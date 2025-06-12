@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   UserCircle,
   SaveIcon,
@@ -7,30 +7,23 @@ import {
   XCircle,
   MailIcon,
   PhoneCallIcon,
-  UserCheck, // For user role
-  Clock, // For last login
-  UploadCloud, // For profile picture upload
-  KeyRound, // For password change section
+  UserCheck,
+  Clock,
+  UploadCloud,
+  KeyRound,
 } from "lucide-react";
-import Button from "../UI/Button"; // Assuming you have a Button component
-// import axios from "axios"; // For API calls (mocked for now)
+import Button from "../UI/Button";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for redirection
 
 export default function MyProfile() {
-  // Mock user data (replace with actual data fetched from API)
-  const [userData, setUserData] = useState({
-    id: "user123",
-    fullName: "Pogi Admin",
-    email: "pogi.admin@example.com",
-    role: "Admin",
-    contactNumber: "09123456789",
-    profilePicture: "https://placehold.co/100x100/A78BFA/ffffff?text=PA", // Placeholder image
-    lastLogin: "2024-05-29 10:30 AM",
-  });
+  // State for user data, initialized to null
+  const [userData, setUserData] = useState(null);
 
-  // State for editable profile fields
-  const [fullName, setFullName] = useState(userData.fullName);
-  const [email, setEmail] = useState(userData.email);
-  const [contactNumber, setContactNumber] = useState(userData.contactNumber);
+  // State for editable profile fields, initialized as empty
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
 
   // State for password change fields
   const [currentPassword, setCurrentPassword] = useState("");
@@ -44,6 +37,68 @@ export default function MyProfile() {
   const [profileSuccess, setProfileSuccess] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [fetchLoading, setFetchLoading] = useState(true); // New state for initial data fetch
+  const [fetchError, setFetchError] = useState(""); // New state for initial data fetch error
+
+  const navigate = useNavigate(); // Initialize useNavigate
+  const backendUrl = import.meta.env.VITE_API_BASE_URL;
+
+  // --- Fetch User Data on Component Mount ---
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userId = sessionStorage.getItem("id");
+      if (!userId) {
+        setFetchError("User ID not found. Please log in.");
+        return;
+      }
+
+      setFetchLoading(true);
+      setFetchError("");
+      try {
+        // Use the /me endpoint to get the currently authenticated user's data
+        const response = await axios.get(`${backendUrl}/api/user/${userId}`, {
+          withCredentials: true, // Essential for sending session cookies
+        });
+
+        if (response.status === 200 && response.data.isAuthenticated) {
+          const fetchedData = {
+            id: response.data.userId,
+            fullName: response.data.userName,
+            email: response.data.userEmail,
+            contactNumber: response.data.userNumber,
+            role: response.data.userRole,
+            lastLogout: response.data.lastLogout,
+          };
+          setUserData(fetchedData);
+          setFullName(fetchedData.fullName || "");
+          setEmail(fetchedData.email || "");
+          setContactNumber(fetchedData.contactNumber || "");
+        } else {
+          // If not authenticated or data is missing, redirect to login
+          setFetchError("Not authenticated. Please log in.");
+          navigate("/login"); // Redirect to your login page
+        }
+      } catch (err) {
+        console.error("User data fetch error:", err);
+        // If the API call fails (e.g., 401 Unauthorized), it means the session is invalid
+        if (err.response && err.response.status === 401) {
+          setFetchError(
+            "Session expired or not logged in. Please log in again."
+          );
+          navigate("/login"); // Redirect to login on authentication failure
+        } else {
+          setFetchError(
+            err.response?.data?.message ||
+              "An error occurred while fetching user data."
+          );
+        }
+      } finally {
+        setFetchLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [backendUrl, navigate]); // Add backendUrl and navigate to dependency array
 
   // Handler for saving profile information
   const handleProfileSave = async (e) => {
@@ -52,21 +107,40 @@ export default function MyProfile() {
     setProfileError("");
     setProfileSuccess("");
 
-    // Basic validation
     if (!fullName || !email || !contactNumber) {
       setProfileError("All fields are required.");
       setProfileLoading(false);
       return;
     }
 
-    try {
-      // Simulate API call to update profile
-      // const response = await axios.post('/api/user/profile', { fullName, email, contactNumber });
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate network delay
+    if (!userData || !userData.id) {
+      setProfileError("User ID not available. Please log in again.");
+      setProfileLoading(false);
+      return;
+    }
 
-      const isSuccess = true; // Mock success
-      if (isSuccess) {
-        setUserData((prev) => ({ ...prev, fullName, email, contactNumber })); // Update local state
+    try {
+      const response = await axios.put(
+        `${backendUrl}/api/update/${userData.id}`,
+        {
+          fullName,
+          email,
+          contactNumber,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.status === 200) {
+        // Update local state with new data
+        setUserData((prev) => ({ ...prev, fullName, email, contactNumber }));
+        // Inside your profile update handler, after a successful update:
+        window.dispatchEvent(new Event("profileUpdated"));
+
         setProfileSuccess("Profile updated successfully!");
       } else {
         setProfileError("Failed to update profile. Please try again.");
@@ -77,6 +151,9 @@ export default function MyProfile() {
         err.response?.data?.message ||
           "An error occurred during profile update."
       );
+      if (err.response && err.response.status === 401) {
+        navigate("/login"); // Redirect if session expires during an action
+      }
     } finally {
       setProfileLoading(false);
     }
@@ -100,19 +177,33 @@ export default function MyProfile() {
       return;
     }
     if (newPassword.length < 6) {
-      // Example password strength
       setPasswordError("New password must be at least 6 characters long.");
       setPasswordLoading(false);
       return;
     }
 
-    try {
-      // Simulate API call to change password
-      // const response = await axios.post('/api/user/change-password', { currentPassword, newPassword });
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate network delay
+    if (!userData || !userData.id) {
+      setPasswordError("User ID not available. Please log in again.");
+      setPasswordLoading(false);
+      return;
+    }
 
-      const isSuccess = true; // Mock success
-      if (isSuccess) {
+    try {
+      const response = await axios.put(
+        `${backendUrl}/api/change-password/${userData.id}`, // Corrected path based on your backend
+        {
+          currentPassword,
+          newPassword,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.status === 200) {
         setPasswordSuccess("Password changed successfully!");
         setCurrentPassword("");
         setNewPassword("");
@@ -128,6 +219,9 @@ export default function MyProfile() {
         err.response?.data?.message ||
           "An error occurred during password change."
       );
+      if (err.response && err.response.status === 401) {
+        navigate("/login"); // Redirect if session expires during an action
+      }
     } finally {
       setPasswordLoading(false);
     }
@@ -137,19 +231,50 @@ export default function MyProfile() {
   const handleProfilePictureUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // In a real app: upload file to storage (e.g., Firebase Storage, S3)
-      // and then update the user's profilePicture URL in your backend.
       const reader = new FileReader();
       reader.onloadend = () => {
         setUserData((prev) => ({ ...prev, profilePicture: reader.result }));
         setProfileSuccess("Profile picture updated!");
+        // In a real app, you'd send this file to your backend
+        // and update the user's profilePicture URL in the database.
+        // E.g., axios.post(`${backendUrl}/api/upload-profile-picture/${userData.id}`, formData);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  if (fetchLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-gray-700">
+        <Loader2 className="animate-spin h-8 w-8 mr-2" /> Loading profile...
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen text-red-700 p-4 text-center">
+        <XCircle className="h-8 w-8 mb-2" />
+        <p>{fetchError}</p>
+        <Button onClick={() => navigate("/login")} className="mt-4">
+          Go to Login
+        </Button>
+      </div>
+    );
+  }
+
+  // Render the profile page only if userData is available
+  if (!userData) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-gray-700">
+        No user data available after loading. This should not happen if login is
+        successful.
+      </div>
+    );
+  }
+
   return (
-    <div className=" bg-gray-100 min-h-screen rounded-lg font-inter">
+    <div className="bg-gray-100 min-h-screen rounded-lg font-inter p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">My Profile</h1>
 
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
@@ -157,7 +282,7 @@ export default function MyProfile() {
           {/* Profile Picture Section */}
           <div className="relative group">
             <img
-              src={userData.profilePicture}
+              src={userData.profilePicture || "/default-profile.png"}
               alt="Profile"
               className="w-28 h-28 rounded-full object-cover border-4 border-blue-200 group-hover:border-blue-400 transition-colors duration-300"
             />
@@ -184,7 +309,7 @@ export default function MyProfile() {
             </h2>
             <p className="text-md text-gray-600 flex items-center justify-center sm:justify-start mt-1">
               <UserCheck className="h-4 w-4 mr-2 text-blue-500" />
-              <span className="capitalize">{userData.role}</span>
+              <span className="capitalize">{userData.role || "User"}</span>
             </p>
             <p className="text-md text-gray-600 flex items-center justify-center sm:justify-start mt-1">
               <MailIcon className="h-4 w-4 mr-2 text-gray-500" />
@@ -196,7 +321,10 @@ export default function MyProfile() {
             </p>
             <p className="text-sm text-gray-500 flex items-center justify-center sm:justify-start mt-2">
               <Clock className="h-4 w-4 mr-2 text-gray-400" />
-              Last Login: {userData.lastLogin}
+              Last Logout:{" "}
+              {userData.lastLogout
+                ? new Date(userData.lastLogout).toLocaleString()
+                : "N/A"}
             </p>
           </div>
         </div>

@@ -68,46 +68,18 @@ exports.deleteSeniorCitizen = async (id) => {
   }
 };
 
-// Search senior citizens by name, address, or number
-exports.searchSeniorCitizens = async (searchTerm) => {
-  try {
-    const searchPattern = `%${searchTerm}%`;
-    const query = `
-      SELECT * FROM senior_citizens
-      WHERE
-        first_name LIKE ? OR
-        last_name LIKE ? OR
-        middle_name LIKE ? OR
-        address LIKE ? OR
-        cp_number LIKE ?
-      ORDER BY last_name ASC, first_name ASC
-    `;
-    const results = await Connection(query, [
-      searchPattern,
-      searchPattern,
-      searchPattern,
-      searchPattern,
-      searchPattern,
-    ]);
-    return results;
-  } catch (error) {
-    console.error(
-      `Error searching senior citizens with term "${searchTerm}":`,
-      error
-    );
-    throw new Error("Failed to search senior citizens.");
-  }
-};
-
 // Paginated retrieval
 exports.getPaginatedSeniorCitizens = async (page, limit) => {
   try {
     const offset = (page - 1) * limit;
+
+    // Get total count of senior citizens
     const [countResult] = await Connection(
       `SELECT COUNT(*) as total FROM senior_citizens`
     );
     const total = countResult.total;
 
+    // Get paginated results ordered by date_registered desc
     const query = `
       SELECT * FROM senior_citizens
       ORDER BY date_registered DESC
@@ -132,29 +104,3 @@ exports.getPaginatedSeniorCitizens = async (page, limit) => {
     throw new Error("Failed to retrieve paginated senior citizens.");
   }
 };
-
-// Filter by barangay
-exports.getSeniorCitizensByBarangay = async (barangay) => {
-  try {
-    const query = `
-      SELECT * FROM senior_citizens
-      WHERE barangay = ?
-      ORDER BY last_name ASC, first_name ASC
-    `;
-    const results = await Connection(query, [barangay]);
-    return results;
-  } catch (error) {
-    console.error(
-      `Error fetching senior citizens by barangay "${barangay}":`,
-      error
-    );
-    throw new Error(
-      `Failed to retrieve senior citizens for barangay ${barangay}.`
-    );
-  }
-};
-
-// Additional service functions can be added below as needed.
-// For example:
-// exports.getTotalCount = async () => { ... };
-// exports.getByHealthStatus = async (status) => { ... };

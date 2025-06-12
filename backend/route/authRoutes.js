@@ -3,6 +3,31 @@ const router = express.Router();
 const userService = require("../service/userService");
 const { isAuthenticated } = require("../middleware/authMiddleware"); // Adjust path
 
+router.get("/user/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await userService.getUser(id); // This should return user data from DB
+
+    if (user) {
+      res.status(200).json({
+        isAuthenticated: true,
+        userId: user.id,
+        userName: user.username,
+        userEmail: user.email,
+        userNumber: user.cp_number,
+        userRole: user.role,
+        lastLogout: user.last_logout,
+      });
+    } else {
+      res.status(404).json({ message: "User not found." });
+    }
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
 // LOGIN
 router.post("/login", async (req, res) => {
   try {
@@ -61,6 +86,44 @@ router.post("/register", async (req, res) => {
   }
 });
 
+router.put("/update/:id", async (req, res) => {
+  const { fullName, email, contactNumber } = req.body;
+  const { id } = req.params;
+  try {
+    const success = await userService.updateUserInfo(
+      id,
+      fullName,
+      email,
+      contactNumber
+    );
+    if (success)
+      return res.status(200).json({ message: "Profile updated successfully." });
+    return res.status(400).json({ message: "Failed to update profile." });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Change password
+router.put("/change-password/:id", async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const { id } = req.params;
+  try {
+    const success = await userService.changePassword(
+      id,
+      currentPassword,
+      newPassword
+    );
+    if (success)
+      return res
+        .status(200)
+        .json({ message: "Password updated successfully." });
+    return res.status(400).json({ message: "Incorrect current password." });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 // LOGOUT
 router.post("/logout", async (req, res) => {
   try {
@@ -84,7 +147,8 @@ router.post("/logout", async (req, res) => {
 
 // CHECK SESSION (/me) - requires authentication middleware
 router.get("/me", isAuthenticated, (req, res) => {
-  const { id, username, email, cp_number, role } = req.session.user;
+  const { id, username, email, cp_number, role, last_logout } =
+    req.session.user;
   res.status(200).json({
     isAuthenticated: true,
     userId: id,
@@ -92,6 +156,7 @@ router.get("/me", isAuthenticated, (req, res) => {
     userEmail: email,
     userNumber: cp_number,
     userRole: role,
+    lastLogout: last_logout,
   });
 });
 

@@ -16,6 +16,8 @@ const SeniorCitizen = () => {
     useState("All Health Status");
   const [sortBy, setSortBy] = useState("name"); // 'name', 'age', 'gender', 'barangay'
   const [sortOrder, setSortOrder] = useState("asc"); // 'asc' or 'desc'
+  const [page, setPage] = useState(1);
+  const limit = 10;
 
   // Mock data for senior citizens (keep this as is)
   const [seniorCitizens, setSeniorCitizens] = useState([
@@ -60,171 +62,15 @@ const SeniorCitizen = () => {
       emergencyContactNumber: "09987654321",
       healthNotes: "Occasional mild arthritis.",
     },
-    {
-      id: 2,
-      name: "Pedro Reyes",
-      age: 72,
-      gender: "Male",
-      address: "Brgy. Labangan",
-      contact: "09234567890",
-      healthStatus: "With Maintenance Meds", // Updated to match options
-      firstName: "Pedro",
-      lastName: "Reyes",
-      middleName: "Cruz",
-      suffix: "",
-      birthdate: "1953-03-20",
-      civilStatus: "Married",
-      religion: "Catholic",
-      bloodType: "A+",
-      houseNumberStreet: "456 Elm St.",
-      barangay: "Labangan",
-      municipality: "San Jose",
-      province: "Occidental Mindoro",
-      zipCode: "5100",
-      mobileNumber: "09234567890",
-      telephoneNumber: "043-1234567",
-      emailAddress: "pedro.reyes@example.com",
-      validIdType: "Driver's License",
-      validIdNumber: "DR-1234567",
-      philSysId: "PH-0987654321",
-      sssNumber: "02-2345678-9",
-      gsisNumber: "",
-      philhealthNumber: "00-234567890-1",
-      tinNumber: "234-567-890-001",
-      employmentStatus: "Retired",
-      occupation: "Farmer",
-      highestEducation: "Elementary Graduate",
-      classification: "Pensioner",
-      monthlyPension: "5000",
-      emergencyContactName: "Maria Reyes",
-      emergencyContactRelationship: "Wife",
-      emergencyContactNumber: "09170000000",
-      healthNotes: "Hypertension, takes medication daily.",
-    },
-    {
-      id: 3,
-      name: "Juan Dela Cruz",
-      age: 65,
-      gender: "Male",
-      address: "Brgy. San Roque",
-      contact: "09345678901",
-      healthStatus: "Good",
-      firstName: "Juan",
-      lastName: "Dela Cruz",
-      middleName: "Santos",
-      suffix: "",
-      birthdate: "1960-07-01",
-      civilStatus: "Married",
-      religion: "Catholic",
-      bloodType: "B+",
-      houseNumberStreet: "789 Pine Ave.",
-      barangay: "San Roque",
-      municipality: "San Jose",
-      province: "Occidental Mindoro",
-      zipCode: "5100",
-      mobileNumber: "09345678901",
-      telephoneNumber: "",
-      emailAddress: "",
-      validIdType: "Voter's ID",
-      validIdNumber: "VM-123456",
-      philSysId: "PH-1357924680",
-      sssNumber: "03-3456789-0",
-      gsisNumber: "",
-      philhealthNumber: "00-345678901-2",
-      tinNumber: "345-678-901-002",
-      employmentStatus: "Self-Employed",
-      occupation: "Vendor",
-      highestEducation: "High School Level",
-      classification: "Working Senior",
-      monthlyPension: "0",
-      emergencyContactName: "Ana Dela Cruz",
-      emergencyContactRelationship: "Daughter",
-      emergencyContactNumber: "09991112222",
-      healthNotes: "No known major health issues.",
-    },
-    {
-      id: 4,
-      name: "Elena Magtanggol",
-      age: 70,
-      gender: "Female",
-      address: "Brgy. Pag-asa",
-      contact: "09456789012",
-      healthStatus: "With Maintenance Meds", // Updated to match options
-      firstName: "Elena",
-      lastName: "Magtanggol",
-      middleName: "Garcia",
-      suffix: "",
-      birthdate: "1955-09-10",
-      civilStatus: "Single",
-      religion: "Christian",
-      bloodType: "AB-",
-      houseNumberStreet: "101 Oak St.",
-      barangay: "Pag-asa",
-      municipality: "San Jose",
-      province: "Occidental Mindoro",
-      zipCode: "5100",
-      mobileNumber: "09456789012",
-      telephoneNumber: "",
-      emailAddress: "elena.m@example.com",
-      validIdType: "Passport",
-      validIdNumber: "P1234567",
-      philSysId: "PH-2468013579",
-      sssNumber: "04-4567890-1",
-      gsisNumber: "200012345678",
-      philhealthNumber: "00-456789012-3",
-      tinNumber: "456-789-012-003",
-      employmentStatus: "Retired",
-      occupation: "Teacher",
-      highestEducation: "College Graduate",
-      classification: "Pensioner",
-      monthlyPension: "15000",
-      emergencyContactName: "Roberto Magtanggol",
-      emergencyContactRelationship: "Nephew",
-      emergencyContactNumber: "09088889999",
-      healthNotes: "Diabetes, controlled by diet and medication.",
-    },
-    {
-      id: 5,
-      name: "Ricardo Dalisay",
-      age: 68,
-      gender: "Male",
-      address: "Brgy. Rizal",
-      contact: "09567890123",
-      healthStatus: "Needs Medical Attention", // Updated to match options
-      firstName: "Ricardo",
-      lastName: "Dalisay",
-      middleName: "Lopez",
-      suffix: "Sr.",
-      birthdate: "1957-02-28",
-      civilStatus: "Married",
-      religion: "Catholic",
-      bloodType: "O-",
-      houseNumberStreet: "202 Maple Lane",
-      barangay: "Rizal",
-      municipality: "San Jose",
-      province: "Occidental Mindoro",
-      zipCode: "5100",
-      mobileNumber: "09567890123",
-      telephoneNumber: "",
-      emailAddress: "",
-      validIdType: "PRC ID",
-      validIdNumber: "0012345",
-      philSysId: "PH-9753108642",
-      sssNumber: "05-5678901-2",
-      gsisNumber: "",
-      philhealthNumber: "00-567890123-4",
-      tinNumber: "567-890-123-004",
-      employmentStatus: "Unemployed",
-      occupation: "Former Carpenter",
-      highestEducation: "Elementary Level",
-      classification: "Indigent",
-      monthlyPension: "0",
-      emergencyContactName: "Flora Dalisay",
-      emergencyContactRelationship: "Wife",
-      emergencyContactNumber: "09151234567",
-      healthNotes: "Mild heart condition, needs regular check-ups.",
-    },
   ]);
+
+  const totalCount = filteredAndSortedCitizens.length;
+  const totalPages = Math.ceil(totalCount / limit);
+
+  const paginatedCitizens = useMemo(() => {
+    const startIndex = (page - 1) * limit;
+    return filteredAndSortedCitizens.slice(startIndex, startIndex + limit);
+  }, [filteredAndSortedCitizens, page, limit]);
 
   const handleEdit = (citizen) => {
     setSelectedCitizen(citizen);
@@ -584,23 +430,78 @@ const SeniorCitizen = () => {
                 results
               </p>
             </div>
-            <div>
-              <nav
-                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                aria-label="Pagination"
-              >
-                <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                  <span className="sr-only">Previous</span>
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
                   Previous
                 </button>
-                <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  1
-                </button>
-                <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                  <span className="sr-only">Next</span>
+                <button
+                  onClick={() =>
+                    setPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={page === totalPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
                   Next
                 </button>
-              </nav>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing{" "}
+                    <span className="font-medium">
+                      {(page - 1) * limit + 1}
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-medium">
+                      {Math.min(page * limit, totalCount)}
+                    </span>{" "}
+                    of <span className="font-medium">{totalCount}</span> results
+                  </p>
+                </div>
+                <div>
+                  <nav
+                    className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                    aria-label="Pagination"
+                  >
+                    <button
+                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i + 1}
+                        onClick={() => setPage(i + 1)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          page === i + 1
+                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                            : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() =>
+                        setPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={page === totalPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </nav>
+                </div>
+              </div>
             </div>
           </div>
         </div>

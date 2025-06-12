@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const seniorCitizenService = require("../services/seniorCitizenService");
+const seniorCitizenService = require("../service/seniorCitizenService");
 
 // GET: All senior citizens
-router.get("/", async (req, res) => {
+router.get("/getAll", async (req, res) => {
   try {
     const data = await seniorCitizenService.getAllSeniorCitizens();
     res.status(200).json(data);
@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
 });
 
 // GET: Senior citizen by ID
-router.get("/:id", async (req, res) => {
+router.get("/get/:id", async (req, res) => {
   try {
     const citizen = await seniorCitizenService.getSeniorCitizenById(
       req.params.id
@@ -28,7 +28,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST: Create new senior citizen
-router.post("/", async (req, res) => {
+router.post("/create", async (req, res) => {
   try {
     const insertId = await seniorCitizenService.createSeniorCitizen(req.body);
     res.status(201).json({ message: "Senior citizen created.", insertId });
@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
 });
 
 // PUT: Update senior citizen
-router.put("/:id", async (req, res) => {
+router.put("/update/:id", async (req, res) => {
   try {
     const success = await seniorCitizenService.updateSeniorCitizen(
       req.params.id,
@@ -56,7 +56,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE: Remove senior citizen
-router.delete("/:id", async (req, res) => {
+router.delete("/delete/:id", async (req, res) => {
   try {
     const success = await seniorCitizenService.deleteSeniorCitizen(
       req.params.id
@@ -72,41 +72,20 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// GET: Search senior citizens
-router.get("/search/:term", async (req, res) => {
-  try {
-    const results = await seniorCitizenService.searchSeniorCitizens(
-      req.params.term
-    );
-    res.status(200).json(results);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
 // GET: Paginated list (e.g. /page?page=1&limit=10)
 router.get("/page", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+
     const data = await seniorCitizenService.getPaginatedSeniorCitizens(
       page,
       limit
     );
-    res.status(200).json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
-// GET: Filter by barangay (e.g. /barangay/Poblacion)
-router.get("/barangay/:barangay", async (req, res) => {
-  try {
-    const data = await seniorCitizenService.getSeniorCitizensByBarangay(
-      req.params.barangay
-    );
     res.status(200).json(data);
   } catch (error) {
+    console.error("Failed to fetch paginated senior citizens:", error);
     res.status(500).json({ message: error.message });
   }
 });

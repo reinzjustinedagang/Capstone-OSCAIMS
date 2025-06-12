@@ -27,6 +27,8 @@ db.connect((err) => {
   console.log("✅ Connected to MySQL database.");
 });
 
+// Create the 'user' table if it does not already exist.
+// This table will store detailed information about user.
 db.query(
   `
   CREATE TABLE IF NOT EXISTS users (
@@ -54,13 +56,13 @@ db.query(
 db.query(
   `
   CREATE TABLE IF NOT EXISTS otp_codes (
-    id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique identifier, auto-increments
-    mobile VARCHAR(15) NOT NULL,        -- Mobile number, cannot be null
-    otp VARCHAR(6) NOT NULL,            -- One-Time Password, cannot be null
-    purpose VARCHAR(50),                -- Purpose of the OTP (e.g., 'registration', 'password_reset')
-    expires_at DATETIME,                -- Timestamp when the OTP expires
-    used BOOLEAN DEFAULT 0,             -- Flag to check if the OTP has been used (0 for false, 1 for true)
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp when the record was created
+    id INT AUTO_INCREMENT PRIMARY KEY,  
+    mobile VARCHAR(15) NOT NULL,        
+    otp VARCHAR(6) NOT NULL,            
+    purpose VARCHAR(50),                
+    expires_at DATETIME,                
+    used BOOLEAN DEFAULT 0,            
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
   )
 `,
   (err) => {
@@ -78,13 +80,13 @@ db.query(
 // This ensures idempotency, meaning running the script multiple times has the same effect.
 db.query(
   `CREATE TABLE IF NOT EXISTS sms_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,    -- Unique identifier, auto-increments
-    recipients TEXT NOT NULL,             -- Comma-separated list of recipients or JSON string, cannot be null
-    message TEXT NOT NULL,                -- The SMS message content, cannot be null
-    status VARCHAR(20) NOT NULL,          -- Status of the SMS (e.g., 'SENT', 'FAILED', 'DELIVERED'), cannot be null
-    reference_id VARCHAR(100),            -- External reference ID for the SMS (e.g., from an SMS gateway)
-    credit_used DECIMAL(10,2) DEFAULT 0,  -- Amount of credit used for the SMS, defaults to 0.00
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp when the record was created
+    id INT AUTO_INCREMENT PRIMARY KEY,    
+    recipients TEXT NOT NULL,             
+    message TEXT NOT NULL,                
+    status VARCHAR(20) NOT NULL,          
+    reference_id VARCHAR(100),            
+    credit_used DECIMAL(10,2) DEFAULT 0,  
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
   )`,
   (err) => {
     if (err) {
@@ -93,6 +95,29 @@ db.query(
     } else {
       // Log a success message if the table is created or already exists.
       console.log("✅ sms_logs table ready.");
+    }
+  }
+);
+
+// Create the 'audit_logs' table if it does not already exist.
+// This table will store detailed information about audit logs.
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    user VARCHAR(255) NOT NULL,
+    userRole VARCHAR(50) NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    entityType VARCHAR(100) NOT NULL,
+    details TEXT
+  )
+  `,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create audit_logs table:", err);
+    } else {
+      console.log("✅ audit_logs table ready.");
     }
   }
 );

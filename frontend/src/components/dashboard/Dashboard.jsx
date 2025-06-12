@@ -4,6 +4,7 @@ import {
   MessageSquareIcon,
   BellIcon,
   UserPlusIcon,
+  HouseIcon,
 } from "lucide-react";
 import Card from "../UI/Card";
 const Dashboard = () => {
@@ -18,9 +19,9 @@ const Dashboard = () => {
           color="blue"
         />
         <Card
-          title="New Registrations"
+          title="No. of Barangay"
           value="28"
-          icon={<UserPlusIcon />}
+          icon={<HouseIcon />}
           color="green"
         />
         <Card

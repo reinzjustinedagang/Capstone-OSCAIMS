@@ -44,15 +44,15 @@ const sessionStore = new MySQLStore({
 app.use(
   session({
     name: "oscaims_sid",
-    secret: "yourSecretKey",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: sessionStore, // ✅ ADD THIS LINE
+    store: sessionStore,
     cookie: {
       httpOnly: true,
       secure: false, // ✅ Make true only in production (with HTTPS)
       sameSite: "lax", // ✅ Adjust as needed
-      maxAge: 1000 * 60 * 60, // 1 hour
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
   })
 );
@@ -60,9 +60,11 @@ app.use(
 // Import route handlers
 const authRoutes = require("../route/authRoutes");
 const seniorCitizenRoutes = require("../route/seniorCitizenRoutes");
+const auditRoutes = require("../route/auditRoutes");
 
+app.use("/audit-logs", auditRoutes);
 app.use("/api", authRoutes);
-app.use("/api/senior-citizens", seniorCitizenRoutes); // Authentication related routes
+app.use("/senior-citizens", seniorCitizenRoutes); // Authentication related routes
 
 app.use((err, req, res, next) => {
   console.error(err.stack); // Log the error stack for debugging

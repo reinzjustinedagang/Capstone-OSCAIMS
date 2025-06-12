@@ -41,8 +41,8 @@ export default function Login() {
 
       const { user } = response.data;
 
-      localStorage.setItem("username", user.username);
-      localStorage.setItem("role", user.role);
+      sessionStorage.setItem("id", user.id);
+      sessionStorage.setItem("user", JSON.stringify(user));
 
       if (user && user.role) {
         const role = user.role.toLowerCase();
