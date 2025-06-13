@@ -10,26 +10,29 @@ const Header = () => {
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
   const fetchUserData = async () => {
-    const userId = sessionStorage.getItem("id");
-    if (!userId) {
-      setError("User ID not found.");
-      return;
-    }
-
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${backendUrl}/api/user/${userId}`, {
+      // Step 1: Call /me to get user ID only
+      const meResponse = await axios.get(`${backendUrl}/api/me`, {
         withCredentials: true,
       });
 
-      if (response.status === 200 && response.data.isAuthenticated) {
-        const user = response.data;
-        setUserName(user.userName || "Guest");
-        setUserRole(user.userRole || "User");
-      } else {
-        setUserName("Guest");
-        setUserRole("User");
+      if (meResponse.status === 200 && meResponse.data.isAuthenticated) {
+        const userId = meResponse.data.userId;
+
+        const response = await axios.get(`${backendUrl}/api/user/${userId}`, {
+          withCredentials: true,
+        });
+
+        if (response.status === 200 && response.data.isAuthenticated) {
+          const user = response.data;
+          setUserName(user.userName || "Guest");
+          setUserRole(user.userRole || "User");
+        } else {
+          setUserName("Guest");
+          setUserRole("User");
+        }
       }
     } catch (err) {
       console.error("Failed to fetch user data for header:", err);

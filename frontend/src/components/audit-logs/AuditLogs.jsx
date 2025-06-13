@@ -232,7 +232,7 @@ export default function AuditLogs() {
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Entity
+                    User Role
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Details
@@ -253,7 +253,9 @@ export default function AuditLogs() {
                   filteredAndSortedLogs.map((log) => (
                     <tr key={log.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {log.timestamp}
+                        {log.timestamp
+                          ? new Date(log.timestamp).toLocaleString()
+                          : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {log.user}
@@ -261,13 +263,14 @@ export default function AuditLogs() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            log.action === "LOGIN" || log.action === "LOGOUT"
+                            log.action === "LOGIN"
                               ? "bg-blue-100 text-blue-800"
                               : log.action === "CREATE"
                               ? "bg-green-100 text-green-800"
                               : log.action === "UPDATE"
                               ? "bg-yellow-100 text-yellow-800"
-                              : log.action === "DELETE"
+                              : log.action === "DELETE" ||
+                                log.action === "LOGOUT"
                               ? "bg-red-100 text-red-800"
                               : "bg-gray-100 text-gray-800"
                           }`}
@@ -276,8 +279,7 @@ export default function AuditLogs() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {log.entityType}{" "}
-                        {log.entityId ? `(${log.entityId})` : ""}
+                        {log.userRole}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {log.details}

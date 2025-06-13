@@ -1,13 +1,13 @@
 const Connection = require("../db/Connection");
 
-exports.logAudit = async (userEmail, userRole, action, entityType, details) => {
+exports.logAudit = async (userEmail, userRole, action, details) => {
   try {
     await Connection(
       `
-      INSERT INTO audit_logs (user, userRole, action, entityType, details)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO audit_logs (user, userRole, action, details)
+      VALUES (?, ?, ?, ?)
       `,
-      [userEmail, userRole, action, entityType, details]
+      [userEmail, userRole, action, details]
     );
   } catch (err) {
     console.error("❌ Failed to log audit entry:", err);

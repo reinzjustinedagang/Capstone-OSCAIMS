@@ -38,7 +38,7 @@ const sessionStore = new MySQLStore({
   database: process.env.DB_DATABASE, // Database name
   clearExpired: true, // Clear expired sessions from the database
   checkExpirationInterval: 900000, // How frequently to check for expired sessions (15 minutes)
-  expiration: 86400000, // The maximum age of a session in milliseconds (1 day)
+  expiration: 1000 * 60 * 60 * 24,
 });
 
 app.use(
@@ -61,10 +61,12 @@ app.use(
 const authRoutes = require("../route/authRoutes");
 const seniorCitizenRoutes = require("../route/seniorCitizenRoutes");
 const auditRoutes = require("../route/auditRoutes");
+const smsRoute = require("../route/smsRoute");
 
 app.use("/audit-logs", auditRoutes);
 app.use("/api", authRoutes);
-app.use("/senior-citizens", seniorCitizenRoutes); // Authentication related routes
+app.use("/senior-citizens", seniorCitizenRoutes);
+app.use("/sms", smsRoute);
 
 app.use((err, req, res, next) => {
   console.error(err.stack); // Log the error stack for debugging

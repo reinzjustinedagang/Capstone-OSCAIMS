@@ -38,6 +38,7 @@ db.query(
     password VARCHAR(255) NOT NULL,
     cp_number VARCHAR(15) UNIQUE NOT NULL,
     role VARCHAR(50) NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'inactive',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_logout TIMESTAMP NULL DEFAULT NULL
   )
@@ -47,6 +48,28 @@ db.query(
       console.error("❌ Failed to create users table:", err);
     } else {
       console.log("✅ users table ready.");
+    }
+  }
+);
+
+// Create the 'user' table if it does not already exist.
+// This table will store detailed information about user.
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS sms_credentials (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  email VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  api_code VARCHAR(255) NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+  `,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create sms credentials table:", err);
+    } else {
+      console.log("✅ sms credentials table ready.");
     }
   }
 );
@@ -109,7 +132,6 @@ db.query(
     user VARCHAR(255) NOT NULL,
     userRole VARCHAR(50) NOT NULL,
     action VARCHAR(50) NOT NULL,
-    entityType VARCHAR(100) NOT NULL,
     details TEXT
   )
   `,

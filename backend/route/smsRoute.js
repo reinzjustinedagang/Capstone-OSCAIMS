@@ -1,5 +1,5 @@
 const express = require("express");
-const smsService = require("../services/sms/smsService");
+const smsService = require("../service/smsService");
 
 const router = express.Router();
 
@@ -89,5 +89,9 @@ router.get("/logs", async (req, res) => {
       .json({ success: false, message: "Failed to retrieve SMS logs." });
   }
 });
+
+router.put("/sms-credentials", smsService.updateSmsCredentials);
+
+router.get("/sms-credentials", smsService.getSmsCredentials);
 
 module.exports = router;

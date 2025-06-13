@@ -28,6 +28,44 @@ router.get("/user/:id", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const users = await userService.getAllUsers();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch users." });
+  }
+});
+
+// DELETE USER
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  const sessionUser = req.session.user;
+
+  if (!sessionUser) {
+    return res.status(401).json({ message: "Unauthorized: Not logged in." });
+  }
+
+  try {
+    const deleted = await userService.deleteUser(
+      id,
+      sessionUser.email,
+      sessionUser.role
+    );
+
+    if (deleted) {
+      return res.status(200).json({ message: "User deleted successfully." });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "User not found or already deleted." });
+    }
+  } catch (err) {
+    console.error("❌ Error deleting user:", err);
+    return res.status(500).json({ message: "Server error during deletion." });
+  }
+});
+
 // LOGIN
 router.post("/login", async (req, res) => {
   try {
@@ -86,15 +124,35 @@ router.post("/register", async (req, res) => {
   }
 });
 
+router.put("/updateProfile/:id", async (req, res) => {
+  const { username, email, contactNumber } = req.body;
+  const { id } = req.params;
+  try {
+    const success = await userService.updateUserProfile(
+      id,
+      username,
+      email,
+      contactNumber
+    );
+    if (success)
+      return res.status(200).json({ message: "Profile updated successfully." });
+    return res.status(400).json({ message: "Failed to update profile." });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 router.put("/update/:id", async (req, res) => {
-  const { fullName, email, contactNumber } = req.body;
+  const { username, email, password, contactNumber, role } = req.body;
   const { id } = req.params;
   try {
     const success = await userService.updateUserInfo(
       id,
-      fullName,
+      username,
       email,
-      contactNumber
+      password,
+      contactNumber,
+      role
     );
     if (success)
       return res.status(200).json({ message: "Profile updated successfully." });

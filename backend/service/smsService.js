@@ -1,20 +1,27 @@
 const axios = require("axios");
 const Connection = require("../db/Connection");
-
-const EMAIL = "reinzjustinedagang.bsit@gmail.com";
-const PASSWORD = "Iamreinz2004";
-const API_CODE = "TR-REINZ654500_HZMUO";
+const { logAudit } = require("./auditService");
 
 exports.sendSMS = async (message, recipients) => {
   try {
+    // 🟩 1. Fetch credentials from DB
+    const [credentials] = await Connection(
+      "SELECT * FROM sms_credentials LIMIT 1"
+    );
+
+    if (!credentials) {
+      throw new Error("SMS credentials not found in database.");
+    }
+
     const payload = {
-      Email: EMAIL,
-      Password: PASSWORD,
-      ApiCode: API_CODE,
+      Email: credentials.email,
+      Password: credentials.password,
+      ApiCode: credentials.api_code,
       Recipients: recipients,
       Message: message,
     };
 
+    // 🟩 2. Send SMS
     const response = await axios.post(
       "https://api.itexmo.com/api/broadcast",
       payload,
@@ -27,11 +34,10 @@ exports.sendSMS = async (message, recipients) => {
 
     const data = response.data;
 
-    // ✅ Save result to database
+    // 🟩 3. Log result in DB
     await Connection(
-      `INSERT INTO sms_logs ` +
-        `(recipients, message, status, reference_id, credit_used) ` +
-        `VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO sms_logs (recipients, message, status, reference_id, credit_used)
+       VALUES (?, ?, ?, ?, ?)`,
       [
         JSON.stringify(recipients),
         message,
@@ -50,26 +56,19 @@ exports.sendSMS = async (message, recipients) => {
       };
     }
   } catch (error) {
-    // ✅ Log the failed attempt too
+    // 🟥 Log failed SMS
     await Connection(
-      `INSERT INTO sms_logs ` +
-        `(recipients, message, status, reference_id, credit_used) ` +
-        `VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO sms_logs (recipients, message, status, reference_id, credit_used)
+       VALUES (?, ?, ?, ?, ?)`,
       [JSON.stringify(recipients), message, "Request Failed", null, 0]
     );
 
-    // Check if it's a 400 error (likely no credits or bad request)
-    if (error.response && error.response.status === 400) {
-      return {
-        success: false,
-        response:
-          "❌ Failed to send broadcast: Insufficient credits or bad request.",
-      };
-    }
-
     return {
       success: false,
-      response: `Request failed: ${error.message}`,
+      response:
+        error.response?.status === 400
+          ? "❌ Failed to send broadcast: Insufficient credits or bad request."
+          : `Request failed: ${error.message}`,
     };
   }
 };
@@ -93,33 +92,61 @@ exports.deleteSms = async (id) => {
 
 // In your smsService.js
 
-exports.getSmsLogs = async (filters = {}) => {
-  // Filters: { recipient, status, startDate, endDate }
-  let query = "SELECT * FROM sms_logs WHERE 1=1";
-  const params = [];
-
-  if (filters.recipient) {
-    query += " AND JSON_CONTAINS(recipients, ?)";
-    params.push(`"${filters.recipient}"`); // JSON_CONTAINS expects a JSON string value
+exports.getSmsCredentials = async (req, res) => {
+  try {
+    const [credentials] = await Connection(
+      "SELECT email, password, api_code FROM sms_credentials WHERE id = 1"
+    );
+    if (!credentials) {
+      return res.status(404).json({ message: "Credentials not found" });
+    }
+    res.json(credentials);
+  } catch (err) {
+    console.error("Error fetching SMS credentials:", err);
+    res.status(500).json({ message: "Server error fetching credentials" });
   }
+};
 
-  if (filters.status) {
-    query += " AND status = ?";
-    params.push(filters.status);
+// PUT /api/sms-credentials
+exports.updateSmsCredentials = async (req, res) => {
+  const { email, password, api_code } = req.body;
+
+  try {
+    // Get current stored credentials for audit
+    const [oldData] = await Connection(
+      `SELECT email, password, api_code FROM sms_credentials WHERE id = 1`
+    );
+
+    // Perform the update
+    await Connection(
+      `UPDATE sms_credentials SET email = ?, password = ?, api_code = ? WHERE id = 1`,
+      [email, password, api_code]
+    );
+
+    // Get user data from request (assuming middleware sets req.user)
+    const userEmail = req.user?.email || "Unknown";
+    const userRole = req.user?.role || "Admin";
+
+    // Prepare audit log details
+    const changes = [];
+    if (oldData.email !== email)
+      changes.push(`Email changed from '${oldData.email}' to '${email}'`);
+    if (oldData.password !== password) changes.push(`Password was updated`);
+    if (oldData.api_code !== api_code) changes.push(`API Code changed`);
+
+    if (changes.length > 0) {
+      await logAudit(
+        userEmail,
+        userRole,
+        "UPDATE",
+        "SMS_CREDENTIALS",
+        changes.join("; ")
+      );
+    }
+
+    res.status(200).json({ message: "SMS credentials updated." });
+  } catch (err) {
+    console.error("Error updating SMS credentials:", err);
+    res.status(500).json({ message: "Failed to update credentials." });
   }
-
-  if (filters.startDate) {
-    query += " AND created_at >= ?";
-    params.push(filters.startDate);
-  }
-
-  if (filters.endDate) {
-    query += " AND created_at <= ?";
-    params.push(filters.endDate);
-  }
-
-  query += " ORDER BY created_at DESC";
-
-  const rows = await Connection(query, params);
-  return rows;
 };

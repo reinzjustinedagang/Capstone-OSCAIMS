@@ -21,7 +21,7 @@ export default function MyProfile() {
   const [userData, setUserData] = useState(null);
 
   // State for editable profile fields, initialized as empty
-  const [fullName, setFullName] = useState("");
+  const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [contactNumber, setContactNumber] = useState("");
 
@@ -46,46 +46,50 @@ export default function MyProfile() {
   // --- Fetch User Data on Component Mount ---
   useEffect(() => {
     const fetchUserData = async () => {
-      const userId = sessionStorage.getItem("id");
-      if (!userId) {
-        setFetchError("User ID not found. Please log in.");
-        return;
-      }
-
       setFetchLoading(true);
       setFetchError("");
+
       try {
-        // Use the /me endpoint to get the currently authenticated user's data
-        const response = await axios.get(`${backendUrl}/api/user/${userId}`, {
-          withCredentials: true, // Essential for sending session cookies
+        // Step 1: Call /me to get user ID only
+        const meResponse = await axios.get(`${backendUrl}/api/me`, {
+          withCredentials: true,
         });
 
-        if (response.status === 200 && response.data.isAuthenticated) {
-          const fetchedData = {
-            id: response.data.userId,
-            fullName: response.data.userName,
-            email: response.data.userEmail,
-            contactNumber: response.data.userNumber,
-            role: response.data.userRole,
-            lastLogout: response.data.lastLogout,
-          };
-          setUserData(fetchedData);
-          setFullName(fetchedData.fullName || "");
-          setEmail(fetchedData.email || "");
-          setContactNumber(fetchedData.contactNumber || "");
-        } else {
-          // If not authenticated or data is missing, redirect to login
-          setFetchError("Not authenticated. Please log in.");
-          navigate("/login"); // Redirect to your login page
+        if (meResponse.status === 200 && meResponse.data.isAuthenticated) {
+          const userId = meResponse.data.userId;
+
+          // Step 2: Use the userId to get full user data
+          const response = await axios.get(`${backendUrl}/api/user/${userId}`, {
+            withCredentials: true,
+          });
+
+          if (response.status === 200 && response.data.isAuthenticated) {
+            const fetchedData = {
+              id: response.data.userId,
+              username: response.data.userName,
+              email: response.data.userEmail,
+              contactNumber: response.data.userNumber,
+              role: response.data.userRole,
+              lastLogout: response.data.lastLogout,
+            };
+            setUserData(fetchedData);
+            setUserName(fetchedData.username || "");
+            setEmail(fetchedData.email || "");
+            setContactNumber(fetchedData.contactNumber || "");
+            return; // exit early after success
+          }
         }
+
+        // If not authenticated or failed
+        setFetchError("Not authenticated. Please log in.");
+        navigate("/login");
       } catch (err) {
         console.error("User data fetch error:", err);
-        // If the API call fails (e.g., 401 Unauthorized), it means the session is invalid
         if (err.response && err.response.status === 401) {
           setFetchError(
             "Session expired or not logged in. Please log in again."
           );
-          navigate("/login"); // Redirect to login on authentication failure
+          navigate("/login");
         } else {
           setFetchError(
             err.response?.data?.message ||
@@ -98,7 +102,8 @@ export default function MyProfile() {
     };
 
     fetchUserData();
-  }, [backendUrl, navigate]); // Add backendUrl and navigate to dependency array
+  }, [backendUrl, navigate]);
+  // Add backendUrl and navigate to dependency array
 
   // Handler for saving profile information
   const handleProfileSave = async (e) => {
@@ -107,7 +112,7 @@ export default function MyProfile() {
     setProfileError("");
     setProfileSuccess("");
 
-    if (!fullName || !email || !contactNumber) {
+    if (!username || !email || !contactNumber) {
       setProfileError("All fields are required.");
       setProfileLoading(false);
       return;
@@ -121,9 +126,9 @@ export default function MyProfile() {
 
     try {
       const response = await axios.put(
-        `${backendUrl}/api/update/${userData.id}`,
+        `${backendUrl}/api/updateProfile/${userData.id}`,
         {
-          fullName,
+          username,
           email,
           contactNumber,
         },
@@ -137,7 +142,7 @@ export default function MyProfile() {
 
       if (response.status === 200) {
         // Update local state with new data
-        setUserData((prev) => ({ ...prev, fullName, email, contactNumber }));
+        setUserData((prev) => ({ ...prev, username, email, contactNumber }));
         // Inside your profile update handler, after a successful update:
         window.dispatchEvent(new Event("profileUpdated"));
 
@@ -305,7 +310,7 @@ export default function MyProfile() {
           {/* User Basic Info */}
           <div className="text-center sm:text-left">
             <h2 className="text-2xl font-semibold text-gray-900">
-              {userData.fullName}
+              {userData.username}
             </h2>
             <p className="text-md text-gray-600 flex items-center justify-center sm:justify-start mt-1">
               <UserCheck className="h-4 w-4 mr-2 text-blue-500" />
@@ -338,16 +343,16 @@ export default function MyProfile() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label
-                htmlFor="fullName"
+                htmlFor="username"
                 className="block text-sm font-medium text-gray-700"
               >
-                Full Name
+                User Name
               </label>
               <input
                 type="text"
-                id="fullName"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                id="username"
+                value={username}
+                onChange={(e) => setUserName(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 required
               />

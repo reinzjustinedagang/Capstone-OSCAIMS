@@ -1,161 +1,127 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   SaveIcon,
-  User,
-  MessageSquare,
-  Settings as SettingsIconLucide, // Renamed to avoid conflict with component name
-  ShieldCheck,
-  BellRing,
   Loader2,
-  TestTube, // For Test SMS Connection
-  HardDrive, // For Manual Backup
-  CheckCircle, // For success messages
-  XCircle, // For error messages
+  CheckCircle,
+  XCircle,
+  Mail,
+  KeyRound,
+  MessageCircleCode,
 } from "lucide-react";
 import Button from "../UI/Button";
+import Modal from "../UI/Modal";
+import axios from "axios";
 
-const SmsTab = () => {
-  const [smsProvider, setSmsProvider] = useState("Twilio");
-  const [apiKey, setApiKey] = useState("your_api_key_here");
-  const [apiSecret, setApiSecret] = useState("your_api_secret_here");
-  const [senderID, setSenderID] = useState("SanJose-SC");
+const SmsCredentialsForm = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [apiCode, setApiCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [testLoading, setTestLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const handleSmsSave = async (e) => {
+  const backendUrl = import.meta.env.VITE_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchCredentials = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`${backendUrl}/sms/sms-credentials`, {
+          withCredentials: true,
+        });
+        if (res.status === 200 && res.data) {
+          setEmail(res.data.email || "");
+          setPassword(res.data.password || "");
+          setApiCode(res.data.api_code || "");
+        }
+      } catch (err) {
+        setError("Failed to fetch SMS credentials.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCredentials();
+  }, [backendUrl]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
     setError("");
     setSuccessMessage("");
 
-    // Basic validation
-    if (!smsProvider || !apiKey || !apiSecret || !senderID) {
-      setError("All SMS settings fields are required.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Simulate API call to save SMS settings
-      // const response = await axios.post('/api/settings/sms', { smsProvider, apiKey, apiSecret, senderID });
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await axios.put(
+        `${backendUrl}/sms/sms-credentials`,
+        { email, password, api_code: apiCode },
+        { withCredentials: true }
+      );
 
-      const isSuccess = true;
-      if (isSuccess) {
-        setSuccessMessage("SMS settings updated successfully!");
+      if (res.status === 200) {
+        setSuccessMessage("Credentials updated successfully.");
       } else {
-        setError("Failed to update SMS settings.");
+        setError("Failed to update credentials.");
       }
     } catch (err) {
-      console.error("SMS settings update error:", err);
-      setError(
-        err.response?.data?.message ||
-          "An error occurred during SMS settings update."
-      );
+      console.error(err);
+      setError("Error updating credentials.");
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTestConnection = async () => {
-    setTestLoading(true);
-    setError("");
-    setSuccessMessage("");
-
-    // Basic validation for test
-    if (!smsProvider || !apiKey || !apiSecret || !senderID) {
-      setError("Please fill in all SMS settings before testing connection.");
-      setTestLoading(false);
-      return;
-    }
-
-    try {
-      // Simulate API call to test SMS connection
-      // const response = await axios.post('/api/settings/sms/test', { smsProvider, apiKey, apiSecret, senderID });
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      const isSuccess = true; // Change to false to test error state
-      if (isSuccess) {
-        setSuccessMessage("SMS connection test successful!");
-      } else {
-        setError("SMS connection test failed. Check credentials.");
-      }
-    } catch (err) {
-      console.error("SMS test error:", err);
-      setError(
-        err.response?.data?.message ||
-          "An error occurred during SMS connection test."
-      );
-    } finally {
-      setTestLoading(false);
+      setSaving(false);
     }
   };
 
   return (
-    <form onSubmit={handleSmsSave} className="space-y-6">
+    <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label
-            htmlFor="smsProvider"
-            className="block text-sm font-medium text-gray-700"
-          >
-            SMS Provider
+          <label className="block text-sm font-medium text-gray-700">
+            Email Address
           </label>
-          <select
-            id="smsProvider"
-            value={smsProvider}
-            onChange={(e) => setSmsProvider(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          >
-            <option>ItextMo</option>
-          </select>
+          <div className="mt-1 relative">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+            <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          </div>
         </div>
+
         <div>
-          <label
-            htmlFor="apiKey"
-            className="block text-sm font-medium text-gray-700"
-          >
-            API Key
+          <label className="block text-sm font-medium text-gray-700">
+            Password
           </label>
-          <input
-            type="text"
-            id="apiKey"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
+          <div className="mt-1 relative">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+            <KeyRound className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          </div>
         </div>
-        <div>
-          <label
-            htmlFor="apiSecret"
-            className="block text-sm font-medium text-gray-700"
-          >
-            API Secret
+
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700">
+            API Code
           </label>
-          <input
-            type="password"
-            id="apiSecret"
-            value={apiSecret}
-            onChange={(e) => setApiSecret(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="senderID"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Sender ID
-          </label>
-          <input
-            type="text"
-            id="senderID"
-            value={senderID}
-            onChange={(e) => setSenderID(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
+          <div className="mt-1 relative">
+            <input
+              type="text"
+              value={apiCode}
+              onChange={(e) => setApiCode(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+            <MessageCircleCode className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          </div>
         </div>
       </div>
 
@@ -168,6 +134,7 @@ const SmsTab = () => {
           <span className="block sm:inline">{error}</span>
         </div>
       )}
+
       {successMessage && (
         <div
           className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg flex items-center"
@@ -178,39 +145,57 @@ const SmsTab = () => {
         </div>
       )}
 
-      <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="flex justify-end">
         <Button
           type="button"
-          variant="secondary"
-          onClick={handleTestConnection}
-          icon={
-            testLoading ? (
-              <Loader2 className="animate-spin h-4 w-4 mr-2" />
-            ) : (
-              <TestTube className="h-4 w-4 mr-2" />
-            )
-          }
-          disabled={testLoading}
-        >
-          {testLoading ? "Testing..." : "Test SMS Connection"}
-        </Button>
-        <Button
-          type="submit"
           variant="primary"
           icon={
-            loading ? (
+            saving ? (
               <Loader2 className="animate-spin h-4 w-4 mr-2" />
             ) : (
               <SaveIcon className="h-4 w-4 mr-2" />
             )
           }
-          disabled={loading}
+          disabled={saving}
+          onClick={() => setShowConfirmModal(true)}
         >
-          {loading ? "Saving..." : "Save SMS Settings"}
+          {saving ? "Saving..." : "Save SMS Credentials"}
         </Button>
       </div>
+      <Modal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        title="Confirm Update"
+      >
+        <div className="mt-4 text-sm text-gray-700">
+          Are you sure you want to update your SMS credentials?
+        </div>
+
+        <div className="mt-6 flex justify-end space-x-4">
+          <button
+            onClick={() => setShowConfirmModal(false)}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            disabled={saving}
+            onClick={(e) => {
+              setShowConfirmModal(false);
+              handleSubmit(e);
+            }}
+            className={`px-4 py-2 rounded text-sm ${
+              saving
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white`}
+          >
+            {saving ? "Saving..." : "Yes, Save"}
+          </button>
+        </div>
+      </Modal>
     </form>
   );
 };
 
-export default SmsTab;
+export default SmsCredentialsForm;
