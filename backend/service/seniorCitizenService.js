@@ -1,23 +1,5 @@
 const Connection = require("../db/Connection");
 
-/**
- * Senior Citizen Service Layer
- * Provides methods for interacting with the senior_citizens table.
- */
-
-// Fetch all senior citizens
-exports.getAllSeniorCitizens = async () => {
-  try {
-    const results = await Connection(
-      "SELECT * FROM senior_citizens ORDER BY date_registered DESC"
-    );
-    return results;
-  } catch (error) {
-    console.error("Error fetching all senior citizens:", error);
-    throw new Error("Failed to retrieve all senior citizens.");
-  }
-};
-
 // Fetch senior citizen by ID
 exports.getSeniorCitizenById = async (id) => {
   try {
@@ -70,31 +52,25 @@ exports.deleteSeniorCitizen = async (id) => {
 
 // Paginated retrieval
 exports.getPaginatedSeniorCitizens = async (page, limit) => {
+  const offset = (page - 1) * limit;
   try {
-    const offset = (page - 1) * limit;
-
-    // Get total count of senior citizens
-    const [countResult] = await Connection(
-      `SELECT COUNT(*) as total FROM senior_citizens`
+    // Get paginated citizens
+    const citizens = await Connection(
+      `SELECT * FROM senior_citizens ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [limit, offset]
     );
-    const total = countResult.total;
 
-    // Get paginated results ordered by date_registered desc
-    const query = `
-      SELECT * FROM senior_citizens
-      ORDER BY date_registered DESC
-      LIMIT ? OFFSET ?
-    `;
-    const results = await Connection(query, [limit, offset]);
+    // Get total count of citizens
+    const totalRows = await Connection(
+      `SELECT COUNT(*) AS total FROM senior_citizens`
+    );
+    const total = totalRows[0].total;
 
     return {
-      total,
-      page,
-      limit,
-      seniorCitizens: results,
+      citizens, // the paginated data
+      total, // total count
       totalPages: Math.ceil(total / limit),
-      hasNextPage: page * limit < total,
-      hasPrevPage: page > 1,
+      page,
     };
   } catch (error) {
     console.error(

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Button from "../UI/Button"; // Assuming you have a Button component
-import Modal from "../UI/Modal"; // Assuming you have a larger Modal component for forms
+import Modal from "../UI/Modal"; // Assuming this is your general Modal component for all dialogs
 import UserForm from "./UserForm";
 import axios from "axios";
 import {
@@ -10,20 +10,25 @@ import {
   Trash,
   ArrowDown,
   ArrowUp,
-  UserCheckIcon,
-  UserXIcon,
+  UserCheckIcon, // Not directly used in this version but kept from original
+  UserXIcon, // Not directly used in this version but kept from original
 } from "lucide-react";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // For fetching errors or general API errors
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formSubmitting, setFormSubmitting] = useState(false); // Used for form/delete specific loading
+
+  // --- New states for the Notification Modal ---
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationType, setNotificationType] = useState("success"); // 'success' or 'error'
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("All Roles");
@@ -31,24 +36,17 @@ const UserManagement = () => {
   const [sortBy, setSortBy] = useState("username");
   const [sortOrder, setSortOrder] = useState("asc");
 
-  // --- API Endpoints ---
-  // Explicitly setting the backendUrl to the full path where the router is mounted.
-  // This ensures the correct URL is used for all API calls.
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
-  // Moved fetchUsers outside of useEffect for better reusability and to prevent re-creation
-  // on every render if it's passed as a dependency.
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      console.log(`Attempting to fetch users from: ${backendUrl}/api/`); // Added console log for debugging
-      // This will correctly resolve to 'http://localhost:3000/api/'
+      console.log(`Attempting to fetch users from: ${backendUrl}/api/`);
       const response = await axios.get(`${backendUrl}/api/`);
       setUsers(response.data);
     } catch (err) {
       console.error("Failed to fetch users:", err);
-      // More descriptive error message for network issues
       let errorMessage = `Failed to load users: ${err.message}.`;
       if (err.code === "ERR_NETWORK") {
         errorMessage += ` Please ensure the backend server is running and accessible at ${backendUrl}/api/.`;
@@ -58,62 +56,92 @@ const UserManagement = () => {
           err.response.status
         }: ${err.response.data?.message || "Unknown error"}.`;
       }
-      setError(errorMessage);
+      setError(errorMessage); // Set error for the main display if fetch fails
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Call fetchUsers once when the component mounts
     fetchUsers();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
+
+  // --- Notification Handlers ---
+  const showSuccessNotification = (message) => {
+    setNotificationMessage(message);
+    setNotificationType("success");
+    setShowNotificationModal(true);
+  };
+
+  const showErrorNotification = (message) => {
+    setNotificationMessage(message);
+    setNotificationType("error");
+    setShowNotificationModal(true);
+  };
+
+  const closeNotificationModal = () => {
+    setShowNotificationModal(false);
+    setNotificationMessage("");
+  };
 
   const handleAddUser = () => {
     setSelectedUser(null);
     setShowAddModal(true);
+    setError(null); // Clear any previous general errors when opening form
   };
 
   const handleEditUser = (user) => {
     setSelectedUser(user);
     setShowEditModal(true);
+    setError(null); // Clear any previous general errors when opening form
   };
 
   const handleDeleteUser = (user) => {
     setSelectedUser(user);
     setShowDeleteModal(true);
+    setError(null); // Clear any previous general errors when opening form
   };
 
   const handleFormSubmit = async (formData) => {
     setFormSubmitting(true);
-    setError(null);
+    // Note: UserForm now handles its own internal errors.
+    // This outer handleFormSubmit will primarily focus on API calls and then
+    // trigger the success/error notification.
     try {
       if (formData.id) {
+        // Check for formData.id (which should be user._id for existing users)
         // Edit user
         const updatePayload = {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          contactNumber: formData.cp_number, // Backend expects 'contactNumber'
-          role: formData.role, // Include status for updates
+          // Ensure 'cp_number' from formData maps to 'contactNumber' for backend
+          contactNumber: formData.cp_number,
+          role: formData.role,
+          // Assuming status isn't directly editable via UserForm for existing users,
+          // or it would be passed in formData as well. If it should be editable,
+          // ensure formData includes it.
         };
         await axios.put(
-          `${backendUrl}/api/update/${formData.id}`,
+          `${backendUrl}/api/update/${formData.id}`, // Backend expects ID in URL
           updatePayload
         );
+        showSuccessNotification("User updated successfully!");
       } else {
         // Add user (register)
         await axios.post(`${backendUrl}/api/register`, {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          cp_number: formData.cp_number,
+          cp_number: formData.cp_number, // Backend expects 'cp_number' for registration
           role: formData.role,
         });
+        showSuccessNotification("New user added successfully!");
       }
 
       await fetchUsers(); // Re-fetch users after successful operation
 
+      // Close the appropriate modal after successful submission
       setShowAddModal(false);
       setShowEditModal(false);
       setSelectedUser(null);
@@ -122,19 +150,21 @@ const UserManagement = () => {
       const errorMessage =
         err.response?.data?.message ||
         `Failed to ${formData.id ? "update" : "add"} user. Please try again.`;
-      setError(errorMessage);
+      showErrorNotification(errorMessage);
+      // Do NOT set a general error here if you want the notification modal to be the primary feedback
+      // setError(errorMessage); // This would show the red error banner
+      throw err; // Re-throw to let UserForm catch and display its own internal error if needed
     } finally {
-      setFormSubmitting(false);
+      setFormSubmitting(false); // Reset submitting state regardless of success/failure
     }
   };
 
   const handleDeleteConfirm = async () => {
     setFormSubmitting(true);
-    setError(null);
+    // setError(null); // Handled by notification
     try {
-      // Delete URL matches the backend's router.delete("/:id") when router is mounted at /api
-      await axios.delete(`${backendUrl}/api/${selectedUser.id}`);
-
+      await axios.delete(`${backendUrl}/api/${selectedUser.id}`); // Assuming `selectedUser.id` holds the correct ID
+      showSuccessNotification("User deleted successfully!");
       await fetchUsers(); // Re-fetch users after successful deletion
       setShowDeleteModal(false);
       setSelectedUser(null);
@@ -143,7 +173,8 @@ const UserManagement = () => {
       const errorMessage =
         err.response?.data?.message ||
         "Failed to delete user. Please try again.";
-      setError(errorMessage);
+      showErrorNotification(errorMessage);
+      // setError(errorMessage); // This would show the red error banner
     } finally {
       setFormSubmitting(false);
     }
@@ -186,6 +217,7 @@ const UserManagement = () => {
       } else {
         if (a[sortBy] > b[sortBy]) cmp = 1;
         else if (a[sortBy] < b[sortBy]) cmp = -1;
+        cmp = a[sortBy] > b[sortBy] ? 1 : a[sortBy] < b[sortBy] ? -1 : 0;
       }
       return sortOrder === "asc" ? cmp : -cmp;
     });
@@ -241,7 +273,7 @@ const UserManagement = () => {
             </select>
           </div>
         </div>
-        {error && (
+        {error && ( // This error is for general fetch issues, not specific form submissions
           <div
             className="p-4 text-red-700 bg-red-100 border-l-4 border-red-500"
             role="alert"
@@ -437,8 +469,14 @@ const UserManagement = () => {
       >
         <UserForm
           onSubmit={handleFormSubmit}
-          onClose={() => setShowAddModal(false)}
-          isLoading={formSubmitting}
+          onClose={() => {
+            setShowAddModal(false);
+            setSelectedUser(null); // Clear selected user if any, for clean add form
+          }}
+          // Pass the notification handlers to UserForm
+          onSubmitSuccess={showSuccessNotification}
+          onSubmitError={showErrorNotification}
+          // isLoading is now managed internally by UserForm for its own button
         />
       </Modal>
 
@@ -451,8 +489,14 @@ const UserManagement = () => {
         <UserForm
           user={selectedUser}
           onSubmit={handleFormSubmit}
-          onClose={() => setShowEditModal(false)}
-          isLoading={formSubmitting}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedUser(null);
+          }}
+          // Pass the notification handlers to UserForm
+          onSubmitSuccess={showSuccessNotification}
+          onSubmitError={showErrorNotification}
+          // isLoading is now managed internally by UserForm for its own button
         />
       </Modal>
 
@@ -473,7 +517,10 @@ const UserManagement = () => {
           <div className="flex justify-end space-x-3">
             <Button
               variant="secondary"
-              onClick={() => setShowDeleteModal(false)}
+              onClick={() => {
+                setShowDeleteModal(false);
+                setSelectedUser(null); // Clear selected user on cancel
+              }}
               disabled={formSubmitting}
             >
               Cancel
@@ -486,6 +533,29 @@ const UserManagement = () => {
               {formSubmitting ? "Deleting..." : "Delete"}
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* --- Notification Modal --- */}
+      <Modal
+        isOpen={showNotificationModal}
+        onClose={closeNotificationModal}
+        title={notificationType === "success" ? "Success!" : "Error!"}
+      >
+        <div className="p-6 text-center">
+          <div
+            className={`text-lg font-semibold mb-4 ${
+              notificationType === "success" ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {notificationMessage}
+          </div>
+          <Button
+            variant={notificationType === "success" ? "primary" : "danger"}
+            onClick={closeNotificationModal}
+          >
+            OK
+          </Button>
         </div>
       </Modal>
     </div>

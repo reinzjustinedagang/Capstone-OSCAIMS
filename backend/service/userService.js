@@ -144,6 +144,7 @@ exports.register = async (username, email, password, cp_number, role) => {
 
 exports.updateUserProfile = async (id, username, email, cp_number) => {
   try {
+    // Fetch old data to compare for audit logging
     const [oldData] = await Connection(
       "SELECT username, email, cp_number, role FROM users WHERE id = ?",
       [id]
@@ -153,11 +154,29 @@ exports.updateUserProfile = async (id, username, email, cp_number) => {
     const result = await Connection(query, [username, email, cp_number, id]);
 
     if (result.affectedRows === 1) {
+      const changes = [];
+
+      // Compare each field and record changes
+      if (oldData.username !== username) {
+        changes.push(`username: '${oldData.username}' → '${username}'`);
+      }
+      if (oldData.email !== email) {
+        changes.push(`email: '${oldData.email}' → '${email}'`);
+      }
+      if (oldData.cp_number !== cp_number) {
+        changes.push(`contact number: '${oldData.cp_number}' → '${cp_number}'`);
+      }
+
+      // Construct the audit detail message
+      const details =
+        changes.length > 0 ? changes.join(", ") : "No changes detected.";
+
+      // Log the audit with specific changes
       await logAudit(
-        email,
+        oldData.email, // Use old email for logging the actor if email was changed
         oldData.role,
         "UPDATE",
-        `Updated profile from '${oldData.username}, ${oldData.email}, ${oldData.cp_number}' to '${username}, ${email}, ${cp_number}'.`
+        `Updated profile for user ${oldData.username}: ${details}`
       );
     }
 

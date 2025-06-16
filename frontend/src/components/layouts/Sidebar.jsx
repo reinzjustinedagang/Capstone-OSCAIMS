@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import axios from "axios";
+import Modal from "../UI/Modal";
+import logo from "../../assets/osca-logo.png";
 import {
   HomeIcon,
   UsersIcon,
@@ -16,8 +19,6 @@ import {
   UserCheck,
   ClipboardListIcon,
 } from "lucide-react";
-import axios from "axios";
-import Modal from "../UI/Modal"; // Import your Modal component here
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -94,10 +95,18 @@ const Sidebar = () => {
           overflow-y-auto max-h-screen
         `}
       >
-        <div className="p-6">
-          <h1 className="text-xl font-bold">Senior Citizen IMS</h1>
+        <div className="p-6 flex flex-col items-center text-center">
+          <img
+            src={logo}
+            alt="OSCA Logo"
+            className="h-14 w-auto object-contain"
+          />
+          <h1 className="text-xl font-bold">
+            Office of the Senior Citizen Affairs
+          </h1>
           <p className="text-sm text-blue-200">San Jose, Occidental Mindoro</p>
         </div>
+
         <nav className="mt-6">
           {/* Dashboard Link */}
           <NavLink

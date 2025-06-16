@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../UI/Button"; // Assuming Button is a custom component
 import axios from "axios"; // Import Axios
 
-// Define your API base URL
-const backendUrl = import.meta.env.VITE_API_BASE_URL; // Adjust if your API runs on a different port or path
-
-const SeniorCitizenForm = ({ citizen, onSubmitSuccess, onCancel }) => {
+const SeniorCitizenForm = ({
+  citizen,
+  onSubmitSuccess = () => {}, // default to empty function
+  onSubmitError = () => {}, // Add onSubmitError prop
+  onCancel = () => {},
+}) => {
   const isEditing = !!citizen;
+  const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
   const [formData, setFormData] = useState({
     // Personal Information
@@ -59,6 +62,93 @@ const SeniorCitizenForm = ({ citizen, onSubmitSuccess, onCancel }) => {
     healthNotes: isEditing ? citizen.healthNotes : "",
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState(""); // State for displaying form-specific errors
+
+  // Effect to reset form data when `citizen` prop changes (e.g., when opening for add vs. edit)
+  useEffect(() => {
+    if (isEditing) {
+      setFormData({
+        firstName: citizen.firstName || "",
+        middleName: citizen.middleName || "",
+        lastName: citizen.lastName || "",
+        suffix: citizen.suffix || "",
+        birthdate: citizen.birthdate ? citizen.birthdate.split("T")[0] : "",
+        age: citizen.age || "",
+        gender: citizen.gender || "",
+        civilStatus: citizen.civilStatus || "",
+        religion: citizen.religion || "",
+        bloodType: citizen.bloodType || "",
+        houseNumberStreet: citizen.houseNumberStreet || "",
+        barangay: citizen.barangay || "",
+        municipality: "San Jose",
+        province: "Occidental Mindoro",
+        zipCode: citizen.zipCode || "",
+        mobileNumber: citizen.mobileNumber || "",
+        telephoneNumber: citizen.telephoneNumber || "",
+        emailAddress: citizen.emailAddress || "",
+        validIdType: citizen.validIdType || "",
+        validIdNumber: citizen.validIdNumber || "",
+        philSysId: citizen.philSysId || "",
+        sssNumber: citizen.sssNumber || "",
+        gsisNumber: citizen.gsisNumber || "",
+        philhealthNumber: citizen.philhealthNumber || "",
+        tinNumber: citizen.tinNumber || "",
+        employmentStatus: citizen.employmentStatus || "",
+        occupation: citizen.occupation || "",
+        highestEducation: citizen.highestEducation || "",
+        classification: citizen.classification || "",
+        monthlyPension: citizen.monthlyPension || "",
+        emergencyContactName: citizen.emergencyContactName || "",
+        emergencyContactRelationship:
+          citizen.emergencyContactRelationship || "",
+        emergencyContactNumber: citizen.emergencyContactNumber || "",
+        healthStatus: citizen.healthStatus || "",
+        healthNotes: citizen.healthNotes || "",
+      });
+    } else {
+      // Reset to initial empty state for adding
+      setFormData({
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        suffix: "",
+        birthdate: "",
+        age: "",
+        gender: "",
+        civilStatus: "",
+        religion: "",
+        bloodType: "",
+        houseNumberStreet: "",
+        barangay: "",
+        municipality: "San Jose",
+        province: "Occidental Mindoro",
+        zipCode: "",
+        mobileNumber: "",
+        telephoneNumber: "",
+        emailAddress: "",
+        validIdType: "",
+        validIdNumber: "",
+        philSysId: "",
+        sssNumber: "",
+        gsisNumber: "",
+        philhealthNumber: "",
+        tinNumber: "",
+        employmentStatus: "",
+        occupation: "",
+        highestEducation: "",
+        classification: "",
+        monthlyPension: "",
+        emergencyContactName: "",
+        emergencyContactRelationship: "",
+        emergencyContactNumber: "",
+        healthStatus: "",
+        healthNotes: "",
+      });
+    }
+    setFormError(""); // Clear any previous errors when the form is re-initialized
+  }, [citizen, isEditing]);
+
   const handleChange = (e) => {
     const { id, value } = e.target;
 
@@ -84,41 +174,40 @@ const SeniorCitizenForm = ({ citizen, onSubmitSuccess, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setFormError(""); // Clear previous errors on new submission attempt
 
     try {
       let response;
-
       if (isEditing) {
-        // PUT request for updating an existing senior citizen
         response = await axios.put(
-          `${backendUrl}/${citizen.id}`, // Assuming citizen.id exists for editing
+          `${backendUrl}/senior-citizens/update/${citizen.id}`,
           formData
         );
+        onSubmitSuccess("Senior citizen record updated successfully!");
       } else {
-        // POST request for creating a new senior citizen
-        response = await axios.post(backendUrl, formData);
+        response = await axios.post(
+          `${backendUrl}/senior-citizens/create`,
+          formData
+        );
+        onSubmitSuccess("New senior citizen registered successfully!");
       }
-
-      alert(
-        `Senior citizen ${isEditing ? "updated" : "created"} successfully!`
-      );
-      onSubmitSuccess(response.data); // Axios puts the response body in `response.data`
     } catch (error) {
       console.error("Error submitting form:", error);
-      // Axios errors have a `response` property for HTTP errors
-      if (error.response) {
-        alert(
-          `Failed to ${isEditing ? "update" : "create"} senior citizen: ${
-            error.response.data.message || error.message
-          }`
-        );
-      } else {
-        alert(
-          `Failed to ${isEditing ? "update" : "create"} senior citizen: ${
-            error.message
-          }`
-        );
+      let errorMessage = "Failed to save record. Please try again.";
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
       }
+      setFormError(errorMessage); // Set form-specific error
+      onSubmitError(errorMessage); // Pass error message to parent component
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -736,13 +825,26 @@ const SeniorCitizenForm = ({ citizen, onSubmitSuccess, onCancel }) => {
           </div>
         </div>
 
+        {/* Display form-specific error */}
+        {formError && (
+          <div className="text-red-600 text-sm text-center mt-4">
+            {formError}
+          </div>
+        )}
+
         {/* --- Form Actions --- */}
         <div className="flex justify-end space-x-3 pt-6">
-          <Button variant="secondary" type="button" onClick={onCancel}>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
-          <Button variant="primary" type="submit">
-            {isEditing ? "Update" : "Register"} Senior Citizen
+          <Button variant="primary" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : isEditing ? "Update" : "Register"}{" "}
+            Senior Citizen
           </Button>
         </div>
       </form>

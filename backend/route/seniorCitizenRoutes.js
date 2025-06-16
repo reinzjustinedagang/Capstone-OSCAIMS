@@ -2,16 +2,6 @@ const express = require("express");
 const router = express.Router();
 const seniorCitizenService = require("../service/seniorCitizenService");
 
-// GET: All senior citizens
-router.get("/getAll", async (req, res) => {
-  try {
-    const data = await seniorCitizenService.getAllSeniorCitizens();
-    res.status(200).json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
 // GET: Senior citizen by ID
 router.get("/get/:id", async (req, res) => {
   try {

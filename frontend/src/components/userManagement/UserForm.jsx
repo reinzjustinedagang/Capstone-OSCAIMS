@@ -1,30 +1,43 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../UI/Button"; // Assuming you have a Button component
-import Modal from "../UI/Modal"; // Assuming you have a larger Modal component for forms
-const UserForm = ({ user, onSubmit, onClose, isLoading }) => {
+// No need to import Modal here, as it's handled by the parent component
+
+const UserForm = ({
+  user,
+  onSubmit,
+  onSubmitSuccess, // New prop for success callback
+  onSubmitError, // New prop for error callback
+  onClose,
+  isLoading, // This prop is used by the parent to indicate overall loading,
+  // but we'll add our own isSubmitting for the form's internal state.
+}) => {
   const [formData, setFormData] = useState(
     user || {
-      username: "", // ✅ not "name"
+      username: "",
       email: "",
       role: "staff",
       status: "active",
-      cp_number: "", // ✅ make sure this is consistent
-      password: "", // Optional: ensures password is defined
+      cp_number: "",
+      password: "",
     }
   );
 
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state for form submission loading
+  const [formError, setFormError] = useState(""); // New state for displaying inline form errors
+
   useEffect(() => {
-    // Update form data when `user` prop changes (e.g., when editing a different user)
+    // Update form data when `user` prop changes (e.g., when editing a different user or resetting for add)
     setFormData(
       user || {
-        username: "", // ✅ not "name"
+        username: "",
         email: "",
         role: "staff",
         status: "active",
-        cp_number: "", // ✅ make sure this is consistent
-        password: "", // Optional: ensures password is defined
+        cp_number: "",
+        password: "",
       }
     );
+    setFormError(""); // Clear any previous form errors when the user changes
   }, [user]);
 
   const handleChange = (e) => {
@@ -35,8 +48,11 @@ const UserForm = ({ user, onSubmit, onClose, isLoading }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    // Made handleSubmit async
     e.preventDefault();
+    setIsSubmitting(true); // Start loading state for the form
+    setFormError(""); // Clear any previous errors
 
     const dataToSend = { ...formData };
 
@@ -45,7 +61,32 @@ const UserForm = ({ user, onSubmit, onClose, isLoading }) => {
       delete dataToSend.password;
     }
 
-    onSubmit(dataToSend);
+    try {
+      // The onSubmit prop should now handle the actual API call
+      // and return a success or throw an error.
+      // We pass the dataToSend and let the parent handle the API logic.
+      await onSubmit(dataToSend);
+      // If onSubmit completes successfully, call the success callback
+      onSubmitSuccess(
+        user ? "User updated successfully!" : "New user added successfully!"
+      );
+    } catch (error) {
+      console.error("Form submission error:", error);
+      let errorMessage = "Failed to save user. Please try again.";
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      setFormError(errorMessage); // Set form-specific error
+      onSubmitError(errorMessage); // Pass error message to parent component
+    } finally {
+      setIsSubmitting(false); // End loading state
+    }
   };
 
   return (
@@ -98,7 +139,7 @@ const UserForm = ({ user, onSubmit, onClose, isLoading }) => {
           value={formData.password || ""}
           onChange={handleChange}
           placeholder={user ? "Leave blank to keep current password" : ""}
-          required={!user} // ✅ Required only when adding
+          required={!user} // Required only when adding a new user
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
@@ -112,16 +153,16 @@ const UserForm = ({ user, onSubmit, onClose, isLoading }) => {
         <input
           id="cp_number"
           name="cp_number"
-          type="tel" // Use type="tel" for phone numbers
+          type="tel"
           required
-          autoComplete="tel" // Use autoComplete="tel" for phone numbers
-          value={formData.cp_number} // Bind to the new phoneNumber state
-          onChange={handleChange} // Use the new handler
+          autoComplete="tel"
+          value={formData.cp_number}
+          onChange={handleChange}
           className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent text-base transition-all duration-200"
-          placeholder="e.g., 09171234567" // Add a helpful placeholder
-          inputMode="numeric" // Suggest numeric keyboard on mobile devices
-          pattern="[0-9]{11}" // Optional: Basic pattern for 11 digits
-          maxLength="11" // Enforce max length at browser level
+          placeholder="e.g., 09171234567"
+          inputMode="numeric"
+          pattern="[0-9]{11}"
+          maxLength="11"
         />
       </div>
       <div className="mb-4">
@@ -144,20 +185,26 @@ const UserForm = ({ user, onSubmit, onClose, isLoading }) => {
         </select>
       </div>
 
-      <div className="flex justify-end space-x-3">
+      {/* Display form-specific error */}
+      {formError && (
+        <div className="text-red-600 text-sm text-center mt-4">{formError}</div>
+      )}
+
+      <div className="flex justify-end space-x-3 mt-6">
         <Button
           variant="secondary"
           onClick={onClose}
           type="button"
-          disabled={isLoading}
+          disabled={isSubmitting}
         >
           Cancel
         </Button>
-        <Button variant="primary" type="submit" disabled={isLoading}>
-          {isLoading ? "Saving..." : user ? "Update User" : "Add User"}
+        <Button variant="primary" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : user ? "Update User" : "Add User"}
         </Button>
       </div>
     </form>
   );
 };
+
 export default UserForm;

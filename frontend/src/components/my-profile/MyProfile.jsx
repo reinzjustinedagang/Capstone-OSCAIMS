@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from "react";
+import Button from "../UI/Button";
+import Modal from "../UI/Modal"; // Assuming the path is correct
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   UserCircle,
   SaveIcon,
@@ -12,9 +16,6 @@ import {
   UploadCloud,
   KeyRound,
 } from "lucide-react";
-import Button from "../UI/Button";
-import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for redirection
 
 export default function MyProfile() {
   // State for user data, initialized to null
@@ -33,24 +34,62 @@ export default function MyProfile() {
   // State for loading, error, and success messages
   const [profileLoading, setProfileLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
-  const [profileError, setProfileError] = useState("");
-  const [profileSuccess, setProfileSuccess] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState("");
+  // No longer need profileError/Success, passwordError/Success for inline messages
+  // const [profileError, setProfileError] = useState("");
+  // const [profileSuccess, setProfileSuccess] = useState("");
+  // const [passwordError, setPasswordError] = useState("");
+  // const [passwordSuccess, setPasswordSuccess] = useState("");
   const [fetchLoading, setFetchLoading] = useState(true); // New state for initial data fetch
   const [fetchError, setFetchError] = useState(""); // New state for initial data fetch error
 
+  // State for general notification modal
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationType, setNotificationType] = useState("success"); // 'success' or 'error'
+
+  // State for confirmation modal
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [confirmationAction, setConfirmationAction] = useState(null); // 'profile' or 'password'
+  const [confirmationMessage, setConfirmationMessage] = useState("");
+
   const navigate = useNavigate(); // Initialize useNavigate
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
+
+  // --- Helper functions for notifications ---
+  const showNotification = (message, type) => {
+    setNotificationMessage(message);
+    setNotificationType(type);
+    setShowNotificationModal(true);
+  };
+
+  const closeNotificationModal = () => {
+    setShowNotificationModal(false);
+    setNotificationMessage(""); // Clear message on close
+    // If you had any other state related to inline messages, clear them here too
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmationAction === "profile") {
+      executeProfileSave();
+    } else if (confirmationAction === "password") {
+      executeChangePassword();
+    }
+    setConfirmationAction(null); // Clear action after execution
+  };
+
+  const handleCancelConfirmation = () => {
+    setShowConfirmationModal(false);
+    setConfirmationAction(null);
+    setConfirmationMessage("");
+  };
 
   // --- Fetch User Data on Component Mount ---
   useEffect(() => {
     const fetchUserData = async () => {
       setFetchLoading(true);
-      setFetchError("");
+      setFetchError(""); // Clear previous fetch errors
 
       try {
-        // Step 1: Call /me to get user ID only
         const meResponse = await axios.get(`${backendUrl}/api/me`, {
           withCredentials: true,
         });
@@ -58,7 +97,6 @@ export default function MyProfile() {
         if (meResponse.status === 200 && meResponse.data.isAuthenticated) {
           const userId = meResponse.data.userId;
 
-          // Step 2: Use the userId to get full user data
           const response = await axios.get(`${backendUrl}/api/user/${userId}`, {
             withCredentials: true,
           });
@@ -76,11 +114,9 @@ export default function MyProfile() {
             setUserName(fetchedData.username || "");
             setEmail(fetchedData.email || "");
             setContactNumber(fetchedData.contactNumber || "");
-            return; // exit early after success
+            return;
           }
         }
-
-        // If not authenticated or failed
         setFetchError("Not authenticated. Please log in.");
         navigate("/login");
       } catch (err) {
@@ -103,26 +139,35 @@ export default function MyProfile() {
 
     fetchUserData();
   }, [backendUrl, navigate]);
-  // Add backendUrl and navigate to dependency array
 
-  // Handler for saving profile information
+  // Handler for saving profile information (triggers confirmation)
   const handleProfileSave = async (e) => {
     e.preventDefault();
-    setProfileLoading(true);
-    setProfileError("");
-    setProfileSuccess("");
+    // setProfileError(""); // No longer needed for inline messages
+    // setProfileSuccess(""); // No longer needed for inline messages
 
     if (!username || !email || !contactNumber) {
-      setProfileError("All fields are required.");
-      setProfileLoading(false);
+      showNotification("All profile fields are required.", "error");
       return;
     }
 
     if (!userData || !userData.id) {
-      setProfileError("User ID not available. Please log in again.");
-      setProfileLoading(false);
+      showNotification("User ID not available. Please log in again.", "error");
       return;
     }
+
+    // Trigger confirmation modal
+    setConfirmationAction("profile");
+    setConfirmationMessage(
+      "Are you sure you want to update your profile with these changes?"
+    );
+    setShowConfirmationModal(true);
+  };
+
+  // Function to execute profile save after confirmation
+  const executeProfileSave = async () => {
+    setShowConfirmationModal(false); // Close confirmation modal immediately
+    setProfileLoading(true);
 
     try {
       const response = await axios.put(
@@ -141,61 +186,70 @@ export default function MyProfile() {
       );
 
       if (response.status === 200) {
-        // Update local state with new data
         setUserData((prev) => ({ ...prev, username, email, contactNumber }));
-        // Inside your profile update handler, after a successful update:
         window.dispatchEvent(new Event("profileUpdated"));
-
-        setProfileSuccess("Profile updated successfully!");
+        showNotification("Profile updated successfully!", "success");
       } else {
-        setProfileError("Failed to update profile. Please try again.");
+        showNotification(
+          "Failed to update profile. Please try again.",
+          "error"
+        );
       }
     } catch (err) {
       console.error("Profile update error:", err);
-      setProfileError(
+      let errorMessage =
         err.response?.data?.message ||
-          "An error occurred during profile update."
-      );
+        "An error occurred during profile update.";
+      showNotification(errorMessage, "error");
       if (err.response && err.response.status === 401) {
-        navigate("/login"); // Redirect if session expires during an action
+        navigate("/login");
       }
     } finally {
       setProfileLoading(false);
     }
   };
 
-  // Handler for changing password
+  // Handler for changing password (triggers confirmation)
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    setPasswordLoading(true);
-    setPasswordError("");
-    setPasswordSuccess("");
+    // setPasswordError(""); // No longer needed for inline messages
+    // setPasswordSuccess(""); // No longer needed for inline messages
 
     if (!currentPassword || !newPassword || !confirmNewPassword) {
-      setPasswordError("All password fields are required.");
-      setPasswordLoading(false);
+      showNotification("All password fields are required.", "error");
       return;
     }
     if (newPassword !== confirmNewPassword) {
-      setPasswordError("New passwords do not match.");
-      setPasswordLoading(false);
+      showNotification("New passwords do not match.", "error");
       return;
     }
     if (newPassword.length < 6) {
-      setPasswordError("New password must be at least 6 characters long.");
-      setPasswordLoading(false);
+      showNotification(
+        "New password must be at least 6 characters long.",
+        "error"
+      );
       return;
     }
 
     if (!userData || !userData.id) {
-      setPasswordError("User ID not available. Please log in again.");
-      setPasswordLoading(false);
+      showNotification("User ID not available. Please log in again.", "error");
       return;
     }
 
+    // Trigger confirmation modal
+    setConfirmationAction("password");
+    setConfirmationMessage("Are you sure you want to change your password?");
+    setShowConfirmationModal(true);
+  };
+
+  // Function to execute password change after confirmation
+  const executeChangePassword = async () => {
+    setShowConfirmationModal(false); // Close confirmation modal immediately
+    setPasswordLoading(true);
+
     try {
       const response = await axios.put(
-        `${backendUrl}/api/change-password/${userData.id}`, // Corrected path based on your backend
+        `${backendUrl}/api/change-password/${userData.id}`,
         {
           currentPassword,
           newPassword,
@@ -209,23 +263,24 @@ export default function MyProfile() {
       );
 
       if (response.status === 200) {
-        setPasswordSuccess("Password changed successfully!");
+        showNotification("Password changed successfully!", "success");
         setCurrentPassword("");
         setNewPassword("");
         setConfirmNewPassword("");
       } else {
-        setPasswordError(
-          "Failed to change password. Current password might be incorrect."
+        showNotification(
+          "Failed to change password. Current password might be incorrect or an unknown error occurred.",
+          "error"
         );
       }
     } catch (err) {
       console.error("Password change error:", err);
-      setPasswordError(
+      let errorMessage =
         err.response?.data?.message ||
-          "An error occurred during password change."
-      );
+        "An error occurred during password change.";
+      showNotification(errorMessage, "error");
       if (err.response && err.response.status === 401) {
-        navigate("/login"); // Redirect if session expires during an action
+        navigate("/login");
       }
     } finally {
       setPasswordLoading(false);
@@ -239,7 +294,7 @@ export default function MyProfile() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setUserData((prev) => ({ ...prev, profilePicture: reader.result }));
-        setProfileSuccess("Profile picture updated!");
+        showNotification("Profile picture updated!", "success"); // Use modal for feedback
         // In a real app, you'd send this file to your backend
         // and update the user's profilePicture URL in the database.
         // E.g., axios.post(`${backendUrl}/api/upload-profile-picture/${userData.id}`, formData);
@@ -390,25 +445,6 @@ export default function MyProfile() {
             </div>
           </div>
 
-          {profileError && (
-            <div
-              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center"
-              role="alert"
-            >
-              <XCircle className="h-5 w-5 mr-2" />
-              <span className="block sm:inline">{profileError}</span>
-            </div>
-          )}
-          {profileSuccess && (
-            <div
-              className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg flex items-center"
-              role="alert"
-            >
-              <CheckCircle className="h-5 w-5 mr-2" />
-              <span className="block sm:inline">{profileSuccess}</span>
-            </div>
-          )}
-
           <div className="flex justify-end">
             <Button
               type="submit"
@@ -486,25 +522,6 @@ export default function MyProfile() {
             </div>
           </div>
 
-          {passwordError && (
-            <div
-              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center"
-              role="alert"
-            >
-              <XCircle className="h-5 w-5 mr-2" />
-              <span className="block sm:inline">{passwordError}</span>
-            </div>
-          )}
-          {passwordSuccess && (
-            <div
-              className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg flex items-center"
-              role="alert"
-            >
-              <CheckCircle className="h-5 w-5 mr-2" />
-              <span className="block sm:inline">{passwordSuccess}</span>
-            </div>
-          )}
-
           <div className="flex justify-end">
             <Button
               type="submit"
@@ -523,6 +540,53 @@ export default function MyProfile() {
           </div>
         </form>
       </div>
+
+      {/* --- Notification Modal --- */}
+      <Modal
+        isOpen={showNotificationModal}
+        onClose={closeNotificationModal}
+        title={notificationType === "success" ? "Success!" : "Error!"}
+      >
+        <div className="p-6 text-center">
+          {notificationType === "success" ? (
+            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+          ) : (
+            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          )}
+          <div
+            className={`text-lg font-semibold mb-4 ${
+              notificationType === "success" ? "text-green-700" : "text-red-700"
+            }`}
+          >
+            {notificationMessage}
+          </div>
+          <Button
+            variant={notificationType === "success" ? "primary" : "danger"}
+            onClick={closeNotificationModal}
+          >
+            OK
+          </Button>
+        </div>
+      </Modal>
+
+      {/* --- Confirmation Modal --- */}
+      <Modal
+        isOpen={showConfirmationModal}
+        onClose={handleCancelConfirmation}
+        title="Confirm Action"
+      >
+        <div className="p-6 text-center">
+          <p className="text-lg text-gray-700 mb-6">{confirmationMessage}</p>
+          <div className="flex justify-center gap-4">
+            <Button variant="secondary" onClick={handleCancelConfirmation}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleConfirmAction}>
+              Confirm
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
