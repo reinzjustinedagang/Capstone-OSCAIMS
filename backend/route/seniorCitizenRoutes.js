@@ -80,4 +80,6 @@ router.get("/page", async (req, res) => {
   }
 });
 
+router.get("/sms-citizens", seniorCitizenService.getSmsRecipients);
+
 module.exports = router;

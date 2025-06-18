@@ -4,7 +4,7 @@ const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
 export const checkAuth = async () => {
   try {
-    const res = await axios.get(`${backendUrl}/api/session`, {
+    const res = await axios.get(`${backendUrl}/api/user/session`, {
       withCredentials: true,
     });
 

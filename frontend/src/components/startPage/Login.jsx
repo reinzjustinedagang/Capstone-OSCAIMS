@@ -28,7 +28,7 @@ export default function Login() {
       const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
       const response = await axios.post(
-        `${backendUrl}/api/login`,
+        `${backendUrl}/api/user/login`,
         {
           email,
           password,
@@ -41,8 +41,8 @@ export default function Login() {
 
       const { user } = response.data;
 
-      sessionStorage.setItem("id", user.id);
       sessionStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(user));
 
       if (user && user.role) {
         const role = user.role.toLowerCase();

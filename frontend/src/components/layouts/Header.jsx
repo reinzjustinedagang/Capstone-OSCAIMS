@@ -14,21 +14,24 @@ const Header = () => {
     setError(null);
     try {
       // Step 1: Call /me to get user ID only
-      const meResponse = await axios.get(`${backendUrl}/api/me`, {
+      const meResponse = await axios.get(`${backendUrl}/api/user/me`, {
         withCredentials: true,
       });
 
       if (meResponse.status === 200 && meResponse.data.isAuthenticated) {
-        const userId = meResponse.data.userId;
+        const userId = meResponse.data.id;
 
-        const response = await axios.get(`${backendUrl}/api/user/${userId}`, {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          `${backendUrl}/api/user/user/${userId}`,
+          {
+            withCredentials: true,
+          }
+        );
 
         if (response.status === 200 && response.data.isAuthenticated) {
           const user = response.data;
-          setUserName(user.userName || "Guest");
-          setUserRole(user.userRole || "User");
+          setUserName(user.username || "Guest");
+          setUserRole(user.role || "User");
         } else {
           setUserName("Guest");
           setUserRole("User");

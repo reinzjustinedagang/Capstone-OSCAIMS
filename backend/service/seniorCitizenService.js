@@ -80,3 +80,21 @@ exports.getPaginatedSeniorCitizens = async (page, limit) => {
     throw new Error("Failed to retrieve paginated senior citizens.");
   }
 };
+
+exports.getSmsRecipients = async (req, res) => {
+  try {
+    const result = await Connection(`
+      SELECT 
+        id,
+        CONCAT_WS(' ', firstName, middleName, lastName, suffix) AS name,
+        COALESCE(mobileNumber, emergencyContactNumber) AS contact,
+        barangay
+      FROM senior_citizens
+      WHERE mobileNumber IS NOT NULL OR emergencyContactNumber IS NOT NULL
+    `);
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching SMS recipients:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

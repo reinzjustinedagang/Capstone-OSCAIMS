@@ -42,7 +42,7 @@ export default function Register() {
       const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
       const response = await axios.post(
-        `${backendUrl}/api/register`, // Ensure this URL is correct for your backend
+        `${backendUrl}/api/user/register`, // Ensure this URL is correct for your backend
         { username, email, password, cp_number, role },
         {
           headers: {

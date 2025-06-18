@@ -1,23 +1,23 @@
 const express = require("express");
 const router = express.Router();
 const userService = require("../service/userService");
-const { isAuthenticated } = require("../middleware/authMiddleware"); // Adjust path
+const { isAuthenticated } = require("../middleware/authMiddleware");
 
+// Get user by ID
 router.get("/user/:id", async (req, res) => {
   const { id } = req.params;
-
   try {
-    const user = await userService.getUser(id); // This should return user data from DB
-
+    const user = await userService.getUser(id);
     if (user) {
       res.status(200).json({
         isAuthenticated: true,
-        userId: user.id,
-        userName: user.username,
-        userEmail: user.email,
-        userNumber: user.cp_number,
-        userRole: user.role,
-        lastLogout: user.last_logout,
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        cp_number: user.cp_number,
+        role: user.role,
+        last_logout: user.last_logout,
+        status: user.status, // include if present
       });
     } else {
       res.status(404).json({ message: "User not found." });
@@ -28,6 +28,7 @@ router.get("/user/:id", async (req, res) => {
   }
 });
 
+// Get all users
 router.get("/", async (req, res) => {
   try {
     const users = await userService.getAllUsers();
@@ -37,7 +38,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// DELETE USER
+// Delete user
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
   const sessionUser = req.session.user;
@@ -66,7 +67,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// LOGIN
+// Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -83,6 +84,7 @@ router.post("/login", async (req, res) => {
       cp_number: user.cp_number,
       role: user.role,
       last_logout: user.last_logout,
+      status: user.status,
     };
     req.session.isAuthenticated = true;
 
@@ -97,7 +99,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// REGISTER
+// Register
 router.post("/register", async (req, res) => {
   try {
     const { username, email, password, cp_number, role } = req.body;
@@ -124,38 +126,60 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// Update profile (username, email, cp_number only)
 router.put("/updateProfile/:id", async (req, res) => {
-  const { username, email, contactNumber } = req.body;
+  const { username, email, cp_number } = req.body;
   const { id } = req.params;
+
   try {
     const success = await userService.updateUserProfile(
       id,
       username,
       email,
-      contactNumber
+      cp_number
     );
-    if (success)
+
+    if (success) {
+      // Update session user if this is the logged-in user
+      if (req.session.user && req.session.user.id === Number(id)) {
+        req.session.user.username = username;
+        req.session.user.email = email;
+        req.session.user.cp_number = cp_number;
+      }
+
       return res.status(200).json({ message: "Profile updated successfully." });
+    }
     return res.status(400).json({ message: "Failed to update profile." });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 });
 
+// Update full user info (admin or self)
 router.put("/update/:id", async (req, res) => {
-  const { username, email, password, contactNumber, role } = req.body;
+  const { username, email, password, cp_number, role } = req.body;
   const { id } = req.params;
+
   try {
     const success = await userService.updateUserInfo(
       id,
       username,
       email,
       password,
-      contactNumber,
+      cp_number,
       role
     );
-    if (success)
+
+    if (success) {
+      if (req.session.user && req.session.user.id === Number(id)) {
+        req.session.user.username = username;
+        req.session.user.email = email;
+        req.session.user.cp_number = cp_number;
+        req.session.user.role = role; // <-- add this!
+      }
       return res.status(200).json({ message: "Profile updated successfully." });
+    }
+
     return res.status(400).json({ message: "Failed to update profile." });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -182,7 +206,7 @@ router.put("/change-password/:id", async (req, res) => {
   }
 });
 
-// LOGOUT
+// Logout
 router.post("/logout", async (req, res) => {
   try {
     if (req.session.user) {
@@ -203,27 +227,27 @@ router.post("/logout", async (req, res) => {
   }
 });
 
-// CHECK SESSION (/me) - requires authentication middleware
+// Get session user info (authenticated)
 router.get("/me", isAuthenticated, (req, res) => {
-  const { id, username, email, cp_number, role, last_logout } =
+  const { id, username, email, cp_number, role, last_logout, status } =
     req.session.user;
   res.status(200).json({
     isAuthenticated: true,
-    userId: id,
-    userName: username,
-    userEmail: email,
-    userNumber: cp_number,
-    userRole: role,
-    lastLogout: last_logout,
+    id,
+    username,
+    email,
+    cp_number,
+    role,
+    last_logout,
+    status,
   });
 });
 
-// CHECK SESSION (/session) - does not require middleware
+// Get session info (public)
 router.get("/session", (req, res) => {
   if (req.session.user) {
     res.json({ user: req.session.user });
   } else {
-    // Send 200 but with user null
     res.json({ user: null });
   }
 });

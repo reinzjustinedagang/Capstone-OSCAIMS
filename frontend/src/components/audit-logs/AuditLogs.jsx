@@ -39,7 +39,7 @@ export default function AuditLogs() {
       setError("");
       try {
         const response = await axios.get(
-          `${backendUrl}/audit-logs/getAll?page=${page}&limit=${limit}`
+          `${backendUrl}/api/audit-logs/getAll?page=${page}&limit=${limit}`
         );
         setAuditLogs(response.data.logs);
         setTotalCount(response.data.total);
@@ -124,6 +124,63 @@ export default function AuditLogs() {
 
     return currentLogs;
   }, [auditLogs, searchTerm, filterUser, filterActionType, sortBy, sortOrder]);
+
+  const renderPageButtons = () => {
+    const visiblePages = [];
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        visiblePages.push(i);
+      }
+    } else {
+      visiblePages.push(1); // Always show first page
+
+      if (page > 3) {
+        visiblePages.push("ellipsis-prev");
+      }
+
+      const start = Math.max(2, page - 1);
+      const end = Math.min(totalPages - 1, page + 1);
+
+      for (let i = start; i <= end; i++) {
+        if (i !== 1 && i !== totalPages) {
+          visiblePages.push(i);
+        }
+      }
+
+      if (page < totalPages - 2) {
+        visiblePages.push("ellipsis-next");
+      }
+
+      if (totalPages !== 1) {
+        visiblePages.push(totalPages); // Avoid duplicate if totalPages is already 1
+      }
+    }
+
+    return visiblePages.map((p, index) =>
+      p === "ellipsis-prev" || p === "ellipsis-next" ? (
+        <span
+          key={`ellipsis-${index}`}
+          className="px-2 py-2 text-gray-500 text-sm select-none"
+        >
+          ...
+        </span>
+      ) : (
+        <button
+          key={p}
+          onClick={() => setPage(p)}
+          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+            page === p
+              ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          {p}
+        </button>
+      )
+    );
+  };
 
   return (
     <div className=" bg-gray-100 min-h-screen rounded-lg font-inter">
@@ -334,19 +391,7 @@ export default function AuditLogs() {
                   Previous
                 </button>
 
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => setPage(i + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                      page === i + 1
-                        ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                        : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
+                {renderPageButtons()}
 
                 <button
                   onClick={() =>

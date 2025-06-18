@@ -28,7 +28,7 @@ const SmsCredentialsForm = () => {
     const fetchCredentials = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${backendUrl}/sms/sms-credentials`, {
+        const res = await axios.get(`${backendUrl}/api/sms/sms-credentials`, {
           withCredentials: true,
         });
         if (res.status === 200 && res.data) {
@@ -55,7 +55,7 @@ const SmsCredentialsForm = () => {
 
     try {
       const res = await axios.put(
-        `${backendUrl}/sms/sms-credentials`,
+        `${backendUrl}/api/sms/sms-credentials`,
         { email, password, api_code: apiCode },
         { withCredentials: true }
       );

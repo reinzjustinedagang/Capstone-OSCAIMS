@@ -32,7 +32,7 @@ const sessionStore = new MySQLStore({
   port: process.env.DB_PORT,
   database: process.env.DB_DATABASE,
   clearExpired: true,
-  checkExpirationInterval: 1000 * 60,
+  checkExpirationInterval: 1000 * 60 * 5,
   expiration: 1000 * 60 * 60, // 1 hour
 });
 
@@ -58,11 +58,13 @@ const authRoutes = require("../route/authRoutes");
 const seniorCitizenRoutes = require("../route/seniorCitizenRoutes");
 const auditRoutes = require("../route/auditRoutes");
 const smsRoute = require("../route/smsRoute");
+const templateRoutes = require("../route/templateRoutes");
 
-app.use("/audit-logs", auditRoutes);
-app.use("/api", authRoutes);
-app.use("/senior-citizens", seniorCitizenRoutes);
-app.use("/sms", smsRoute);
+app.use("/api/audit-logs", auditRoutes);
+app.use("/api/user", authRoutes);
+app.use("/api/senior-citizens", seniorCitizenRoutes);
+app.use("/api/sms", smsRoute);
+app.use("/api/templates", templateRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

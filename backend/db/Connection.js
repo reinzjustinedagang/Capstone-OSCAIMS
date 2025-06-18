@@ -52,6 +52,42 @@ db.query(
   }
 );
 
+// db.query(
+//   `
+//   CREATE TABLE IF NOT EXISTS officials (
+//     id INT AUTO_INCREMENT PRIMARY KEY,
+//     name VARCHAR(255) NOT NULL,
+//     position VARCHAR(100) NOT NULL,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+//   )
+//   `,
+//   (err) => {
+//     if (err) {
+//       console.error("❌ Failed to create officials table:", err);
+//     } else {
+//       console.log("✅ officials table ready.");
+//     }
+//   }
+// );
+
+db.query(
+  `CREATE TABLE IF NOT EXISTS sms_templates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    category VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,                   
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- When the template was added
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )`,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create sms_templates table:", err);
+    } else {
+      console.log("✅ sms_templates table ready.");
+    }
+  }
+);
+
 // Create the 'user' table if it does not already exist.
 // This table will store detailed information about user.
 db.query(

@@ -181,13 +181,13 @@ const SeniorCitizenForm = ({
       let response;
       if (isEditing) {
         response = await axios.put(
-          `${backendUrl}/senior-citizens/update/${citizen.id}`,
+          `${backendUrl}/api/senior-citizens/update/${citizen.id}`,
           formData
         );
         onSubmitSuccess("Senior citizen record updated successfully!");
       } else {
         response = await axios.post(
-          `${backendUrl}/senior-citizens/create`,
+          `${backendUrl}/api/senior-citizens/create`,
           formData
         );
         onSubmitSuccess("New senior citizen registered successfully!");

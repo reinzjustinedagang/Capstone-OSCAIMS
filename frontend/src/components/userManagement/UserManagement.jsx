@@ -35,6 +35,8 @@ const UserManagement = () => {
   const [filterStatus, setFilterStatus] = useState("All Status");
   const [sortBy, setSortBy] = useState("username");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [showLogoutWarning, setShowLogoutWarning] = useState(false);
+  const [pendingUpdatePayload, setPendingUpdatePayload] = useState(null);
 
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -42,14 +44,14 @@ const UserManagement = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log(`Attempting to fetch users from: ${backendUrl}/api/`);
-      const response = await axios.get(`${backendUrl}/api/`);
+      console.log(`Attempting to fetch users from: ${backendUrl}/api/user/`);
+      const response = await axios.get(`${backendUrl}/api/user/`);
       setUsers(response.data);
     } catch (err) {
       console.error("Failed to fetch users:", err);
       let errorMessage = `Failed to load users: ${err.message}.`;
       if (err.code === "ERR_NETWORK") {
-        errorMessage += ` Please ensure the backend server is running and accessible at ${backendUrl}/api/.`;
+        errorMessage += ` Please ensure the backend server is running and accessible at ${backendUrl}/api/user/.`;
         errorMessage += ` Also, check your browser's developer console for CORS errors.`;
       } else if (err.response) {
         errorMessage += ` Server responded with status ${
@@ -104,44 +106,75 @@ const UserManagement = () => {
 
   const handleFormSubmit = async (formData) => {
     setFormSubmitting(true);
-    // Note: UserForm now handles its own internal errors.
-    // This outer handleFormSubmit will primarily focus on API calls and then
-    // trigger the success/error notification.
+
     try {
+      // --- PREPARE UPDATE PAYLOAD ---
+      const updatePayload = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        cp_number: formData.cp_number,
+        role: formData.role,
+      };
+      let originalRole = null;
+
+      // --- FIND THE ORIGINAL USER OBJECT FOR ROLE COMPARISON ---
       if (formData.id) {
-        // Check for formData.id (which should be user._id for existing users)
-        // Edit user
-        const updatePayload = {
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          // Ensure 'cp_number' from formData maps to 'contactNumber' for backend
-          contactNumber: formData.cp_number,
-          role: formData.role,
-          // Assuming status isn't directly editable via UserForm for existing users,
-          // or it would be passed in formData as well. If it should be editable,
-          // ensure formData includes it.
-        };
+        const originalUser = users.find(
+          (u) => String(u.id) === String(formData.id)
+        );
+        originalRole = originalUser?.role;
+      }
+
+      // --- ACTUAL API CALL ---
+      if (formData.id) {
         await axios.put(
-          `${backendUrl}/api/update/${formData.id}`, // Backend expects ID in URL
-          updatePayload
+          `${backendUrl}/api/user/update/${formData.id}`,
+          updatePayload,
+          { withCredentials: true }
         );
         showSuccessNotification("User updated successfully!");
       } else {
-        // Add user (register)
-        await axios.post(`${backendUrl}/api/register`, {
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          cp_number: formData.cp_number, // Backend expects 'cp_number' for registration
-          role: formData.role,
-        });
+        await axios.post(
+          `${backendUrl}/api/user/register`,
+          {
+            ...updatePayload,
+          },
+          { withCredentials: true }
+        );
         showSuccessNotification("New user added successfully!");
       }
 
-      await fetchUsers(); // Re-fetch users after successful operation
+      await fetchUsers();
 
-      // Close the appropriate modal after successful submission
+      // --- LOGOUT LOGIC ONLY IF ROLE CHANGED ON SELF ---
+      const userObj = JSON.parse(localStorage.getItem("user"));
+      const currentUserId = userObj?.id;
+
+      if (
+        formData.id &&
+        currentUserId &&
+        String(formData.id) === String(currentUserId) &&
+        originalRole &&
+        formData.role !== originalRole
+      ) {
+        // Show warning modal and save update info for later
+        setPendingUpdatePayload({
+          updatePayload,
+          formData,
+        });
+        setShowLogoutWarning(true);
+        // Don't close modal or clear selectedUser yet!
+        return;
+      } else if (
+        formData.id &&
+        currentUserId &&
+        String(formData.id) === String(currentUserId)
+      ) {
+        // Just fire profileUpdated if it's self, but no role change
+        window.dispatchEvent(new Event("profileUpdated"));
+      }
+
       setShowAddModal(false);
       setShowEditModal(false);
       setSelectedUser(null);
@@ -151,19 +184,40 @@ const UserManagement = () => {
         err.response?.data?.message ||
         `Failed to ${formData.id ? "update" : "add"} user. Please try again.`;
       showErrorNotification(errorMessage);
-      // Do NOT set a general error here if you want the notification modal to be the primary feedback
-      // setError(errorMessage); // This would show the red error banner
-      throw err; // Re-throw to let UserForm catch and display its own internal error if needed
+      throw err;
     } finally {
-      setFormSubmitting(false); // Reset submitting state regardless of success/failure
+      setFormSubmitting(false);
     }
+  };
+
+  const handleConfirmLogout = async () => {
+    setShowLogoutWarning(false);
+    // Optional: fire profileUpdated so header changes before logout
+    window.dispatchEvent(new Event("profileUpdated"));
+    await axios.post(
+      `${backendUrl}/api/user/logout`,
+      {},
+      { withCredentials: true }
+    );
+    window.location.href = "/login";
+    localStorage.clear();
+    sessionStorage.clear();
+  };
+
+  // --- HANDLER IF USER CANCELS LOGOUT WARNING ---
+  const handleCancelLogout = () => {
+    setShowLogoutWarning(false);
+    setPendingUpdatePayload(null);
+    // Optionally, re-fetch users or just close modal
+    setShowEditModal(false);
+    setSelectedUser(null);
   };
 
   const handleDeleteConfirm = async () => {
     setFormSubmitting(true);
     // setError(null); // Handled by notification
     try {
-      await axios.delete(`${backendUrl}/api/${selectedUser.id}`); // Assuming `selectedUser.id` holds the correct ID
+      await axios.delete(`${backendUrl}/api/user/${selectedUser.id}`); // Assuming `selectedUser.id` holds the correct ID
       showSuccessNotification("User deleted successfully!");
       await fetchUsers(); // Re-fetch users after successful deletion
       setShowDeleteModal(false);
@@ -345,6 +399,9 @@ const UserManagement = () => {
                         ))}
                     </div>
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                    <div className="flex items-center">Last Logout</div>
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
@@ -393,6 +450,13 @@ const UserManagement = () => {
                         >
                           {user.status.charAt(0).toUpperCase() +
                             user.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                          {user.last_logout
+                            ? new Date(user.last_logout).toLocaleString()
+                            : "N/A"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -556,6 +620,27 @@ const UserManagement = () => {
           >
             OK
           </Button>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={showLogoutWarning}
+        onClose={handleCancelLogout}
+        title="Role Change Detected"
+      >
+        <div className="p-6 text-center">
+          <div className="text-lg font-semibold mb-4 text-red-700">
+            You are changing your own role.
+            <br />
+            You will be logged out and must re-login to continue.
+          </div>
+          <div className="flex justify-center gap-4 mt-4">
+            <Button variant="secondary" onClick={handleCancelLogout}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleConfirmLogout}>
+              Continue & Logout
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

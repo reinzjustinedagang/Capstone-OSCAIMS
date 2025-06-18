@@ -33,10 +33,9 @@ const PublicOnlyRoute = ({ children }) => {
   if (authState.loading) return <div>Loading...</div>;
 
   if (authState.isAuthenticated) {
-    if (authState.role === "admin")
-      return <Navigate to="/admin-dashboard" replace />;
-    if (authState.role === "staff")
-      return <Navigate to="/staff-dashboard" replace />;
+    const role = authState.role?.toLowerCase();
+    if (role === "admin") return <Navigate to="/admin-dashboard" replace />;
+    if (role === "staff") return <Navigate to="/staff-dashboard" replace />;
     // fallback redirect if role unknown
     return <Navigate to="/" replace />;
   }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Button from "../UI/Button";
-import Modal from "../UI/Modal"; // Assuming the path is correct
+import Modal from "../UI/Modal";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,41 +18,32 @@ import {
 } from "lucide-react";
 
 export default function MyProfile() {
-  // State for user data, initialized to null
+  // State for user data
   const [userData, setUserData] = useState(null);
-
-  // State for editable profile fields, initialized as empty
+  // Editable fields
   const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
-  const [contactNumber, setContactNumber] = useState("");
+  const [cp_number, setCpNumber] = useState(""); // Use cp_number everywhere
 
-  // State for password change fields
+  // Password change fields
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
-  // State for loading, error, and success messages
   const [profileLoading, setProfileLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
-  // No longer need profileError/Success, passwordError/Success for inline messages
-  // const [profileError, setProfileError] = useState("");
-  // const [profileSuccess, setProfileSuccess] = useState("");
-  // const [passwordError, setPasswordError] = useState("");
-  // const [passwordSuccess, setPasswordSuccess] = useState("");
-  const [fetchLoading, setFetchLoading] = useState(true); // New state for initial data fetch
-  const [fetchError, setFetchError] = useState(""); // New state for initial data fetch error
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
-  // State for general notification modal
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
-  const [notificationType, setNotificationType] = useState("success"); // 'success' or 'error'
+  const [notificationType, setNotificationType] = useState("success");
 
-  // State for confirmation modal
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationAction, setConfirmationAction] = useState(null); // 'profile' or 'password'
   const [confirmationMessage, setConfirmationMessage] = useState("");
 
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
   // --- Helper functions for notifications ---
@@ -64,8 +55,7 @@ export default function MyProfile() {
 
   const closeNotificationModal = () => {
     setShowNotificationModal(false);
-    setNotificationMessage(""); // Clear message on close
-    // If you had any other state related to inline messages, clear them here too
+    setNotificationMessage("");
   };
 
   const handleConfirmAction = () => {
@@ -74,7 +64,7 @@ export default function MyProfile() {
     } else if (confirmationAction === "password") {
       executeChangePassword();
     }
-    setConfirmationAction(null); // Clear action after execution
+    setConfirmationAction(null);
   };
 
   const handleCancelConfirmation = () => {
@@ -83,39 +73,30 @@ export default function MyProfile() {
     setConfirmationMessage("");
   };
 
-  // --- Fetch User Data on Component Mount ---
+  // --- Fetch User Data on Mount ---
   useEffect(() => {
     const fetchUserData = async () => {
       setFetchLoading(true);
-      setFetchError(""); // Clear previous fetch errors
-
+      setFetchError("");
       try {
-        const meResponse = await axios.get(`${backendUrl}/api/me`, {
+        const meResponse = await axios.get(`${backendUrl}/api/user/me`, {
           withCredentials: true,
         });
 
         if (meResponse.status === 200 && meResponse.data.isAuthenticated) {
-          const userId = meResponse.data.userId;
-
-          const response = await axios.get(`${backendUrl}/api/user/${userId}`, {
-            withCredentials: true,
-          });
-
-          if (response.status === 200 && response.data.isAuthenticated) {
-            const fetchedData = {
-              id: response.data.userId,
-              username: response.data.userName,
-              email: response.data.userEmail,
-              contactNumber: response.data.userNumber,
-              role: response.data.userRole,
-              lastLogout: response.data.lastLogout,
-            };
-            setUserData(fetchedData);
-            setUserName(fetchedData.username || "");
-            setEmail(fetchedData.email || "");
-            setContactNumber(fetchedData.contactNumber || "");
-            return;
-          }
+          const fetchedData = {
+            id: meResponse.data.id,
+            username: meResponse.data.username,
+            email: meResponse.data.email,
+            cp_number: meResponse.data.cp_number,
+            role: meResponse.data.role,
+            last_logout: meResponse.data.last_logout,
+          };
+          setUserData(fetchedData);
+          setUserName(fetchedData.username || "");
+          setEmail(fetchedData.email || "");
+          setCpNumber(fetchedData.cp_number || "");
+          return;
         }
         setFetchError("Not authenticated. Please log in.");
         navigate("/login");
@@ -143,20 +124,14 @@ export default function MyProfile() {
   // Handler for saving profile information (triggers confirmation)
   const handleProfileSave = async (e) => {
     e.preventDefault();
-    // setProfileError(""); // No longer needed for inline messages
-    // setProfileSuccess(""); // No longer needed for inline messages
-
-    if (!username || !email || !contactNumber) {
+    if (!username || !email || !cp_number) {
       showNotification("All profile fields are required.", "error");
       return;
     }
-
     if (!userData || !userData.id) {
       showNotification("User ID not available. Please log in again.", "error");
       return;
     }
-
-    // Trigger confirmation modal
     setConfirmationAction("profile");
     setConfirmationMessage(
       "Are you sure you want to update your profile with these changes?"
@@ -166,16 +141,15 @@ export default function MyProfile() {
 
   // Function to execute profile save after confirmation
   const executeProfileSave = async () => {
-    setShowConfirmationModal(false); // Close confirmation modal immediately
+    setShowConfirmationModal(false);
     setProfileLoading(true);
-
     try {
       const response = await axios.put(
-        `${backendUrl}/api/updateProfile/${userData.id}`,
+        `${backendUrl}/api/user/updateProfile/${userData.id}`,
         {
           username,
           email,
-          contactNumber,
+          cp_number, // Send cp_number as backend expects
         },
         {
           headers: {
@@ -186,7 +160,12 @@ export default function MyProfile() {
       );
 
       if (response.status === 200) {
-        setUserData((prev) => ({ ...prev, username, email, contactNumber }));
+        setUserData((prev) => ({
+          ...prev,
+          username,
+          email,
+          cp_number,
+        }));
         window.dispatchEvent(new Event("profileUpdated"));
         showNotification("Profile updated successfully!", "success");
       } else {
@@ -212,9 +191,6 @@ export default function MyProfile() {
   // Handler for changing password (triggers confirmation)
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    // setPasswordError(""); // No longer needed for inline messages
-    // setPasswordSuccess(""); // No longer needed for inline messages
-
     if (!currentPassword || !newPassword || !confirmNewPassword) {
       showNotification("All password fields are required.", "error");
       return;
@@ -230,13 +206,10 @@ export default function MyProfile() {
       );
       return;
     }
-
     if (!userData || !userData.id) {
       showNotification("User ID not available. Please log in again.", "error");
       return;
     }
-
-    // Trigger confirmation modal
     setConfirmationAction("password");
     setConfirmationMessage("Are you sure you want to change your password?");
     setShowConfirmationModal(true);
@@ -244,12 +217,12 @@ export default function MyProfile() {
 
   // Function to execute password change after confirmation
   const executeChangePassword = async () => {
-    setShowConfirmationModal(false); // Close confirmation modal immediately
+    setShowConfirmationModal(false);
     setPasswordLoading(true);
 
     try {
       const response = await axios.put(
-        `${backendUrl}/api/change-password/${userData.id}`,
+        `${backendUrl}/api/user/change-password/${userData.id}`,
         {
           currentPassword,
           newPassword,
@@ -294,10 +267,8 @@ export default function MyProfile() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setUserData((prev) => ({ ...prev, profilePicture: reader.result }));
-        showNotification("Profile picture updated!", "success"); // Use modal for feedback
-        // In a real app, you'd send this file to your backend
-        // and update the user's profilePicture URL in the database.
-        // E.g., axios.post(`${backendUrl}/api/upload-profile-picture/${userData.id}`, formData);
+        showNotification("Profile picture updated!", "success");
+        // In a real app, you'd send this file to your backend and update the user's profilePicture URL in the database.
       };
       reader.readAsDataURL(file);
     }
@@ -323,7 +294,6 @@ export default function MyProfile() {
     );
   }
 
-  // Render the profile page only if userData is available
   if (!userData) {
     return (
       <div className="flex justify-center items-center min-h-screen text-gray-700">
@@ -336,7 +306,6 @@ export default function MyProfile() {
   return (
     <div className="bg-gray-100 min-h-screen rounded-lg font-inter p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">My Profile</h1>
-
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b pb-6 mb-6">
           {/* Profile Picture Section */}
@@ -377,18 +346,17 @@ export default function MyProfile() {
             </p>
             <p className="text-md text-gray-600 flex items-center justify-center sm:justify-start mt-1">
               <PhoneCallIcon className="h-4 w-4 mr-2 text-gray-500" />
-              {userData.contactNumber}
+              {userData.cp_number}
             </p>
             <p className="text-sm text-gray-500 flex items-center justify-center sm:justify-start mt-2">
               <Clock className="h-4 w-4 mr-2 text-gray-400" />
               Last Logout:{" "}
-              {userData.lastLogout
-                ? new Date(userData.lastLogout).toLocaleString()
+              {userData.last_logout
+                ? new Date(userData.last_logout).toLocaleString()
                 : "N/A"}
             </p>
           </div>
         </div>
-
         {/* Profile Information Form */}
         <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
           <UserCircle className="h-5 w-5 mr-2 text-blue-600" />
@@ -430,21 +398,21 @@ export default function MyProfile() {
             </div>
             <div>
               <label
-                htmlFor="contactNumber"
+                htmlFor="cp_number"
                 className="block text-sm font-medium text-gray-700"
               >
                 Contact Number
               </label>
               <input
                 type="tel"
-                id="contactNumber"
-                value={contactNumber}
-                onChange={(e) => setContactNumber(e.target.value)}
+                id="cp_number"
+                value={cp_number}
+                onChange={(e) => setCpNumber(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                required
               />
             </div>
           </div>
-
           <div className="flex justify-end">
             <Button
               type="submit"
@@ -463,7 +431,6 @@ export default function MyProfile() {
           </div>
         </form>
       </div>
-
       {/* Change Password Section */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -521,7 +488,6 @@ export default function MyProfile() {
               />
             </div>
           </div>
-
           <div className="flex justify-end">
             <Button
               type="submit"
@@ -540,7 +506,6 @@ export default function MyProfile() {
           </div>
         </form>
       </div>
-
       {/* --- Notification Modal --- */}
       <Modal
         isOpen={showNotificationModal}
@@ -568,7 +533,6 @@ export default function MyProfile() {
           </Button>
         </div>
       </Modal>
-
       {/* --- Confirmation Modal --- */}
       <Modal
         isOpen={showConfirmationModal}

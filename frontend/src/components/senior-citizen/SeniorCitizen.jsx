@@ -39,7 +39,7 @@ const SeniorCitizen = () => {
     setError("");
     try {
       const response = await axios.get(
-        `${backendUrl}/senior-citizens/page?page=${page}&limit=${limit}`
+        `${backendUrl}/api/senior-citizens/page?page=${page}&limit=${limit}`
       );
       setSeniorCitizens(response.data.citizens);
       setTotalCount(response.data.total);
@@ -100,7 +100,7 @@ const SeniorCitizen = () => {
   const handleDeleteConfirm = async () => {
     try {
       await axios.delete(
-        `${backendUrl}/senior-citizens/delete/${selectedCitizen.id}`
+        `${backendUrl}/api/senior-citizens/delete/${selectedCitizen.id}`
       );
       await fetchCitizens();
       setShowDeleteModal(false);

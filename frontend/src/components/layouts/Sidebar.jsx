@@ -29,7 +29,7 @@ const Sidebar = () => {
     try {
       const backendUrl = import.meta.env.VITE_API_BASE_URL;
       await axios.post(
-        `${backendUrl}/api/logout`,
+        `${backendUrl}/api/user/logout`,
         {},
         {
           withCredentials: true,
@@ -39,9 +39,10 @@ const Sidebar = () => {
       console.error("Logout failed:", error);
     } finally {
       // Always clear localStorage and navigate away
-      localStorage.removeItem("username");
-      localStorage.removeItem("role");
-      localStorage.removeItem("token");
+      // sessionStorage.removeItem("id");
+      // sessionStorage.removeItem("user");
+      localStorage.clear();
+      sessionStorage.clear();
       navigate("/login");
       // Close sidebar and confirmation dialog
       setIsSidebarOpen(false);

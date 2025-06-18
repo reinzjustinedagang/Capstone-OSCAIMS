@@ -187,7 +187,13 @@ const UserForm = ({
 
       {/* Display form-specific error */}
       {formError && (
-        <div className="text-red-600 text-sm text-center mt-4">{formError}</div>
+        <div
+          className="text-red-600 text-sm text-center mt-4"
+          role="alert"
+          aria-live="polite"
+        >
+          {formError}
+        </div>
       )}
 
       <div className="flex justify-end space-x-3 mt-6">

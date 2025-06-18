@@ -1,52 +1,95 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PlusIcon, EditIcon, TrashIcon } from "lucide-react";
 import Button from "../UI/Button";
 import Modal2 from "../UI/Modal2";
+import axios from "axios";
 
 const MessageTemplates = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  // Mock data for templates
-  const templates = [
-    {
-      id: 1,
-      name: "Pension Notification",
-      content:
-        "Dear {name}, your monthly pension is now available for claiming at the municipal hall. Please bring your senior citizen ID and one valid ID. Thank you!",
-      category: "Financial",
-    },
-    {
-      id: 2,
-      name: "Health Checkup Reminder",
-      content:
-        "Dear {name}, this is a reminder about your free health checkup tomorrow at the barangay health center from 8AM to 12NN. Please bring your senior citizen ID.",
-      category: "Health",
-    },
-    {
-      id: 3,
-      name: "Community Meeting Invitation",
-      content:
-        "Dear {name}, you are invited to attend the monthly community meeting on {date} at {time} at the municipal hall. Important matters will be discussed.",
-      category: "Community",
-    },
-    {
-      id: 4,
-      name: "Medicine Distribution Notice",
-      content:
-        "Dear {name}, free medicine distribution will be conducted on {date} at the health center. Please bring your prescription and senior citizen ID.",
-      category: "Health",
-    },
-  ];
+
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const backendUrl = import.meta.env.VITE_API_BASE_URL;
+
+  const [newTemplate, setNewTemplate] = useState({
+    name: "",
+    category: "",
+    message: "", // 👈 you're using `content` not `message`
+  });
+
+  const fetchTemplates = async () => {
+    try {
+      const res = await axios.get(`${backendUrl}/api/templates/`);
+      setTemplates(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch templates:", err);
+    }
+  };
+
+  const handleAddTemplate = async () => {
+    if (!newTemplate.name || !newTemplate.category || !newTemplate.message) {
+      setError("All fields are required.");
+      return;
+    }
+    try {
+      await axios.post(`${backendUrl}/api/templates/`, newTemplate);
+      setShowAddModal(false);
+      fetchTemplates();
+      setNewTemplate({ name: "", category: "", message: "" });
+      setError(""); // clear error
+    } catch (err) {
+      console.error("Add failed", err);
+      setError("Failed to add template.");
+    }
+  };
+
+  const handleUpdateTemplate = async () => {
+    if (!newTemplate.name || !newTemplate.category || !newTemplate.message) {
+      setError("All fields are required.");
+      return;
+    }
+    try {
+      await axios.put(
+        `${backendUrl}/api/templates/${selectedTemplate.id}`,
+        selectedTemplate
+      );
+      setShowEditModal(false);
+      fetchTemplates();
+    } catch (err) {
+      console.error("Update failed", err);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await axios.delete(`${backendUrl}/api/templates/${selectedTemplate.id}`);
+      setShowDeleteModal(false);
+      fetchTemplates();
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
+  };
+
   const handleEdit = (template) => {
     setSelectedTemplate(template);
     setShowEditModal(true);
   };
+
   const handleDelete = (template) => {
     setSelectedTemplate(template);
     setShowDeleteModal(true);
   };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -59,40 +102,44 @@ const MessageTemplates = () => {
           Add Template
         </Button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {templates.map((template) => (
-          <div
-            key={template.id}
-            className="border border-gray-200 rounded-md overflow-hidden"
-          >
-            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
-              <div>
-                <h3 className="font-medium">{template.name}</h3>
-                <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">
-                  {template.category}
-                </span>
+      {loading ? (
+        <p className="text-gray-500">Loading templates...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {templates.map((template) => (
+            <div
+              key={template.id}
+              className="border border-gray-200 rounded-md overflow-hidden"
+            >
+              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                <div>
+                  <h3 className="font-medium">{template.name}</h3>
+                  <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">
+                    {template.category}
+                  </span>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEdit(template)}
+                    className="text-blue-600 hover:text-blue-900"
+                  >
+                    <EditIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(template)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleEdit(template)}
-                  className="text-blue-600 hover:text-blue-900"
-                >
-                  <EditIcon className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(template)}
-                  className="text-red-600 hover:text-red-900"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
+              <div className="p-4 bg-white">
+                <p className="text-sm text-gray-600">{template.message}</p>
               </div>
             </div>
-            <div className="p-4 bg-white">
-              <p className="text-sm text-gray-600">{template.content}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       {/* Add Template Modal */}
       <Modal2
         isOpen={showAddModal}
@@ -111,6 +158,10 @@ const MessageTemplates = () => {
               <input
                 type="text"
                 id="templateName"
+                value={newTemplate.name}
+                onChange={(e) =>
+                  setNewTemplate({ ...newTemplate, name: e.target.value })
+                }
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 placeholder="e.g., Birthday Greeting"
               />
@@ -124,6 +175,10 @@ const MessageTemplates = () => {
               </label>
               <select
                 id="category"
+                value={newTemplate.category}
+                onChange={(e) =>
+                  setNewTemplate({ ...newTemplate, category: e.target.value })
+                }
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 <option value="">Select category</option>
@@ -135,21 +190,23 @@ const MessageTemplates = () => {
             </div>
             <div>
               <label
-                htmlFor="content"
+                htmlFor="message"
                 className="block text-sm font-medium text-gray-700"
               >
                 Message Content
               </label>
               <textarea
-                id="content"
+                id="message"
+                value={newTemplate.message}
+                onChange={(e) =>
+                  setNewTemplate({ ...newTemplate, message: e.target.value })
+                }
                 rows={5}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Type your message template here. Use {name} for recipient's name."
+                placeholder="Type your message template here."
               ></textarea>
-              <p className="mt-1 text-xs text-gray-500">
-                Available variables: {"{name}"}, {"{date}"}, {"{time}"}
-              </p>
             </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
             <div className="flex justify-end space-x-3 pt-4">
               <Button
                 variant="secondary"
@@ -157,7 +214,7 @@ const MessageTemplates = () => {
               >
                 Cancel
               </Button>
-              <Button variant="primary" onClick={() => setShowAddModal(false)}>
+              <Button variant="primary" onClick={handleAddTemplate}>
                 Save Template
               </Button>
             </div>
@@ -182,7 +239,13 @@ const MessageTemplates = () => {
               <input
                 type="text"
                 id="editTemplateName"
-                defaultValue={selectedTemplate?.name}
+                value={selectedTemplate?.name || ""}
+                onChange={(e) =>
+                  setSelectedTemplate({
+                    ...selectedTemplate,
+                    name: e.target.value,
+                  })
+                }
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
@@ -195,7 +258,13 @@ const MessageTemplates = () => {
               </label>
               <select
                 id="editCategory"
-                defaultValue={selectedTemplate?.category}
+                value={selectedTemplate?.category || ""}
+                onChange={(e) =>
+                  setSelectedTemplate({
+                    ...selectedTemplate,
+                    category: e.target.value,
+                  })
+                }
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 <option value="Financial">Financial</option>
@@ -214,12 +283,15 @@ const MessageTemplates = () => {
               <textarea
                 id="editContent"
                 rows={5}
-                defaultValue={selectedTemplate?.content}
+                value={selectedTemplate?.message || ""}
+                onChange={(e) =>
+                  setSelectedTemplate({
+                    ...selectedTemplate,
+                    message: e.target.value,
+                  })
+                }
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               ></textarea>
-              <p className="mt-1 text-xs text-gray-500">
-                Available variables: {"{name}"}, {"{date}"}, {"{time}"}
-              </p>
             </div>
             <div className="flex justify-end space-x-3 pt-4">
               <Button
@@ -228,7 +300,7 @@ const MessageTemplates = () => {
               >
                 Cancel
               </Button>
-              <Button variant="primary" onClick={() => setShowEditModal(false)}>
+              <Button variant="primary" onClick={handleUpdateTemplate}>
                 Update Template
               </Button>
             </div>
@@ -253,7 +325,7 @@ const MessageTemplates = () => {
             >
               Cancel
             </Button>
-            <Button variant="danger" onClick={() => setShowDeleteModal(false)}>
+            <Button variant="danger" onClick={handleConfirmDelete}>
               Delete
             </Button>
           </div>

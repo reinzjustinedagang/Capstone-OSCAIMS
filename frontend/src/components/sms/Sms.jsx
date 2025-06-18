@@ -1,56 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SendIcon, SaveIcon } from "lucide-react";
 import Button from "../UI/Button";
 import MessageTemplates from "./MessageTemplates";
+import MessageHistory from "./MessageHistory";
+import axios from "axios"; // ✅ Add this at the top
 
 const Sms = () => {
   const [activeTab, setActiveTab] = useState("send");
   const [selectedRecipients, setSelectedRecipients] = useState([]);
   const [messageText, setMessageText] = useState("");
   const [barangayFilter, setBarangayFilter] = useState("");
+  const [seniorCitizens, setSeniorCitizens] = useState([]);
+  const [templates, setTemplates] = useState({});
+  const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
-  const seniorCitizens = [
-    {
-      id: 1,
-      name: "Maria Santos",
-      contact: "09123456789",
-      barangay: "San Jose",
-    },
-    {
-      id: 2,
-      name: "Pedro Reyes",
-      contact: "09234567890",
-      barangay: "San Roque",
-    },
-    {
-      id: 3,
-      name: "Juan Dela Cruz",
-      contact: "09345678901",
-      barangay: "San Jose",
-    },
-    {
-      id: 4,
-      name: "Elena Magtanggol",
-      contact: "09456789012",
-      barangay: "San Pedro",
-    },
-    {
-      id: 5,
-      name: "Ricardo Dalisay",
-      contact: "09567890123",
-      barangay: "San Roque",
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [citizensRes, templatesRes] = await Promise.all([
+          axios.get(`${backendUrl}/api/senior-citizens/sms-citizens`),
+          axios.get(`${backendUrl}/api/templates/`),
+        ]);
 
-  const templates = {
-    pension:
-      "Monthly pension is now available for claiming at the municipal hall.",
-    checkup:
-      "Reminder: Free health checkup tomorrow at the barangay health center.",
-    meeting: "You're invited to attend the monthly community meeting.",
-    medicine:
-      "Free medicine distribution will be conducted on [date] at your barangay.",
-  };
+        setSeniorCitizens(citizensRes.data);
+        // Convert templates array to object map
+        const templateMap = {};
+        templatesRes.data.forEach((t) => {
+          templateMap[t.name] = t.message;
+        });
+        setTemplates(templateMap);
+      } catch (err) {
+        console.error("Error fetching data", err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSelectAll = (e) => {
     const filtered = filteredCitizens.map((c) => c.id);
@@ -76,10 +61,24 @@ const Sms = () => {
     setMessageText(templates[selected] || "");
   };
 
-  const handleSendMessage = () => {
-    alert(`Message sent to ${selectedRecipients.length} recipients`);
-    setMessageText("");
-    setSelectedRecipients([]);
+  const handleSendMessage = async () => {
+    try {
+      const numbers = seniorCitizens
+        .filter((c) => selectedRecipients.includes(c.id))
+        .map((c) => c.contact);
+
+      await axios.post(`${backendUrl}/api/sms/send-sms`, {
+        numbers,
+        message: messageText,
+      });
+
+      alert(`Message sent to ${numbers.length} recipients`);
+      setMessageText("");
+      setSelectedRecipients([]);
+    } catch (err) {
+      console.error("Failed to send SMS", err);
+      alert("Failed to send messages.");
+    }
   };
 
   const uniqueBarangays = Array.from(
@@ -245,20 +244,12 @@ const Sms = () => {
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     ></textarea>
                     <p className="mt-2 text-sm text-gray-500 flex justify-between">
-                      <span>
-                        Use <span className="font-medium">{"{name}"}</span> to
-                        personalize messages
-                      </span>
+                      <span></span>
                       <span>{messageText.length} / 160 characters</span>
                     </p>
                   </div>
                   <div className="flex justify-between">
-                    <Button
-                      variant="secondary"
-                      icon={<SaveIcon className="h-4 w-4 mr-2" />}
-                    >
-                      Save as Template
-                    </Button>
+                    <span></span>
                     <Button
                       variant="primary"
                       onClick={handleSendMessage}
@@ -278,55 +269,7 @@ const Sms = () => {
         {activeTab === "templates" && <MessageTemplates />}
 
         {/* History Tab */}
-        {activeTab === "history" && (
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {[
-                      "Date & Time",
-                      "Message",
-                      "Recipients",
-                      "Status",
-                      "Sent By",
-                    ].map((heading) => (
-                      <th
-                        key={heading}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        {heading}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {/* Dummy data */}
-                  <tr>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      2023-06-16 09:15 AM
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      Monthly pension is now available for claiming at the
-                      municipal hall...
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      45 recipients
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Delivered
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      Admin User
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        {activeTab === "history" && <MessageHistory />}
       </div>
     </div>
   );

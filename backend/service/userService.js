@@ -21,7 +21,7 @@ exports.getUser = async (id) => {
 exports.getAllUsers = async () => {
   try {
     const users = await Connection(`
-      SELECT id, username, email, cp_number, role, status
+      SELECT id, username, email, cp_number, role, status, last_logout
       FROM users
       ORDER BY username ASC
     `);
@@ -61,7 +61,7 @@ exports.deleteUser = async (id, actingUserEmail, actingUserRole) => {
 exports.login = async (email, password) => {
   try {
     const results = await Connection(
-      "SELECT id, username, email, password, cp_number, role, last_logout FROM users WHERE email = ?",
+      "SELECT id, username, email, password, cp_number, role, last_logout, status FROM users WHERE email = ?",
       [email]
     );
 
@@ -90,6 +90,7 @@ exports.login = async (email, password) => {
       cp_number: user.cp_number,
       role: user.role,
       last_logout: user.last_logout,
+      status: user.status,
     };
   } catch (error) {
     console.error("Error in login service:", error);
