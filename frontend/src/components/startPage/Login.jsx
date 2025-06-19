@@ -41,7 +41,6 @@ export default function Login() {
 
       const { user } = response.data;
 
-      sessionStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("user", JSON.stringify(user));
 
       if (user && user.role) {

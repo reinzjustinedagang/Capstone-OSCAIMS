@@ -42,7 +42,6 @@ const Sidebar = () => {
       // sessionStorage.removeItem("id");
       // sessionStorage.removeItem("user");
       localStorage.clear();
-      sessionStorage.clear();
       navigate("/login");
       // Close sidebar and confirmation dialog
       setIsSidebarOpen(false);

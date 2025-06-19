@@ -10,18 +10,28 @@ export const checkAuth = async () => {
 
     const user = res.data.user;
 
-    return {
-      isAuthenticated: !!user,
-      role: user?.role || null,
-    };
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user)); // optional, if you use localStorage
+      return {
+        isAuthenticated: true,
+        role: user.role,
+      };
+    } else {
+      localStorage.removeItem("user");
+      return {
+        isAuthenticated: false,
+        role: null,
+      };
+    }
   } catch (err) {
+    // Handle unauthenticated or error case
     if (err.response && err.response.status === 401) {
-      // Expected: user is not authenticated, no console error
+      localStorage.removeItem("user");
       return { isAuthenticated: false, role: null };
     }
 
-    // Unexpected error, log it
     console.error("Error checking auth:", err);
+    localStorage.removeItem("user"); // clean up in unexpected errors too
     return { isAuthenticated: false, role: null };
   }
 };

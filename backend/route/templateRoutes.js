@@ -29,8 +29,14 @@ router.get("/:id", async (req, res) => {
 // POST create a new template
 router.post("/", async (req, res) => {
   const { name, category, message } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ message: "Unauthorized: Not logged in" });
+  }
+
   try {
-    await templateService.createTemplate(name, category, message);
+    await templateService.createTemplate(name, category, message, user);
     res.status(201).json({ message: "Template created successfully" });
   } catch (error) {
     console.error("Error creating template:", error);
@@ -41,12 +47,19 @@ router.post("/", async (req, res) => {
 // PUT update a template
 router.put("/:id", async (req, res) => {
   const { name, category, message } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ message: "Unauthorized: Not logged in" });
+  }
+
   try {
     await templateService.updateTemplate(
       req.params.id,
       name,
       category,
-      message
+      message,
+      user
     );
     res.json({ message: "Template updated successfully" });
   } catch (error) {
@@ -57,8 +70,14 @@ router.put("/:id", async (req, res) => {
 
 // DELETE a template
 router.delete("/:id", async (req, res) => {
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ message: "Unauthorized: Not logged in" });
+  }
+
   try {
-    await templateService.deleteTemplate(req.params.id);
+    await templateService.deleteTemplate(req.params.id, user);
     res.json({ message: "Template deleted successfully" });
   } catch (error) {
     console.error("Error deleting template:", error);

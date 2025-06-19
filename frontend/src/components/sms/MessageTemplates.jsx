@@ -38,7 +38,10 @@ const MessageTemplates = () => {
       return;
     }
     try {
-      await axios.post(`${backendUrl}/api/templates/`, newTemplate);
+      await axios.post(`${backendUrl}/api/templates/`, newTemplate, {
+        withCredentials: true,
+      });
+
       setShowAddModal(false);
       fetchTemplates();
       setNewTemplate({ name: "", category: "", message: "" });
@@ -53,8 +56,12 @@ const MessageTemplates = () => {
     try {
       await axios.put(
         `${backendUrl}/api/templates/${selectedTemplate.id}`,
-        selectedTemplate
+        selectedTemplate,
+        {
+          withCredentials: true,
+        }
       );
+
       setShowEditModal(false);
       fetchTemplates();
       setError("");
@@ -66,7 +73,10 @@ const MessageTemplates = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`${backendUrl}/api/templates/${selectedTemplate.id}`);
+      await axios.delete(`${backendUrl}/api/templates/${selectedTemplate.id}`, {
+        withCredentials: true,
+      });
+
       setShowDeleteModal(false);
       fetchTemplates();
     } catch (err) {
