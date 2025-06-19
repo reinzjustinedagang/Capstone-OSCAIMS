@@ -3,7 +3,14 @@ import Button from "../UI/Button";
 import SeniorCitizenForm from "./SeniorCitizenForm";
 import Modal from "../UI/Modal"; // This will be your smaller modal (for notifications and delete confirmation)
 import Modal2 from "../UI/Modal2"; // This is your larger modal for the form
-import { Search, Plus, Pencil, Trash, ArrowDown, ArrowUp } from "lucide-react";
+import {
+  Search,
+  Plus,
+  EditIcon,
+  Trash,
+  ArrowDown,
+  ArrowUp,
+} from "lucide-react";
 import axios from "axios";
 
 const SeniorCitizen = () => {
@@ -369,7 +376,7 @@ const SeniorCitizen = () => {
                         className="text-blue-600 hover:text-blue-900"
                         aria-label={`Edit ${citizen.firstName} ${citizen.lastName}`}
                       >
-                        <Pencil className="h-5 w-5" />
+                        <EditIcon className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => handleDelete(citizen)}

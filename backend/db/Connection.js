@@ -52,23 +52,47 @@ db.query(
   }
 );
 
-// db.query(
-//   `
-//   CREATE TABLE IF NOT EXISTS officials (
-//     id INT AUTO_INCREMENT PRIMARY KEY,
-//     name VARCHAR(255) NOT NULL,
-//     position VARCHAR(100) NOT NULL,
-//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-//   )
-//   `,
-//   (err) => {
-//     if (err) {
-//       console.error("❌ Failed to create officials table:", err);
-//     } else {
-//       console.log("✅ officials table ready.");
-//     }
-//   }
-// );
+// Municipal Officials Table
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS municipal_officials (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    position VARCHAR(255) NOT NULL,
+    type ENUM('head', 'vice', 'officer') NOT NULL,
+    image VARCHAR(255), -- stores file name or URL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+  `,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create municipal_officials table:", err);
+    } else {
+      console.log("✅ municipal_officials table ready.");
+    }
+  }
+);
+
+// Barangay Officials Table
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS barangay_officials (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    barangay_name VARCHAR(255) NOT NULL,
+    president_name VARCHAR(255) NOT NULL,
+    position VARCHAR(100) DEFAULT 'President',
+    image VARCHAR(255), -- stores file name or URL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+  `,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create barangay_officials table:", err);
+    } else {
+      console.log("✅ barangay_officials table ready.");
+    }
+  }
+);
 
 db.query(
   `CREATE TABLE IF NOT EXISTS sms_templates (

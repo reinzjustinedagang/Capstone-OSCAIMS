@@ -6,7 +6,7 @@ import axios from "axios";
 import {
   Search,
   Plus,
-  Pencil,
+  EditIcon,
   Trash,
   ArrowDown,
   ArrowUp,
@@ -466,7 +466,7 @@ const UserManagement = () => {
                             className="text-blue-600 hover:text-blue-900"
                             aria-label={`Edit ${user.username}`}
                           >
-                            <Pencil className="h-5 w-5" />
+                            <EditIcon className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => handleDeleteUser(user)}

@@ -59,7 +59,18 @@ const seniorCitizenRoutes = require("../route/seniorCitizenRoutes");
 const auditRoutes = require("../route/auditRoutes");
 const smsRoute = require("../route/smsRoute");
 const templateRoutes = require("../route/templateRoutes");
+const officialRoutes = require("../route/officialRoutes");
+const fs = require("fs");
+const path = require("path");
 
+const uploadsDir = path.join(__dirname, "uploads");
+
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+  console.log("✅ Created uploads directory");
+}
+app.use("/uploads", express.static("uploads")); // serve uploaded images
+app.use("/api/officials", officialRoutes);
 app.use("/api/audit-logs", auditRoutes);
 app.use("/api/user", authRoutes);
 app.use("/api/senior-citizens", seniorCitizenRoutes);
