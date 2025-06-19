@@ -90,6 +90,17 @@ router.get("/logs", async (req, res) => {
   }
 });
 
+// GET message history
+router.get("/history", async (req, res) => {
+  try {
+    const logs = await smsService.getSMSHistory();
+    res.json(logs);
+  } catch (error) {
+    console.error("Error fetching SMS history:", error);
+    res.status(500).json({ message: "Failed to fetch SMS history" });
+  }
+});
+
 router.put("/sms-credentials", smsService.updateSmsCredentials);
 
 router.get("/sms-credentials", smsService.getSmsCredentials);

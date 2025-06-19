@@ -33,7 +33,7 @@ const sessionStore = new MySQLStore({
   database: process.env.DB_DATABASE,
   clearExpired: true,
   checkExpirationInterval: 1000 * 60 * 5,
-  expiration: 1000 * 60 * 60, // 1 hour
+  expiration: 1000 * 60 * 60 * 24, // 1 day
 });
 
 // Session middleware
@@ -48,7 +48,7 @@ app.use(
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-      maxAge: 1000 * 60 * 60, // 1 hour
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
   })
 );

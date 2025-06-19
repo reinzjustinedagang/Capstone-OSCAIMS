@@ -19,7 +19,7 @@ const MessageTemplates = () => {
   const [newTemplate, setNewTemplate] = useState({
     name: "",
     category: "",
-    message: "", // 👈 you're using `content` not `message`
+    message: "",
   });
 
   const fetchTemplates = async () => {
@@ -50,10 +50,6 @@ const MessageTemplates = () => {
   };
 
   const handleUpdateTemplate = async () => {
-    if (!newTemplate.name || !newTemplate.category || !newTemplate.message) {
-      setError("All fields are required.");
-      return;
-    }
     try {
       await axios.put(
         `${backendUrl}/api/templates/${selectedTemplate.id}`,
@@ -61,8 +57,10 @@ const MessageTemplates = () => {
       );
       setShowEditModal(false);
       fetchTemplates();
+      setError("");
     } catch (err) {
       console.error("Update failed", err);
+      setError("Failed to update template.");
     }
   };
 
@@ -293,6 +291,7 @@ const MessageTemplates = () => {
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               ></textarea>
             </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
             <div className="flex justify-end space-x-3 pt-4">
               <Button
                 variant="secondary"

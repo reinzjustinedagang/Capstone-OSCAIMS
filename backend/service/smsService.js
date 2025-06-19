@@ -150,3 +150,12 @@ exports.updateSmsCredentials = async (req, res) => {
     res.status(500).json({ message: "Failed to update credentials." });
   }
 };
+
+exports.getSMSHistory = async () => {
+  const logs = await Connection(`
+    SELECT id, recipients, message, status, reference_id, credit_used, created_at
+    FROM sms_logs
+    ORDER BY created_at DESC
+  `);
+  return logs;
+};

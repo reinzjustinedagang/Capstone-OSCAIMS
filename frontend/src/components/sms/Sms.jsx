@@ -11,31 +11,32 @@ const Sms = () => {
   const [messageText, setMessageText] = useState("");
   const [barangayFilter, setBarangayFilter] = useState("");
   const [seniorCitizens, setSeniorCitizens] = useState([]);
-  const [templates, setTemplates] = useState({});
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
+  const fetchData = async () => {
+    try {
+      const [citizensRes, templatesRes] = await Promise.all([
+        axios.get(`${backendUrl}/api/senior-citizens/sms-citizens`),
+        axios.get(`${backendUrl}/api/templates/`),
+      ]);
+      setSeniorCitizens(citizensRes.data);
+      setTemplates(templatesRes.data);
+    } catch (err) {
+      console.error("Failed to fetch data", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [citizensRes, templatesRes] = await Promise.all([
-          axios.get(`${backendUrl}/api/senior-citizens/sms-citizens`),
-          axios.get(`${backendUrl}/api/templates/`),
-        ]);
-
-        setSeniorCitizens(citizensRes.data);
-        // Convert templates array to object map
-        const templateMap = {};
-        templatesRes.data.forEach((t) => {
-          templateMap[t.name] = t.message;
-        });
-        setTemplates(templateMap);
-      } catch (err) {
-        console.error("Error fetching data", err);
-      }
-    };
-
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "send") {
+      fetchData(); // re-fetch on tab switch
+    }
+  }, [activeTab]);
 
   const handleSelectAll = (e) => {
     const filtered = filteredCitizens.map((c) => c.id);
@@ -56,9 +57,23 @@ const Sms = () => {
     }
   };
 
-  const handleTemplateChange = (e) => {
-    const selected = e.target.value;
-    setMessageText(templates[selected] || "");
+  const handleTemplateChange = async (e) => {
+    const selectedId = e.target.value;
+    setSelectedTemplateId(selectedId);
+
+    if (selectedId) {
+      try {
+        const res = await axios.get(
+          `${backendUrl}/api/templates/${selectedId}`
+        );
+        const template = res.data;
+        setMessageText(template.message);
+      } catch (err) {
+        console.error("Failed to load template message", err);
+      }
+    } else {
+      setMessageText("");
+    }
   };
 
   const handleSendMessage = async () => {
@@ -214,18 +229,16 @@ const Sms = () => {
                     </label>
                     <select
                       id="template"
+                      value={selectedTemplateId}
                       onChange={handleTemplateChange}
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
                       <option value="">-- Select a template --</option>
-                      <option value="pension">Pension Notification</option>
-                      <option value="checkup">Health Checkup Reminder</option>
-                      <option value="meeting">
-                        Community Meeting Invitation
-                      </option>
-                      <option value="medicine">
-                        Medicine Distribution Notice
-                      </option>
+                      {templates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
