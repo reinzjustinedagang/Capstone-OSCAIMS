@@ -17,6 +17,8 @@ exports.sendSMS = async (message, recipients) => {
       Email: credentials.email,
       Password: credentials.password,
       ApiCode: credentials.api_code,
+      ClientId: "SYSTEM_CLIENT_001", // or load from DB or env
+      SenderId: "ITEXMO SMS",
       Recipients: recipients,
       Message: message,
     };
@@ -47,16 +49,12 @@ exports.sendSMS = async (message, recipients) => {
       ]
     );
 
-    if (data && data.Error === false && data.Accepted > 0) {
-      return { success: true, response: data };
-    } else {
-      return {
-        success: false,
-        response: `iTexMo error: ${JSON.stringify(data)}`,
-      };
-    }
+    return data.Error === false && data.Accepted > 0
+      ? { success: true, response: data }
+      : { success: false, response: `iTexMo error: ${JSON.stringify(data)}` };
   } catch (error) {
-    // 🟥 Log failed SMS
+    console.error("Error sending SMS:", error);
+
     await Connection(
       `INSERT INTO sms_logs (recipients, message, status, reference_id, credit_used)
        VALUES (?, ?, ?, ?, ?)`,
@@ -112,50 +110,86 @@ exports.updateSmsCredentials = async (req, res) => {
   const { email, password, api_code } = req.body;
 
   try {
-    // Get current stored credentials for audit
-    const [oldData] = await Connection(
-      `SELECT email, password, api_code FROM sms_credentials WHERE id = 1`
+    // Check if any record exists
+    const existing = await Connection(
+      `SELECT * FROM sms_credentials WHERE id = 1`
     );
 
-    // Perform the update
-    await Connection(
-      `UPDATE sms_credentials SET email = ?, password = ?, api_code = ? WHERE id = 1`,
-      [email, password, api_code]
-    );
+    let actionType = "UPDATE";
+    let changes = [];
 
-    // Get user data from request (assuming middleware sets req.user)
+    if (existing.length === 0) {
+      // No record exists, perform INSERT
+      await Connection(
+        `INSERT INTO sms_credentials (id, email, password, api_code) VALUES (1, ?, ?, ?)`,
+        [email, password, api_code]
+      );
+      actionType = "INSERT";
+      changes.push("Initial SMS credentials created.");
+    } else {
+      const oldData = existing[0];
+
+      // Perform the update
+      await Connection(
+        `UPDATE sms_credentials SET email = ?, password = ?, api_code = ? WHERE id = 1`,
+        [email, password, api_code]
+      );
+
+      // Track changes for audit
+      if (oldData.email !== email)
+        changes.push(`Email changed from '${oldData.email}' to '${email}'`);
+      if (oldData.password !== password) changes.push("Password was updated");
+      if (oldData.api_code !== api_code) changes.push(`API Code changed`);
+    }
+
+    // Get user info
     const userEmail = req.user?.email || "Unknown";
     const userRole = req.user?.role || "Admin";
 
-    // Prepare audit log details
-    const changes = [];
-    if (oldData.email !== email)
-      changes.push(`Email changed from '${oldData.email}' to '${email}'`);
-    if (oldData.password !== password) changes.push(`Password was updated`);
-    if (oldData.api_code !== api_code) changes.push(`API Code changed`);
-
+    // Log if any changes or insert happened
     if (changes.length > 0) {
       await logAudit(
         userEmail,
         userRole,
-        "UPDATE",
+        actionType,
         "SMS_CREDENTIALS",
         changes.join("; ")
       );
     }
 
-    res.status(200).json({ message: "SMS credentials updated." });
+    res.status(200).json({
+      message:
+        actionType === "INSERT"
+          ? "SMS credentials added."
+          : "SMS credentials updated.",
+    });
   } catch (err) {
-    console.error("Error updating SMS credentials:", err);
-    res.status(500).json({ message: "Failed to update credentials." });
+    console.error("Error updating/adding SMS credentials:", err);
+    res.status(500).json({ message: "Failed to save credentials." });
   }
 };
 
-exports.getSMSHistory = async () => {
-  const logs = await Connection(`
+exports.getSMSHistory = async (page = 1, limit = 10) => {
+  const offset = (page - 1) * limit;
+
+  // Get paginated logs
+  const logs = await Connection(
+    `
     SELECT id, recipients, message, status, reference_id, credit_used, created_at
     FROM sms_logs
     ORDER BY created_at DESC
-  `);
-  return logs;
+    LIMIT ? OFFSET ?
+    `,
+    [limit, offset]
+  );
+
+  // Get total count
+  const [countResult] = await Connection(
+    `SELECT COUNT(*) as total FROM sms_logs`
+  );
+
+  return {
+    logs,
+    total: countResult.total,
+  };
 };

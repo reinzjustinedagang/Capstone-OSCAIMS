@@ -82,17 +82,17 @@ const Sms = () => {
         .filter((c) => selectedRecipients.includes(c.id))
         .map((c) => c.contact);
 
-      await axios.post(`${backendUrl}/api/sms/send-sms`, {
+      const response = await axios.post(`${backendUrl}/api/sms/send-sms`, {
         numbers,
         message: messageText,
       });
 
-      alert(`Message sent to ${numbers.length} recipients`);
+      alert(response.data.message); // shows "✅ Broadcast sent successfully"
       setMessageText("");
       setSelectedRecipients([]);
     } catch (err) {
       console.error("Failed to send SMS", err);
-      alert("Failed to send messages.");
+      alert(err.response?.data?.message || "Failed to send messages.");
     }
   };
 
