@@ -2,11 +2,17 @@ const express = require("express");
 const router = express.Router();
 const barangayService = require("../service/barangayService");
 
-// GET all barangays
+// GET paginated barangays
 router.get("/", async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+
   try {
-    const barangays = await barangayService.getAllBarangays();
-    res.json(barangays);
+    const { data, total } = await barangayService.getPaginatedBarangays(
+      page,
+      limit
+    );
+    res.json({ barangays: data, total });
   } catch (error) {
     console.error("Error fetching barangays:", error);
     res.status(500).json({ message: "Failed to fetch barangays" });
@@ -52,7 +58,9 @@ router.post("/", async (req, res) => {
     res.status(201).json({ message: "Barangay created successfully" });
   } catch (error) {
     console.error("Error creating barangay:", error);
-    res.status(500).json({ message: "Failed to create barangay" });
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to create barangay" });
   }
 });
 

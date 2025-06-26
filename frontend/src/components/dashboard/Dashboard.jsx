@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import Card from "../UI/Card";
+import { NavLink } from "react-router-dom";
 import {
   UsersIcon,
   MessageSquareIcon,
@@ -6,10 +9,24 @@ import {
   UserPlusIcon,
   HouseIcon,
 } from "lucide-react";
-import Card from "../UI/Card";
-import { NavLink } from "react-router-dom";
 
 const Dashboard = () => {
+  const [barangayCount, setBarangayCount] = useState(0);
+  const backendUrl = import.meta.env.VITE_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchBarangayCount = async () => {
+      try {
+        const res = await axios.get(`${backendUrl}/api/barangays/count/all`);
+        setBarangayCount(res.data.count);
+      } catch (err) {
+        console.error("Failed to fetch barangay count", err);
+      }
+    };
+
+    fetchBarangayCount();
+  }, []);
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
@@ -23,7 +40,7 @@ const Dashboard = () => {
         <NavLink to="/admin-barangays">
           <Card
             title="No. of Barangay"
-            value="28"
+            value={barangayCount}
             icon={<HouseIcon />}
             color="green"
           />

@@ -126,13 +126,6 @@ const MessageHistory = () => {
             }
             transition-colors duration-150 ease-in-out`;
 
-      // Specific rounded classes are handled by the Previous/Next buttons outside this map
-      // For the numeric buttons, the -space-x-px in parent nav takes care of continuous look.
-      // If renderPageButtons needs to render rounded ends, then apply them here.
-      // For typical pagination, the first/last *numeric* buttons within the range usually don't have
-      // specific rounded corners when part of the -space-x-px group, unless they are the *absolute* first/last
-      // elements of the entire pagination component (which the Prev/Next buttons handle).
-
       return (
         <button key={p} onClick={() => setPage(p)} className={buttonClasses}>
           {p}

@@ -2,10 +2,23 @@ const Connection = require("../db/Connection");
 const { logAudit } = require("./auditService");
 
 // Get all barangays
-exports.getAllBarangays = async () => {
-  return await Connection(
-    "SELECT id, barangay_name, created_at FROM barangays"
+// Get paginated barangays
+exports.getPaginatedBarangays = async (page = 1, limit = 10) => {
+  const offset = (page - 1) * limit;
+
+  const data = await Connection(
+    "SELECT id, barangay_name, created_at FROM barangays ORDER BY id DESC LIMIT ? OFFSET ?",
+    [parseInt(limit), parseInt(offset)]
   );
+
+  const [countResult] = await Connection(
+    "SELECT COUNT(*) AS total FROM barangays"
+  );
+
+  return {
+    data,
+    total: countResult.total,
+  };
 };
 
 // Get one barangay by ID
@@ -16,9 +29,20 @@ exports.getBarangayById = async (id) => {
 
 // Create a new barangay
 exports.createBarangay = async (name, user) => {
+  // Check for duplicate name
+  const [existing] = await Connection(
+    "SELECT * FROM barangays WHERE barangay_name = ?",
+    [name.trim()]
+  );
+  if (existing) {
+    const error = new Error("Barangay already exists.");
+    error.status = 409;
+    throw error;
+  }
+
   const result = await Connection(
     "INSERT INTO barangays (barangay_name) VALUES (?)",
-    [name]
+    [name.trim()]
   );
 
   if (result.affectedRows === 1 && user) {
@@ -36,19 +60,19 @@ exports.createBarangay = async (name, user) => {
 // Update a barangay
 exports.updateBarangay = async (id, name, user) => {
   const [oldData] = await Connection(
-    "SELECT name FROM barangays WHERE id = ?",
+    "SELECT barangay_name FROM barangays WHERE id = ?",
     [id]
   );
 
   const result = await Connection(
-    "UPDATE barangays SET name = ? WHERE id = ?",
+    "UPDATE barangays SET barangay_name = ? WHERE id = ?",
     [name, id]
   );
 
   if (result.affectedRows === 1 && user) {
     const changes =
       oldData.name !== name
-        ? `name: '${oldData.name}' → '${name}'`
+        ? `name: '${oldData.barangay_name}' → '${name}'`
         : "No changes.";
 
     await logAudit(
@@ -65,7 +89,7 @@ exports.updateBarangay = async (id, name, user) => {
 // Delete a barangay
 exports.deleteBarangay = async (id, user) => {
   const [barangay] = await Connection(
-    "SELECT name FROM barangays WHERE id = ?",
+    "SELECT barangay_name FROM barangays WHERE id = ?",
     [id]
   );
 
@@ -76,7 +100,7 @@ exports.deleteBarangay = async (id, user) => {
       user.email,
       user.role,
       "DELETE",
-      `Deleted barangay '${barangay?.name}'`
+      `Deleted barangay '${barangay?.barangay_name}'`
     );
   }
 

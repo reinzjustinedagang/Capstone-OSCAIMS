@@ -25,14 +25,14 @@ const BarangayForm = ({ barangay, onClose, onSuccess }) => {
         // Update existing
         await axios.put(
           `${backendUrl}/api/barangays/${barangay.id}`,
-          { name },
+          { name: name },
           { withCredentials: true }
         );
       } else {
         // Create new
         await axios.post(
           `${backendUrl}/api/barangays/`,
-          { name },
+          { name: name },
           { withCredentials: true }
         );
       }
@@ -50,7 +50,7 @@ const BarangayForm = ({ barangay, onClose, onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4">
+    <form onSubmit={handleSubmit} className="p-4" disabled={loading}>
       {error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 border-l-4 border-red-500 rounded">
           {error}
@@ -66,6 +66,9 @@ const BarangayForm = ({ barangay, onClose, onSuccess }) => {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          minLength={3}
+          disabled={loading}
+          autoFocus
         />
       </div>
       <div className="flex justify-end space-x-3">
