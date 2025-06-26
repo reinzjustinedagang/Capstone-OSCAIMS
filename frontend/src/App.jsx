@@ -25,6 +25,7 @@ import { SettingsPage } from "./pages/admin/SettingsPage";
 import { UserManagementPage } from "./pages/admin/UserManagementPage.jsx";
 import { MyProfilePage } from "./pages/admin/MyProfilePage.jsx";
 import { AuditLogsPage } from "./pages/admin/AuditLogsPage.jsx";
+import { BarangayManagementPage } from "./pages/admin/BarangayManagementPage.jsx";
 
 // Staff Pages
 import { UserDashboard } from "./pages/user/UserDashboard";
@@ -169,6 +170,14 @@ function App() {
         element={
           <ProtectedRoute role="Admin">
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin-barangays"
+        element={
+          <ProtectedRoute role="Admin">
+            <BarangayManagementPage />
           </ProtectedRoute>
         }
       />

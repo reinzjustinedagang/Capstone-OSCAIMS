@@ -214,11 +214,9 @@ const BarangayOfficials = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 mt-5">
+    <div className="bg-white rounded-xl shadow-lg p-4 mt-5">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
-          Barangay Association Presidents
-        </h2>
+        <h2 className="text-2xl font-bold">Barangay Association Presidents</h2>
         <Button
           onClick={() => {
             setFormData({

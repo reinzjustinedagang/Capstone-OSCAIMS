@@ -36,7 +36,7 @@ const Officials = () => {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen rounded-lg p-6">
+    <div>
       <h1 className="text-2xl font-bold mb-6">OSCA Officials Directory</h1>
       <MunicipalOfficials
         title="Municipal Federation Officer"

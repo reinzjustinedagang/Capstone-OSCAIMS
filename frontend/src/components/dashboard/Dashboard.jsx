@@ -7,6 +7,7 @@ import {
   HouseIcon,
 } from "lucide-react";
 import Card from "../UI/Card";
+import { NavLink } from "react-router-dom";
 
 const Dashboard = () => {
   return (
@@ -19,12 +20,15 @@ const Dashboard = () => {
           icon={<UsersIcon />}
           color="blue"
         />
-        <Card
-          title="No. of Barangay"
-          value="28"
-          icon={<HouseIcon />}
-          color="green"
-        />
+        <NavLink to="/admin-barangays">
+          <Card
+            title="No. of Barangay"
+            value="28"
+            icon={<HouseIcon />}
+            color="green"
+          />
+        </NavLink>
+
         <Card
           title="SMS Sent (This Month)"
           value="156"

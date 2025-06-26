@@ -169,27 +169,21 @@ exports.updateSmsCredentials = async (req, res) => {
   }
 };
 
-exports.getSMSHistory = async (page = 1, limit = 10) => {
-  const offset = (page - 1) * limit;
-
-  // Get paginated logs
+exports.getPaginatedSMSHistory = async (limit, offset) => {
   const logs = await Connection(
     `
     SELECT id, recipients, message, status, reference_id, credit_used, created_at
     FROM sms_logs
     ORDER BY created_at DESC
     LIMIT ? OFFSET ?
-    `,
+  `,
     [limit, offset]
   );
 
-  // Get total count
-  const [countResult] = await Connection(
-    `SELECT COUNT(*) as total FROM sms_logs`
+  const totalResult = await Connection(
+    `SELECT COUNT(*) AS total FROM sms_logs`
   );
+  const total = totalResult[0]?.total || 0;
 
-  return {
-    logs,
-    total: countResult.total,
-  };
+  return { logs, total };
 };

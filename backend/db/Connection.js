@@ -52,6 +52,24 @@ db.query(
   }
 );
 
+// Barangay Table
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS barangays (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    barangay_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+  `,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create barangay table:", err);
+    } else {
+      console.log("✅ barangay table ready.");
+    }
+  }
+);
+
 // Municipal Officials Table
 db.query(
   `

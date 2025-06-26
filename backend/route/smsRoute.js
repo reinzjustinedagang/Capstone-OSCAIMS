@@ -90,14 +90,18 @@ router.get("/logs", async (req, res) => {
   }
 });
 
-// GET message history with pagination
+// GET message history
 router.get("/history", async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-
   try {
-    const result = await smsService.getSMSHistory(page, limit);
-    res.json(result);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { logs, total } = await smsService.getPaginatedSMSHistory(
+      limit,
+      offset
+    );
+    res.json({ logs, total });
   } catch (error) {
     console.error("Error fetching SMS history:", error);
     res.status(500).json({ message: "Failed to fetch SMS history" });

@@ -281,9 +281,9 @@ const MunicipalOfficials = ({ title }) => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="bg-white rounded-xl shadow-lg p-4">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
+        <h2 className="text-2xl font-bold">{title}</h2>
         <Button
           onClick={openAddModal} // Calls the function to open the add form modal
           variant="primary"

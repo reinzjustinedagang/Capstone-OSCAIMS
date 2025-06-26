@@ -12,12 +12,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const fs = require("fs");
 const path = require("path");
-const uploadsDir = path.join(__dirname, "../uploads");
-
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-  console.log("✅ Created uploads directory");
-}
 
 // Middleware setup
 app.use(compression());
@@ -36,7 +30,7 @@ app.use(
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD || "",
+  password: "", // Use process.env.DB_PASSWORD ideally
   port: process.env.DB_PORT,
   database: process.env.DB_DATABASE,
   clearExpired: true,
@@ -62,12 +56,18 @@ app.use(
 );
 
 // Import route handlers
+const uploadsDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+  console.log("✅ Created uploads directory");
+}
 const authRoutes = require("../route/authRoutes");
 const seniorCitizenRoutes = require("../route/seniorCitizenRoutes");
 const auditRoutes = require("../route/auditRoutes");
 const smsRoute = require("../route/smsRoute");
 const templateRoutes = require("../route/templateRoutes");
 const officialRoutes = require("../route/officialRoutes");
+const barangayRoutes = require("../route/barangayRoutes");
 
 app.use("/uploads", express.static(uploadsDir)); // serve uploaded images
 app.use("/api/officials", officialRoutes);
@@ -76,17 +76,16 @@ app.use("/api/user", authRoutes);
 app.use("/api/senior-citizens", seniorCitizenRoutes);
 app.use("/api/sms", smsRoute);
 app.use("/api/templates", templateRoutes);
+app.use("/api/barangays", barangayRoutes);
 
-// Global error handling middleware
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack); // Log the error stack for debugging
-  // In production, avoid sending detailed error messages to the client
+  console.error(err.stack);
   res.status(500).json({ message: "Something went wrong on the server!" });
 });
 
-// Test endpoint for session functionality
+// Session test route
 app.get("/api/test-session", (req, res) => {
-  // Increment a view counter in the session
   req.session.views = (req.session.views || 0) + 1;
   res.send(`Session views: ${req.session.views}`);
 });
