@@ -98,3 +98,11 @@ exports.getSmsRecipients = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Get total number of barangays
+exports.getCitizenCount = async () => {
+  const [result] = await Connection(
+    "SELECT COUNT(*) AS count FROM senior_citizens"
+  );
+  return result.count;
+};

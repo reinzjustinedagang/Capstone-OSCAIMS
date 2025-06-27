@@ -22,6 +22,7 @@ const SeniorCitizen = () => {
   const [filterBarangay, setFilterBarangay] = useState("All Barangays");
   const [filterHealthStatus, setFilterHealthStatus] =
     useState("All Health Status");
+  const [barangayOptions, setBarangayOptions] = useState([]);
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
 
@@ -59,7 +60,21 @@ const SeniorCitizen = () => {
     }
   };
 
+  const fetchBarangays = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/barangays/All`);
+      const options = [
+        "All Barangays",
+        ...response.data.map((b) => b.barangay_name), // ✅ Use correct field name
+      ];
+      setBarangayOptions(options);
+    } catch (error) {
+      console.error("Failed to fetch barangays:", error);
+    }
+  };
+
   useEffect(() => {
+    fetchBarangays();
     fetchCitizens();
   }, [page, backendUrl]);
 
@@ -203,37 +218,6 @@ const SeniorCitizen = () => {
       setSortOrder("asc");
     }
   };
-
-  const barangayOptions = [
-    "All Barangays",
-    "Adela",
-    "Bagong Sikat",
-    "Bangkal",
-    "Central",
-    "F. Balagtas",
-    "Ilik",
-    "Labangan",
-    "Magsaysay",
-    "Maibara",
-    "Malasin",
-    "Mangarin",
-    "Mapaya",
-    "Murtha",
-    "Pag-asa",
-    "Pandurucan",
-    "Pinagturilan",
-    "Poblacion 1",
-    "Poblacion 2",
-    "Poblacion 3",
-    "Poblacion 4",
-    "Rizal",
-    "San Isidro",
-    "San Roque",
-    "Santo Niño",
-    "Tadyawan",
-    "Tamao",
-    "Tuban",
-  ];
 
   const healthStatusOptions = [
     "All Health Status",

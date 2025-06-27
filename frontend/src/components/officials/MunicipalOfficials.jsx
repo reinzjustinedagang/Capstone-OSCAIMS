@@ -157,7 +157,7 @@ const MunicipalOfficials = ({ title }) => {
 
       // If updating an existing official and there's an existing image filename
       if (dataToSave.id && dataToSave.existingImage) {
-        form.append("existing_image", dataToSave.existingImage);
+        form.append("existing_image", dataToSave.existingImage || "");
       }
       // If a new image file has been selected
       if (fileToUpload) {

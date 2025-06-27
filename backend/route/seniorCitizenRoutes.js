@@ -80,6 +80,17 @@ router.get("/page", async (req, res) => {
   }
 });
 
+// GET senior citizen count
+router.get("/count/all", async (req, res) => {
+  try {
+    const count = await seniorCitizenService.getCitizenCount();
+    res.json({ count });
+  } catch (error) {
+    console.error("Error fetching senior citizen count:", error);
+    res.status(500).json({ message: "Failed to fetch senior citizen count" });
+  }
+});
+
 router.get("/sms-citizens", seniorCitizenService.getSmsRecipients);
 
 module.exports = router;

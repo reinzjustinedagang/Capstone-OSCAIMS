@@ -19,17 +19,17 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET one barangay by ID
-router.get("/:id", async (req, res) => {
+// GET barangay
+router.get("/All", async (req, res) => {
   try {
-    const barangay = await barangayService.getBarangayById(req.params.id);
-    if (!barangay) {
-      return res.status(404).json({ message: "Barangay not found" });
+    const barangays = await barangayService.getAllBarangay();
+    if (!barangays || barangays.length === 0) {
+      return res.status(404).json({ message: "No barangays found" });
     }
-    res.json(barangay);
+    res.json(barangays); // ✅ returns array of barangay names
   } catch (error) {
-    console.error("Error fetching barangay:", error);
-    res.status(500).json({ message: "Failed to fetch barangay" });
+    console.error("Error fetching barangays:", error);
+    res.status(500).json({ message: "Failed to fetch barangays" });
   }
 });
 

@@ -21,10 +21,10 @@ exports.getPaginatedBarangays = async (page = 1, limit = 10) => {
   };
 };
 
-// Get one barangay by ID
-exports.getBarangayById = async (id) => {
-  const result = await Connection("SELECT * FROM barangays WHERE id = ?", [id]);
-  return result[0];
+// Get all barangay
+exports.getAllBarangay = async () => {
+  const result = await Connection("SELECT barangay_name FROM barangays");
+  return result;
 };
 
 // Create a new barangay

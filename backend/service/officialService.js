@@ -1,5 +1,7 @@
 const Connection = require("../db/Connection");
 const { logAudit } = require("./auditService"); // Uncomment if needed and adjust path
+const fs = require("fs/promises");
+const path = require("path");
 
 // ─── MUNICIPAL OFFICIALS ──────────────────────────────────────────────────────
 
@@ -58,33 +60,29 @@ exports.updateMunicipalOfficial = async (
   name,
   position,
   type,
-  image, // This 'image' parameter will now be either the new filename OR the existing filename (from frontend)
+  image, // new image filename
   user
 ) => {
   try {
-    // FIX: Get all rows and then access the first element
     const oldDataRows = await Connection(
       `SELECT name, position, type, image FROM municipal_officials WHERE id = ?`,
       [id]
     );
-    const oldData = oldDataRows[0]; // Get the first (and only) row
+    const oldData = oldDataRows[0];
 
     if (!oldData) {
       throw new Error("Municipal official not found for update.");
     }
 
-    // Check for existing head/vice if type is being changed or is head/vice
+    // Check for existing head/vice logic (unchanged)
     if ((type === "head" || type === "vice") && oldData.type !== type) {
-      // If the type is being changed TO head or vice, check if another exists
-      const typeAlreadyExists = await checkIfTypeExists(type, id); // Exclude current official's ID
+      const typeAlreadyExists = await checkIfTypeExists(type, id);
       if (typeAlreadyExists) {
         throw new Error(
           `A municipal official with type '${type}' already exists. Cannot change.`
         );
       }
     } else if ((type === "head" || type === "vice") && oldData.type === type) {
-      // If type is already head/vice and not changing, ensure no OTHER official of that type exists
-      // (This handles cases where existing data might be inconsistent or initial setup)
       const typeAlreadyExists = await checkIfTypeExists(type, id);
       if (typeAlreadyExists) {
         throw new Error(
@@ -93,13 +91,25 @@ exports.updateMunicipalOfficial = async (
       }
     }
 
-    const finalImage = image; // Image determined by route
+    const finalImage = image || oldData.image; // fallback to old image if none uploaded
 
     const result = await Connection(
       `UPDATE municipal_officials SET name = ?, position = ?, type = ?, image = ? WHERE id = ?`,
-      [name, position, type, finalImage, id] // Use finalImage
+      [name, position, type, finalImage, id]
     );
 
+    // 🔥 Delete old image file if changed
+    if (image && oldData.image && oldData.image !== image) {
+      const imagePath = path.join(__dirname, "../uploads", oldData.image);
+      try {
+        await fs.unlink(imagePath);
+        console.log(`Deleted old image file: ${imagePath}`);
+      } catch (err) {
+        console.error(`Failed to delete old image file ${imagePath}:`, err);
+      }
+    }
+
+    // 🔐 Audit log
     if (result.affectedRows === 1 && user) {
       const changes = [];
       if (oldData.name !== name)
@@ -124,10 +134,11 @@ exports.updateMunicipalOfficial = async (
         );
       }
     }
+
     return result;
   } catch (error) {
     console.error("Error in updateMunicipalOfficial service:", error);
-    throw error; // Re-throw to be caught by the route handler
+    throw error;
   }
 };
 
@@ -209,28 +220,40 @@ exports.updateBarangayOfficial = async (
   barangay_name,
   president_name,
   position,
-  image, // This 'image' parameter will be either the new filename or the existing filename (from route)
+  image, // new image filename
   user
 ) => {
-  // FIX: Get all rows and then access the first element
+  // Step 1: Get current data
   const oldDataRows = await Connection(
-    `SELECT barangay_name, president_name, image FROM barangay_officials WHERE id = ?`,
+    `SELECT barangay_name, president_name, position, image FROM barangay_officials WHERE id = ?`,
     [id]
   );
-  const oldData = oldDataRows[0]; // Get the first (and only) row
+  const oldData = oldDataRows[0];
 
   if (!oldData) {
     throw new Error("Barangay official not found for update.");
   }
 
-  const finalImage = image; // Image determined by route
+  const finalImage = image || oldData.image;
 
+  // Step 2: Perform the update
   const result = await Connection(
     `UPDATE barangay_officials SET barangay_name = ?, president_name = ?, position = ?, image = ? WHERE id = ?`,
     [barangay_name, president_name, position, finalImage, id]
   );
 
-  // Optional audit logging
+  // Step 3: Delete old image if it's being replaced
+  if (image && oldData.image && image !== oldData.image) {
+    const imagePath = path.join(__dirname, "../uploads", oldData.image);
+    try {
+      await fs.unlink(imagePath);
+      console.log(`Deleted old barangay official image: ${imagePath}`);
+    } catch (err) {
+      console.error(`Failed to delete old image file ${imagePath}:`, err);
+    }
+  }
+
+  // Step 4: Audit log if changes were made
   if (result.affectedRows === 1 && user) {
     const changes = [];
     if (oldData.barangay_name !== barangay_name)
@@ -240,6 +263,10 @@ exports.updateBarangayOfficial = async (
     if (oldData.president_name !== president_name)
       changes.push(
         `president_name: '${oldData.president_name}' → '${president_name}'`
+      );
+    if (oldData.position !== position)
+      changes.push(
+        `position: '${oldData.position || "none"}' → '${position || "none"}'`
       );
     if (oldData.image !== finalImage)
       changes.push(

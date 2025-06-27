@@ -51,8 +51,8 @@ router.put(
   isAuthenticated,
   upload.single("image"),
   async (req, res) => {
-    const { name, position, type } = req.body;
-    const image = req.file ? req.file.filename : null;
+    const { name, position, type, existing_image } = req.body;
+    const image = req.file ? req.file.filename : existing_image; // ✅ fallback to existing_image
     const user = req.session.user;
 
     try {

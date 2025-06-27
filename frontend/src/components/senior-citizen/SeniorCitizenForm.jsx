@@ -8,6 +8,8 @@ const SeniorCitizenForm = ({
   onSubmitError = () => {}, // Add onSubmitError prop
   onCancel = () => {},
 }) => {
+  const [barangayOptions, setBarangayOptions] = useState([]);
+
   const isEditing = !!citizen;
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -64,6 +66,20 @@ const SeniorCitizenForm = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState(""); // State for displaying form-specific errors
+
+  const fetchBarangays = async () => {
+    try {
+      const res = await axios.get(`${backendUrl}/api/barangays/All`);
+      const options = res.data.map((b) => b.barangay_name); // or b.name depending on your DB
+      setBarangayOptions(options);
+    } catch (err) {
+      console.error("Failed to fetch barangays:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchBarangays();
+  }, []);
 
   // Effect to reset form data when `citizen` prop changes (e.g., when opening for add vs. edit)
   useEffect(() => {
@@ -411,40 +427,18 @@ const SeniorCitizenForm = ({
               </label>
               <select
                 id="barangay"
+                name="barangay"
                 value={formData.barangay}
                 onChange={handleChange}
                 className={inputStyle}
                 required
               >
                 <option value="">Select barangay</option>
-                {/* Add more barangays for San Jose, Occidental Mindoro as needed */}
-                <option value="Adela">Adela</option>
-                <option value="Bagong Sikat">Bagong Sikat</option>
-                <option value="Bangkal">Bangkal</option>
-                <option value="Central">Central</option>
-                <option value="F. Balagtas">F. Balagtas</option>
-                <option value="Ilik">Ilik</option>
-                <option value="Labangan">Labangan</option>
-                <option value="Magsaysay">Magsaysay</option>
-                <option value="Maibara">Maibara</option>
-                <option value="Malasin">Malasin</option>
-                <option value="Mangarin">Mangarin</option>
-                <option value="Mapaya">Mapaya</option>
-                <option value="Murtha">Murtha</option>
-                <option value="Pag-asa">Pag-asa</option>
-                <option value="Pandurucan">Pandurucan</option>
-                <option value="Pinagturilan">Pinagturilan</option>
-                <option value="Poblacion 1">Poblacion 1</option>
-                <option value="Poblacion 2">Poblacion 2</option>
-                <option value="Poblacion 3">Poblacion 3</option>
-                <option value="Poblacion 4">Poblacion 4</option>
-                <option value="Rizal">Rizal</option>
-                <option value="San Isidro">San Isidro</option>
-                <option value="San Roque">San Roque</option>
-                <option value="Santo Niño">Santo Niño</option>
-                <option value="Tadyawan">Tadyawan</option>
-                <option value="Tamao">Tamao</option>
-                <option value="Tuban">Tuban</option>
+                {barangayOptions.map((barangay, index) => (
+                  <option key={index} value={barangay}>
+                    {barangay}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
