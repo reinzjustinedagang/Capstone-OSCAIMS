@@ -105,7 +105,37 @@ const MunicipalOfficials = ({ title }) => {
   };
 
   const handleFileChange = (e) => {
-    setImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png"];
+    const allowedExtensions = ["jpg", "jpeg", "png"];
+    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
+
+    const fileType = file.type.toLowerCase();
+    const fileExtension = file.name.toLowerCase().split(".").pop();
+
+    // Check MIME type
+    if (!allowedMimeTypes.includes(fileType)) {
+      setError("Only JPEG, JPG, and PNG files are allowed.");
+      return;
+    }
+
+    // Check file extension
+    if (!allowedExtensions.includes(fileExtension)) {
+      setError("Only .jpeg, .jpg, and .png file extensions are allowed.");
+      return;
+    }
+
+    // Check file size
+    if (file.size > maxSizeInBytes) {
+      setError("File size exceeds 10MB. Please select a smaller image.");
+      return;
+    }
+
+    // Clear any previous errors and update state
+    setError(null);
+    setImageFile(file);
   };
 
   // Function to close the form modal and reset all form-related states
@@ -283,7 +313,7 @@ const MunicipalOfficials = ({ title }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-4">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-        <h2 className="text-2xl font-bold">{title}</h2>
+        <h3 className="text-2xl font-bold">{title}</h3>
         <Button
           onClick={openAddModal} // Calls the function to open the add form modal
           variant="primary"
@@ -361,7 +391,7 @@ const MunicipalOfficials = ({ title }) => {
 
               {/* Grid for other Officers */}
               {others.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6 w-full max-w-2xl m-6">
+                <div className="grid grid-cols-1 justify-items-center sm:grid-cols-2 md:grid-cols-2 gap-6 w-full max-w-2xl m-6">
                   {others.map((o) => (
                     <OfficialCard
                       key={o.id}

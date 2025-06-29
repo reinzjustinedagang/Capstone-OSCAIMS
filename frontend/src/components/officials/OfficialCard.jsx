@@ -9,9 +9,7 @@ const OfficialCard = ({
   backendUrl,
 }) => {
   // Construct the image URL. If no image, imageUrl will be null.
-  const imageUrl = official.image
-    ? `${backendUrl}/uploads/${official.image}`
-    : null;
+  const imageUrl = official.image ? `${official.image}` : null;
 
   return (
     <div

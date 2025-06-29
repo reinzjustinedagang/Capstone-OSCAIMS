@@ -1,7 +1,33 @@
 const Connection = require("../db/Connection");
-const { logAudit } = require("./auditService"); // Uncomment if needed and adjust path
+const { logAudit } = require("./auditService");
 const fs = require("fs/promises");
 const path = require("path");
+const cloudinary = require("../utils/cloudinary");
+
+const extractCloudinaryPublicId = (url) => {
+  if (!url.includes("res.cloudinary.com")) return null;
+  const parts = url.split("/");
+  const filename = parts.pop().split(".")[0];
+  const folder = parts.pop();
+  return `${folder}/${filename}`;
+};
+
+const safeCloudinaryDestroy = async (publicId, retries = 3, delayMs = 1000) => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await cloudinary.uploader.destroy(publicId);
+      console.log(`Deleted Cloudinary image: ${publicId}`);
+      return;
+    } catch (error) {
+      console.error(
+        `Attempt ${attempt} to delete Cloudinary image failed:`,
+        error
+      );
+      if (attempt === retries) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+};
 
 // ─── MUNICIPAL OFFICIALS ──────────────────────────────────────────────────────
 
@@ -15,17 +41,15 @@ const checkIfTypeExists = async (type, excludeId = null) => {
   let query = `SELECT id FROM municipal_officials WHERE type = ?`;
   const params = [type];
   if (excludeId) {
-    query += ` AND id != ?`; // Exclude the current official if updating
+    query += ` AND id != ?`;
     params.push(excludeId);
   }
-  // FIX: Removed array destructuring here. 'rows' will now correctly be the array of results.
   const rows = await Connection(query, params);
   return rows.length > 0;
 };
 
 exports.addMunicipalOfficial = async (name, position, type, image, user) => {
   try {
-    // Check for existing head/vice before adding
     if (type === "head" || type === "vice") {
       const typeAlreadyExists = await checkIfTypeExists(type);
       if (typeAlreadyExists) {
@@ -51,7 +75,7 @@ exports.addMunicipalOfficial = async (name, position, type, image, user) => {
     return result;
   } catch (error) {
     console.error("Error in addMunicipalOfficial service:", error);
-    throw error; // Re-throw to be caught by the route handler
+    throw error;
   }
 };
 
@@ -60,7 +84,7 @@ exports.updateMunicipalOfficial = async (
   name,
   position,
   type,
-  image, // new image filename
+  image,
   user
 ) => {
   try {
@@ -70,11 +94,8 @@ exports.updateMunicipalOfficial = async (
     );
     const oldData = oldDataRows[0];
 
-    if (!oldData) {
-      throw new Error("Municipal official not found for update.");
-    }
+    if (!oldData) throw new Error("Municipal official not found for update.");
 
-    // Check for existing head/vice logic (unchanged)
     if ((type === "head" || type === "vice") && oldData.type !== type) {
       const typeAlreadyExists = await checkIfTypeExists(type, id);
       if (typeAlreadyExists) {
@@ -82,34 +103,34 @@ exports.updateMunicipalOfficial = async (
           `A municipal official with type '${type}' already exists. Cannot change.`
         );
       }
-    } else if ((type === "head" || type === "vice") && oldData.type === type) {
-      const typeAlreadyExists = await checkIfTypeExists(type, id);
-      if (typeAlreadyExists) {
-        throw new Error(
-          `Another municipal official with type '${type}' already exists.`
-        );
-      }
     }
 
-    const finalImage = image || oldData.image; // fallback to old image if none uploaded
-
+    const finalImage = image || oldData.image;
     const result = await Connection(
       `UPDATE municipal_officials SET name = ?, position = ?, type = ?, image = ? WHERE id = ?`,
       [name, position, type, finalImage, id]
     );
 
-    // 🔥 Delete old image file if changed
     if (image && oldData.image && oldData.image !== image) {
-      const imagePath = path.join(__dirname, "../uploads", oldData.image);
-      try {
-        await fs.unlink(imagePath);
-        console.log(`Deleted old image file: ${imagePath}`);
-      } catch (err) {
-        console.error(`Failed to delete old image file ${imagePath}:`, err);
+      const publicId = extractCloudinaryPublicId(oldData.image);
+      if (publicId) {
+        try {
+          await cloudinary.uploader.destroy(publicId);
+          console.log(`Deleted Cloudinary image: ${publicId}`);
+        } catch (err) {
+          console.error("Failed to delete Cloudinary image:", err);
+        }
+      } else {
+        const imagePath = path.join(__dirname, "../uploads", oldData.image);
+        try {
+          await fs.unlink(imagePath);
+          console.log(`Deleted local image: ${imagePath}`);
+        } catch (err) {
+          console.error(`Failed to delete local image ${imagePath}:`, err);
+        }
       }
     }
 
-    // 🔐 Audit log
     if (result.affectedRows === 1 && user) {
       const changes = [];
       if (oldData.name !== name)
@@ -119,9 +140,7 @@ exports.updateMunicipalOfficial = async (
       if (oldData.type !== type)
         changes.push(`type: '${oldData.type}' → '${type}'`);
       if (oldData.image !== finalImage)
-        changes.push(
-          `image: '${oldData.image || "none"}' → '${finalImage || "none"}'`
-        );
+        changes.push(`image: '${oldData.image}' → '${finalImage}'`);
 
       if (changes.length > 0) {
         await logAudit(
@@ -143,16 +162,12 @@ exports.updateMunicipalOfficial = async (
 };
 
 exports.deleteMunicipalOfficial = async (id, user) => {
-  // FIX: Get all rows and then access the first element
   const officialRows = await Connection(
     `SELECT name, image FROM municipal_officials WHERE id = ?`,
     [id]
   );
-  const official = officialRows[0]; // Get the first (and only) row
-
-  if (!official) {
-    throw new Error("Municipal official not found for deletion.");
-  }
+  const official = officialRows[0];
+  if (!official) throw new Error("Municipal official not found for deletion.");
 
   const result = await Connection(
     `DELETE FROM municipal_officials WHERE id = ?`,
@@ -164,18 +179,26 @@ exports.deleteMunicipalOfficial = async (id, user) => {
       user.email,
       user.role,
       "DELETE",
-      `Deleted municipal official '${official?.name}'`
+      `Deleted municipal official '${official.name}'`
     );
-    // TODO: Add logic here to delete the physical image file from your storage (e.g., 'uploads' folder)
+
     if (official.image) {
-      const fs = require("fs/promises");
-      const path = require("path");
-      const imagePath = path.join(__dirname, "../uploads", official.image); // Adjust path
-      try {
-        await fs.unlink(imagePath);
-        console.log(`Deleted image file: ${imagePath}`);
-      } catch (err) {
-        console.error(`Failed to delete image file ${imagePath}:`, err);
+      const publicId = extractCloudinaryPublicId(official.image);
+      if (publicId) {
+        try {
+          await cloudinary.uploader.destroy(publicId);
+          console.log(`Deleted Cloudinary image: ${publicId}`);
+        } catch (err) {
+          console.error("Failed to delete Cloudinary image:", err);
+        }
+      } else {
+        const imagePath = path.join(__dirname, "../uploads", official.image);
+        try {
+          await fs.unlink(imagePath);
+          console.log(`Deleted local image file: ${imagePath}`);
+        } catch (err) {
+          console.error(`Failed to delete local image file ${imagePath}:`, err);
+        }
       }
     }
   }
@@ -192,27 +215,37 @@ exports.addBarangayOfficial = async (
   image,
   user
 ) => {
-  const result = await Connection(
-    `INSERT INTO barangay_officials (barangay_name, president_name, position, image) VALUES (?, ?, ?, ?)`,
-    [barangay_name, president_name, position, image]
-  );
-
-  if (result.affectedRows === 1 && user) {
-    await logAudit(
-      user.email,
-      user.role,
-      "CREATE",
-      `Added barangay official '${barangay_name}'`
+  try {
+    const result = await Connection(
+      `INSERT INTO barangay_officials (barangay_name, president_name, position, image) VALUES (?, ?, ?, ?)`,
+      [barangay_name, president_name, position, image]
     );
-  }
 
-  return result;
+    if (result.affectedRows === 1 && user) {
+      await logAudit(
+        user.email,
+        user.role,
+        "CREATE",
+        `Added barangay official '${barangay_name}'`
+      );
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error in addBarangayOfficial:", error);
+    throw error;
+  }
 };
 
 exports.getBarangayOfficials = async () => {
-  return await Connection(
-    `SELECT * FROM barangay_officials ORDER BY barangay_name ASC`
-  );
+  try {
+    return await Connection(
+      `SELECT * FROM barangay_officials ORDER BY barangay_name ASC`
+    );
+  } catch (error) {
+    console.error("Error in getBarangayOfficials:", error);
+    throw error;
+  }
 };
 
 exports.updateBarangayOfficial = async (
@@ -220,107 +253,128 @@ exports.updateBarangayOfficial = async (
   barangay_name,
   president_name,
   position,
-  image, // new image filename
+  image,
   user
 ) => {
-  // Step 1: Get current data
-  const oldDataRows = await Connection(
-    `SELECT barangay_name, president_name, position, image FROM barangay_officials WHERE id = ?`,
-    [id]
-  );
-  const oldData = oldDataRows[0];
-
-  if (!oldData) {
-    throw new Error("Barangay official not found for update.");
-  }
-
-  const finalImage = image || oldData.image;
-
-  // Step 2: Perform the update
-  const result = await Connection(
-    `UPDATE barangay_officials SET barangay_name = ?, president_name = ?, position = ?, image = ? WHERE id = ?`,
-    [barangay_name, president_name, position, finalImage, id]
-  );
-
-  // Step 3: Delete old image if it's being replaced
-  if (image && oldData.image && image !== oldData.image) {
-    const imagePath = path.join(__dirname, "../uploads", oldData.image);
-    try {
-      await fs.unlink(imagePath);
-      console.log(`Deleted old barangay official image: ${imagePath}`);
-    } catch (err) {
-      console.error(`Failed to delete old image file ${imagePath}:`, err);
-    }
-  }
-
-  // Step 4: Audit log if changes were made
-  if (result.affectedRows === 1 && user) {
-    const changes = [];
-    if (oldData.barangay_name !== barangay_name)
-      changes.push(
-        `barangay_name: '${oldData.barangay_name}' → '${barangay_name}'`
-      );
-    if (oldData.president_name !== president_name)
-      changes.push(
-        `president_name: '${oldData.president_name}' → '${president_name}'`
-      );
-    if (oldData.position !== position)
-      changes.push(
-        `position: '${oldData.position || "none"}' → '${position || "none"}'`
-      );
-    if (oldData.image !== finalImage)
-      changes.push(
-        `image: '${oldData.image || "none"}' → '${finalImage || "none"}'`
-      );
-
-    await logAudit(
-      user.email,
-      user.role,
-      "UPDATE",
-      `Updated barangay official ${president_name}: ${changes.join(", ")}`
+  try {
+    const oldDataRows = await Connection(
+      `SELECT barangay_name, president_name, position, image FROM barangay_officials WHERE id = ?`,
+      [id]
     );
-  }
+    const oldData = oldDataRows[0];
 
-  return result;
+    if (!oldData) throw new Error("Barangay official not found for update.");
+
+    const finalImage = image || oldData.image;
+    const result = await Connection(
+      `UPDATE barangay_officials SET barangay_name = ?, president_name = ?, position = ?, image = ? WHERE id = ?`,
+      [barangay_name, president_name, position, finalImage, id]
+    );
+
+    if (image && oldData.image && image !== oldData.image) {
+      const publicId = extractCloudinaryPublicId(oldData.image);
+      if (publicId) {
+        try {
+          await safeCloudinaryDestroy(publicId);
+        } catch (err) {
+          console.error("Failed to delete Cloudinary image:", err);
+        }
+      } else {
+        const imagePath = path.join(__dirname, "../uploads", oldData.image);
+        try {
+          await fs.unlink(imagePath);
+          console.log(`Deleted local barangay image: ${imagePath}`);
+        } catch (err) {
+          console.error(
+            `Failed to delete local barangay image ${imagePath}:`,
+            err
+          );
+        }
+      }
+    }
+
+    if (result.affectedRows === 1 && user) {
+      const changes = [];
+      if (oldData.barangay_name !== barangay_name)
+        changes.push(
+          `barangay_name: '${oldData.barangay_name}' → '${barangay_name}'`
+        );
+      if (oldData.president_name !== president_name)
+        changes.push(
+          `president_name: '${oldData.president_name}' → '${president_name}'`
+        );
+      if (oldData.position !== position)
+        changes.push(
+          `position: '${oldData.position || "none"}' → '${position || "none"}'`
+        );
+      if (oldData.image !== finalImage)
+        changes.push(
+          `image: '${oldData.image || "none"}' → '${finalImage || "none"}'`
+        );
+
+      await logAudit(
+        user.email,
+        user.role,
+        "UPDATE",
+        `Updated barangay official ${president_name}: ${changes.join(", ")}`
+      );
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error in updateBarangayOfficial:", error);
+    throw error;
+  }
 };
 
 exports.deleteBarangayOfficial = async (id, user) => {
-  // FIX: Get all rows and then access the first element
-  const barangayRows = await Connection(
-    `SELECT barangay_name, image FROM barangay_officials WHERE id = ?`,
-    [id]
-  );
-  const barangay = barangayRows[0]; // Get the first (and only) row
-
-  if (!barangay) {
-    throw new Error("Barangay official not found for deletion.");
-  }
-
-  const result = await Connection(
-    `DELETE FROM barangay_officials WHERE id = ?`,
-    [id]
-  );
-
-  if (result.affectedRows === 1 && user) {
-    await logAudit(
-      user.email,
-      user.role,
-      "DELETE",
-      `Deleted barangay official '${barangay?.barangay_name}'`
+  try {
+    const barangayRows = await Connection(
+      `SELECT barangay_name, image FROM barangay_officials WHERE id = ?`,
+      [id]
     );
-    // TODO: Add logic here to delete the physical image file from your storage (e.g., 'uploads' folder)
-    if (barangay.image) {
-      const fs = require("fs/promises");
-      const path = require("path");
-      const imagePath = path.join(__dirname, "../uploads", barangay.image); // Adjust path
-      try {
-        await fs.unlink(imagePath);
-        console.log(`Deleted image file: ${imagePath}`);
-      } catch (err) {
-        console.error(`Failed to delete image file ${imagePath}:`, err);
+    const barangay = barangayRows[0];
+    if (!barangay) throw new Error("Barangay official not found for deletion.");
+
+    const result = await Connection(
+      `DELETE FROM barangay_officials WHERE id = ?`,
+      [id]
+    );
+
+    if (result.affectedRows === 1 && user) {
+      await logAudit(
+        user.email,
+        user.role,
+        "DELETE",
+        `Deleted barangay official '${barangay.barangay_name}'`
+      );
+
+      if (barangay.image) {
+        const publicId = extractCloudinaryPublicId(barangay.image);
+        if (publicId) {
+          try {
+            await safeCloudinaryDestroy(publicId);
+          } catch (err) {
+            console.error("Failed to delete Cloudinary image:", err);
+          }
+        } else {
+          const imagePath = path.join(__dirname, "../uploads", barangay.image);
+          try {
+            await fs.unlink(imagePath);
+            console.log(`Deleted local barangay image file: ${imagePath}`);
+          } catch (err) {
+            console.error(
+              `Failed to delete local barangay image ${imagePath}:`,
+              err
+            );
+          }
+        }
       }
     }
-  }
 
-  return result;
+    return result;
+  } catch (error) {
+    console.error("Error in deleteBarangayOfficial:", error);
+    throw error;
+  }
 };

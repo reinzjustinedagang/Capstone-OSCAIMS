@@ -184,7 +184,7 @@ export default function AuditLogs() {
 
   return (
     <div className=" bg-gray-100 min-h-screen rounded-lg font-inter">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Audit Logs</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Audit Logs</h1>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
@@ -326,9 +326,10 @@ export default function AuditLogs() {
                               ? "bg-green-100 text-green-800"
                               : log.action === "UPDATE"
                               ? "bg-yellow-100 text-yellow-800"
-                              : log.action === "DELETE" ||
-                                log.action === "LOGOUT"
+                              : log.action === "DELETE"
                               ? "bg-red-100 text-red-800"
+                              : log.action === "LOGOUT"
+                              ? "bg-gray-300 text-black"
                               : "bg-gray-100 text-gray-800"
                           }`}
                         >

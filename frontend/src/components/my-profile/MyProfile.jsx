@@ -304,8 +304,8 @@ export default function MyProfile() {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen rounded-lg font-inter p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">My Profile</h1>
+    <div className="bg-gray-100 min-h-screen rounded-lg font-inter">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b pb-6 mb-6">
           {/* Profile Picture Section */}
@@ -438,6 +438,21 @@ export default function MyProfile() {
           Change Password
         </h3>
         <form onSubmit={handleChangePassword} className="space-y-6">
+          <input
+            type="text"
+            name="username"
+            autoComplete="username"
+            value={userData?.username || ""}
+            style={{
+              position: "absolute",
+              left: "-9999px",
+              width: "1px",
+              height: "1px",
+              overflow: "hidden",
+            }}
+            readOnly
+            tabIndex={-1}
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label
@@ -453,6 +468,7 @@ export default function MyProfile() {
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 required
+                autoComplete="current-password" // <-- Add this
               />
             </div>
             <div>
@@ -469,6 +485,7 @@ export default function MyProfile() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 required
+                autoComplete="new-password" // <-- Add this
               />
             </div>
             <div>
@@ -485,6 +502,7 @@ export default function MyProfile() {
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 required
+                autoComplete="new-password" // ✅ Add this line
               />
             </div>
           </div>

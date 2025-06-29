@@ -280,11 +280,9 @@ const UserManagement = () => {
   }, [users, searchTerm, filterRole, filterStatus, sortBy, sortOrder]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 font-sans">
+    <div className="min-h-screen bg-gray-100">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-extrabold text-gray-800">
-          User Management
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
         <Button
           onClick={handleAddUser}
           variant="primary"

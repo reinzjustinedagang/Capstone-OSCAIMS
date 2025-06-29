@@ -105,7 +105,7 @@ const OfficialForm = ({
             <p className="text-sm text-gray-500 mt-1">
               Current image:{" "}
               <a
-                href={`${backendUrl}/uploads/${existingImage}`}
+                href={`${existingImage}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:underline"

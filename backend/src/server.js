@@ -56,11 +56,13 @@ app.use(
 );
 
 // Import route handlers
-const uploadsDir = path.join(__dirname, "../uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-  console.log("✅ Created uploads directory");
-}
+// const uploadsDir = path.join(__dirname, "../uploads");
+// if (!fs.existsSync(uploadsDir)) {
+//   fs.mkdirSync(uploadsDir);
+//   console.log("✅ Created uploads directory");
+// }
+// app.use("/uploads", express.static(uploadsDir)); // serve uploaded images
+
 const authRoutes = require("../route/authRoutes");
 const seniorCitizenRoutes = require("../route/seniorCitizenRoutes");
 const auditRoutes = require("../route/auditRoutes");
@@ -69,7 +71,6 @@ const templateRoutes = require("../route/templateRoutes");
 const officialRoutes = require("../route/officialRoutes");
 const barangayRoutes = require("../route/barangayRoutes");
 
-app.use("/uploads", express.static(uploadsDir)); // serve uploaded images
 app.use("/api/officials", officialRoutes);
 app.use("/api/audit-logs", auditRoutes);
 app.use("/api/user", authRoutes);
@@ -92,40 +93,6 @@ app.get("/api/test-session", (req, res) => {
 
 // Trust proxy
 app.set("trust proxy", 1);
-
-// 🔁 Auto deactivate users with expired sessions
-const deactivateExpiredUsers = async () => {
-  try {
-    const expiredSessions = await sessionStore.all();
-    const now = Date.now();
-    const expiredUserIds = [];
-
-    for (const sid in expiredSessions) {
-      const sess = expiredSessions[sid];
-      if (sess.cookie?.expires && new Date(sess.cookie.expires) < now) {
-        if (sess.user?.id) {
-          expiredUserIds.push(sess.user.id);
-        }
-      }
-    }
-
-    if (expiredUserIds.length > 0) {
-      const placeholders = expiredUserIds.map(() => "?").join(",");
-      await Connection(
-        `UPDATE users SET status = 'inactive' WHERE id IN (${placeholders})`,
-        expiredUserIds
-      );
-      console.log(
-        `🔒 Marked ${expiredUserIds.length} user(s) as inactive due to expired sessions`
-      );
-    }
-  } catch (err) {
-    console.error("❌ Error deactivating expired sessions:", err);
-  }
-};
-
-// Run check every 5 minutes
-setInterval(deactivateExpiredUsers, 300000); // 5 minutes
 
 // Start the server
 app.listen(PORT, () => {

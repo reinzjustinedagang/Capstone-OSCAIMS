@@ -74,7 +74,37 @@ const BarangayOfficials = () => {
   };
 
   const handleFileChange = (e) => {
-    setImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png"];
+    const allowedExtensions = ["jpg", "jpeg", "png"];
+    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
+
+    const fileType = file.type.toLowerCase();
+    const fileExtension = file.name.toLowerCase().split(".").pop();
+
+    // Check MIME type
+    if (!allowedMimeTypes.includes(fileType)) {
+      setError("Only JPEG, JPG, and PNG files are allowed.");
+      return;
+    }
+
+    // Check file extension
+    if (!allowedExtensions.includes(fileExtension)) {
+      setError("Only .jpeg, .jpg, and .png file extensions are allowed.");
+      return;
+    }
+
+    // Check file size
+    if (file.size > maxSizeInBytes) {
+      setError("File size exceeds 10MB. Please select a smaller image.");
+      return;
+    }
+
+    // Clear any previous errors and update state
+    setError(null);
+    setImageFile(file);
   };
 
   const closeFormModal = () => {
@@ -216,7 +246,7 @@ const BarangayOfficials = () => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-4 mt-5">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-        <h2 className="text-2xl font-bold">Barangay Association Presidents</h2>
+        <h3 className="text-2xl font-bold">Barangay Association Presidents</h3>
         <Button
           onClick={() => {
             setFormData({
@@ -282,7 +312,7 @@ const BarangayOfficials = () => {
                   <div className="bg-blue-200 p-2 rounded-full text-blue-700 mb-2">
                     {b.image ? (
                       <img
-                        src={`${backendUrl}/uploads/${b.image}`} // Ensure this path is correct for serving static images
+                        src={b.image} // Ensure this path is correct for serving static images
                         alt={b.president_name}
                         className="w-30 h-30 object-cover rounded-full mx-auto border-2 border-blue-400"
                         onError={(e) => {
@@ -427,7 +457,7 @@ const BarangayOfficials = () => {
                   <p className="text-sm text-gray-500 mt-1">
                     Current image:{" "}
                     <a
-                      href={`${backendUrl}/uploads/${formData.existingImage}`}
+                      href={`${formData.existingImage}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-500 hover:underline"
