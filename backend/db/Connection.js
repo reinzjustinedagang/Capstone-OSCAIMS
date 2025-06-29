@@ -39,8 +39,10 @@ db.query(
     cp_number VARCHAR(15) UNIQUE NOT NULL,
     role VARCHAR(50) NOT NULL,
     status ENUM('active', 'inactive') DEFAULT 'inactive',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_logout TIMESTAMP NULL DEFAULT NULL
+    image TEXT DEFAULT NULL,
+    last_login TIMESTAMP NULL DEFAULT NULL,
+    last_logout TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
   `,
   (err) => {

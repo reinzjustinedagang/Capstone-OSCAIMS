@@ -29,6 +29,7 @@ import { BarangayManagementPage } from "./pages/admin/BarangayManagementPage.jsx
 
 // Staff Pages
 import { UserDashboard } from "./pages/user/UserDashboard";
+import { NotificationPage } from "./pages/admin/NotificationPage.jsx";
 
 function App() {
   return (
@@ -178,6 +179,14 @@ function App() {
         element={
           <ProtectedRoute role="Admin">
             <BarangayManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin-notifications"
+        element={
+          <ProtectedRoute role="Admin">
+            <NotificationPage />
           </ProtectedRoute>
         }
       />

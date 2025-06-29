@@ -23,39 +23,6 @@ import {
 const Sidebar = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      const backendUrl = import.meta.env.VITE_API_BASE_URL;
-      await axios.post(
-        `${backendUrl}/api/user/logout`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      // Always clear localStorage and navigate away
-      // sessionStorage.removeItem("id");
-      // sessionStorage.removeItem("user");
-      localStorage.clear();
-      navigate("/login");
-      // Close sidebar and confirmation dialog
-      setIsSidebarOpen(false);
-      setShowLogoutConfirm(false);
-    }
-  };
-
-  const confirmLogout = () => {
-    setShowLogoutConfirm(true);
-  };
-
-  const cancelLogout = () => {
-    setShowLogoutConfirm(false);
-  };
 
   return (
     <>
@@ -220,20 +187,6 @@ const Sidebar = () => {
             Audit Logs
           </NavLink>
 
-          {/* My Profile Link */}
-          <NavLink
-            to="/admin-my-profile"
-            className={({ isActive }) =>
-              `flex items-center px-6 py-3 hover:bg-blue-700 ${
-                isActive ? "bg-blue-700" : ""
-              }`
-            }
-            onClick={() => setIsSidebarOpen(false)}
-          >
-            <UserIcon className="h-5 w-5 mr-3" />
-            My Profile
-          </NavLink>
-
           {/* User Management Link */}
           <NavLink
             to="/admin-user-management"
@@ -261,45 +214,8 @@ const Sidebar = () => {
             <SettingsIcon className="h-5 w-5 mr-3" />
             Settings
           </NavLink>
-
-          {/* Logout Button */}
-          <button
-            type="button"
-            onClick={confirmLogout}
-            className="flex items-center px-6 py-3 w-full text-left hover:bg-blue-700 mt-10"
-          >
-            <LogOutIcon className="h-5 w-5 mr-3" />
-            Logout
-          </button>
         </nav>
       </aside>
-
-      {/* Logout Confirmation Modal using your Modal component */}
-      <Modal
-        isOpen={showLogoutConfirm}
-        onClose={cancelLogout}
-        title="Confirm Logout"
-      >
-        <div className="py-4">
-          <p className="text-gray-700 mb-6">
-            Are you sure you want to log out?
-          </p>
-          <div className="flex justify-center space-x-4">
-            <button
-              onClick={handleLogout}
-              className="px-5 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              Yes, Logout
-            </button>
-            <button
-              onClick={cancelLogout}
-              className="px-5 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </Modal>
     </>
   );
 };

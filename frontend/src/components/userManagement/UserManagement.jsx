@@ -398,7 +398,7 @@ const UserManagement = () => {
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
-                    <div className="flex items-center">Last Logout</div>
+                    <div className="flex items-center">Last Login</div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -452,8 +452,8 @@ const UserManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
-                          {user.last_logout
-                            ? new Date(user.last_logout).toLocaleString()
+                          {user.last_login
+                            ? new Date(user.last_login).toLocaleString()
                             : "N/A"}
                         </span>
                       </td>

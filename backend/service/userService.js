@@ -21,7 +21,7 @@ exports.getUser = async (id) => {
 exports.getAllUsers = async () => {
   try {
     const users = await Connection(`
-      SELECT id, username, email, cp_number, role, status, last_logout
+      SELECT id, username, email, cp_number, role, status, last_login
       FROM users
       ORDER BY username ASC
     `);
@@ -72,9 +72,10 @@ exports.login = async (email, password) => {
     if (!passwordMatch) return null;
 
     // Set status to 'active' on login
-    await Connection("UPDATE users SET status = 'active' WHERE id = ?", [
-      user.id,
-    ]);
+    await Connection(
+      "UPDATE users SET status = 'active', last_login = NOW() WHERE id = ?",
+      [user.id]
+    );
 
     await logAudit(
       user.email,

@@ -16,6 +16,10 @@ import {
   UploadCloud,
   KeyRound,
 } from "lucide-react";
+import ProfilePicture from "./ProfilePicture";
+import UserInfoCard from "./UserInfoCard";
+import ProfileForm from "./ProfileForm";
+import ChangePasswordForm from "./ChangePasswordForm";
 
 export default function MyProfile() {
   // State for user data
@@ -309,220 +313,39 @@ export default function MyProfile() {
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b pb-6 mb-6">
           {/* Profile Picture Section */}
-          <div className="relative group">
-            <img
-              src={userData.profilePicture || "/default-profile.png"}
-              alt="Profile"
-              className="w-28 h-28 rounded-full object-cover border-4 border-blue-200 group-hover:border-blue-400 transition-colors duration-300"
-            />
-            <label
-              htmlFor="profile-picture-upload"
-              className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-1 group-hover:translate-y-0 shadow-md hover:bg-blue-700"
-              title="Change profile picture"
-            >
-              <UploadCloud className="h-5 w-5" />
-              <input
-                id="profile-picture-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleProfilePictureUpload}
-              />
-            </label>
-          </div>
+          <ProfilePicture
+            profilePicture={userData.profilePicture}
+            onUpload={handleProfilePictureUpload}
+          />
 
           {/* User Basic Info */}
-          <div className="text-center sm:text-left">
-            <h2 className="text-2xl font-semibold text-gray-900">
-              {userData.username}
-            </h2>
-            <p className="text-md text-gray-600 flex items-center justify-center sm:justify-start mt-1">
-              <UserCheck className="h-4 w-4 mr-2 text-blue-500" />
-              <span className="capitalize">{userData.role || "User"}</span>
-            </p>
-            <p className="text-md text-gray-600 flex items-center justify-center sm:justify-start mt-1">
-              <MailIcon className="h-4 w-4 mr-2 text-gray-500" />
-              {userData.email}
-            </p>
-            <p className="text-md text-gray-600 flex items-center justify-center sm:justify-start mt-1">
-              <PhoneCallIcon className="h-4 w-4 mr-2 text-gray-500" />
-              {userData.cp_number}
-            </p>
-            <p className="text-sm text-gray-500 flex items-center justify-center sm:justify-start mt-2">
-              <Clock className="h-4 w-4 mr-2 text-gray-400" />
-              Last Logout:{" "}
-              {userData.last_logout
-                ? new Date(userData.last_logout).toLocaleString()
-                : "N/A"}
-            </p>
-          </div>
+          <UserInfoCard userData={userData} />
         </div>
         {/* Profile Information Form */}
-        <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-          <UserCircle className="h-5 w-5 mr-2 text-blue-600" />
-          Update Profile Information
-        </h3>
-        <form onSubmit={handleProfileSave} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700"
-              >
-                User Name
-              </label>
-              <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUserName(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="cp_number"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Contact Number
-              </label>
-              <input
-                type="tel"
-                id="cp_number"
-                value={cp_number}
-                onChange={(e) => setCpNumber(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                required
-              />
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              variant="primary"
-              icon={
-                profileLoading ? (
-                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                ) : (
-                  <SaveIcon className="h-4 w-4 mr-2" />
-                )
-              }
-              disabled={profileLoading}
-            >
-              {profileLoading ? "Saving..." : "Save Profile"}
-            </Button>
-          </div>
-        </form>
+        <ProfileForm
+          username={username}
+          email={email}
+          cp_number={cp_number}
+          setUserName={setUserName}
+          setEmail={setEmail}
+          setCpNumber={setCpNumber}
+          onSubmit={handleProfileSave}
+          loading={profileLoading}
+        />
       </div>
       {/* Change Password Section */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-          <KeyRound className="h-5 w-5 mr-2 text-indigo-600" />
-          Change Password
-        </h3>
-        <form onSubmit={handleChangePassword} className="space-y-6">
-          <input
-            type="text"
-            name="username"
-            autoComplete="username"
-            value={userData?.username || ""}
-            style={{
-              position: "absolute",
-              left: "-9999px",
-              width: "1px",
-              height: "1px",
-              overflow: "hidden",
-            }}
-            readOnly
-            tabIndex={-1}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="currentPassword"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Current Password
-              </label>
-              <input
-                type="password"
-                id="currentPassword"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-                autoComplete="current-password" // <-- Add this
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="newPassword"
-                className="block text-sm font-medium text-gray-700"
-              >
-                New Password
-              </label>
-              <input
-                type="password"
-                id="newPassword"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-                autoComplete="new-password" // <-- Add this
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="confirmNewPassword"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                id="confirmNewPassword"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-                autoComplete="new-password" // ✅ Add this line
-              />
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              variant="primary"
-              icon={
-                passwordLoading ? (
-                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                ) : (
-                  <SaveIcon className="h-4 w-4 mr-2" />
-                )
-              }
-              disabled={passwordLoading}
-            >
-              {passwordLoading ? "Updating..." : "Change Password"}
-            </Button>
-          </div>
-        </form>
+        <ChangePasswordForm
+          currentPassword={currentPassword}
+          newPassword={newPassword}
+          confirmNewPassword={confirmNewPassword}
+          setCurrentPassword={setCurrentPassword}
+          setNewPassword={setNewPassword}
+          setConfirmNewPassword={setConfirmNewPassword}
+          onSubmit={handleChangePassword}
+          loading={passwordLoading}
+          username={userData.username}
+        />
       </div>
       {/* --- Notification Modal --- */}
       <Modal
