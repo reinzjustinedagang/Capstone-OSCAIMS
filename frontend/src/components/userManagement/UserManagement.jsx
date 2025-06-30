@@ -10,8 +10,10 @@ import {
   Trash,
   ArrowDown,
   ArrowUp,
-  UserCheckIcon, // Not directly used in this version but kept from original
-  UserXIcon, // Not directly used in this version but kept from original
+  EyeIcon, // Added EyeIcon for viewing login trails
+  Loader2, // For loading indicators
+  XCircle, // For error messages
+  CheckCircle, // For success messages
 } from "lucide-react";
 
 const UserManagement = () => {
@@ -25,10 +27,16 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [formSubmitting, setFormSubmitting] = useState(false); // Used for form/delete specific loading
 
-  // --- New states for the Notification Modal ---
+  // --- States for the Notification Modal ---
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("success"); // 'success' or 'error'
+
+  // --- States for Login Trails Modal ---
+  const [showLoginTrailsModal, setShowLoginTrailsModal] = useState(false);
+  const [loginTrails, setLoginTrails] = useState([]);
+  const [loginTrailsLoading, setLoginTrailsLoading] = useState(false);
+  const [loginTrailsError, setLoginTrailsError] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("All Roles");
@@ -38,14 +46,17 @@ const UserManagement = () => {
   const [showLogoutWarning, setShowLogoutWarning] = useState(false);
   const [pendingUpdatePayload, setPendingUpdatePayload] = useState(null);
 
-  const backendUrl = import.meta.env.VITE_API_BASE_URL;
+  const backendUrl =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
       console.log(`Attempting to fetch users from: ${backendUrl}/api/user/`);
-      const response = await axios.get(`${backendUrl}/api/user/`);
+      const response = await axios.get(`${backendUrl}/api/user/`, {
+        withCredentials: true,
+      });
       setUsers(response.data);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -66,7 +77,7 @@ const UserManagement = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [backendUrl]); // Added backendUrl to dependencies
 
   // --- Notification Handlers ---
   const showSuccessNotification = (message) => {
@@ -104,11 +115,71 @@ const UserManagement = () => {
     setError(null); // Clear any previous general errors when opening form
   };
 
+  // --- New: Handle View Login Trails ---
+  const handleViewLoginTrails = async (user) => {
+    setSelectedUser(user);
+    setLoginTrailsLoading(true);
+    setLoginTrailsError(null);
+    setShowLoginTrailsModal(true); // Open modal immediately to show loading state
+
+    try {
+      // --- MOCK API CALL FOR LOGIN TRAILS ---
+      // In a real application, you would make an API call like this:
+      // const response = await axios.get(`${backendUrl}/api/user/${user.id}/login-trails`, { withCredentials: true });
+      // setLoginTrails(response.data.trails);
+
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+
+      // Mock data based on user (replace with actual fetch)
+      const mockTrails = [
+        {
+          id: 1,
+          timestamp: "2024-05-29 14:30:00",
+          action: "LOGIN",
+          status: "Success",
+          ipAddress: "192.168.1.100",
+        },
+        {
+          id: 2,
+          timestamp: "2024-05-29 14:35:15",
+          action: "LOGOUT",
+          status: "Success",
+          ipAddress: "192.168.1.100",
+        },
+        {
+          id: 3,
+          timestamp: "2024-05-29 14:40:30",
+          action: "LOGIN_ATTEMPT",
+          status: "Failed",
+          ipAddress: "192.168.1.101",
+        },
+        {
+          id: 4,
+          timestamp: "2024-05-29 14:42:00",
+          action: "LOGIN",
+          status: "Success",
+          ipAddress: "192.168.1.101",
+        },
+      ].filter((trail) =>
+        user.id % 2 === 0 ? trail.id % 2 === 0 : trail.id % 2 !== 0
+      ); // Simple mock filter
+
+      setLoginTrails(mockTrails);
+    } catch (err) {
+      console.error("Failed to fetch login trails:", err);
+      setLoginTrailsError(
+        err.response?.data?.message || "Failed to load login trails."
+      );
+      setLoginTrails([]); // Clear trails on error
+    } finally {
+      setLoginTrailsLoading(false);
+    }
+  };
+
   const handleFormSubmit = async (formData) => {
     setFormSubmitting(true);
 
     try {
-      // --- PREPARE UPDATE PAYLOAD ---
       const updatePayload = {
         username: formData.username,
         email: formData.email,
@@ -118,7 +189,6 @@ const UserManagement = () => {
       };
       let originalRole = null;
 
-      // --- FIND THE ORIGINAL USER OBJECT FOR ROLE COMPARISON ---
       if (formData.id) {
         const originalUser = users.find(
           (u) => String(u.id) === String(formData.id)
@@ -126,7 +196,6 @@ const UserManagement = () => {
         originalRole = originalUser?.role;
       }
 
-      // --- ACTUAL API CALL ---
       if (formData.id) {
         await axios.put(
           `${backendUrl}/api/user/update/${formData.id}`,
@@ -147,7 +216,6 @@ const UserManagement = () => {
 
       await fetchUsers();
 
-      // --- LOGOUT LOGIC ONLY IF ROLE CHANGED ON SELF ---
       const userObj = JSON.parse(localStorage.getItem("user"));
       const currentUserId = userObj?.id;
 
@@ -158,20 +226,17 @@ const UserManagement = () => {
         originalRole &&
         formData.role !== originalRole
       ) {
-        // Show warning modal and save update info for later
         setPendingUpdatePayload({
           updatePayload,
           formData,
         });
         setShowLogoutWarning(true);
-        // Don't close modal or clear selectedUser yet!
         return;
       } else if (
         formData.id &&
         currentUserId &&
         String(formData.id) === String(currentUserId)
       ) {
-        // Just fire profileUpdated if it's self, but no role change
         window.dispatchEvent(new Event("profileUpdated"));
       }
 
@@ -184,7 +249,7 @@ const UserManagement = () => {
         err.response?.data?.message ||
         `Failed to ${formData.id ? "update" : "add"} user. Please try again.`;
       showErrorNotification(errorMessage);
-      throw err;
+      // Removed the throw err; to prevent uncaught promise rejection in UI
     } finally {
       setFormSubmitting(false);
     }
@@ -192,34 +257,38 @@ const UserManagement = () => {
 
   const handleConfirmLogout = async () => {
     setShowLogoutWarning(false);
-    // Optional: fire profileUpdated so header changes before logout
     window.dispatchEvent(new Event("profileUpdated"));
-    await axios.post(
-      `${backendUrl}/api/user/logout`,
-      {},
-      { withCredentials: true }
-    );
-    window.location.href = "/login";
-    localStorage.clear();
-    sessionStorage.clear();
+    try {
+      await axios.post(
+        `${backendUrl}/api/user/logout`,
+        {},
+        { withCredentials: true }
+      );
+    } catch (logoutErr) {
+      console.error("Logout failed:", logoutErr);
+      // Even if logout API fails, proceed with client-side logout
+    } finally {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "/login"; // Force full page reload to clear state
+    }
   };
 
-  // --- HANDLER IF USER CANCELS LOGOUT WARNING ---
   const handleCancelLogout = () => {
     setShowLogoutWarning(false);
     setPendingUpdatePayload(null);
-    // Optionally, re-fetch users or just close modal
     setShowEditModal(false);
     setSelectedUser(null);
   };
 
   const handleDeleteConfirm = async () => {
     setFormSubmitting(true);
-    // setError(null); // Handled by notification
     try {
-      await axios.delete(`${backendUrl}/api/user/${selectedUser.id}`); // Assuming `selectedUser.id` holds the correct ID
+      await axios.delete(`${backendUrl}/api/user/${selectedUser.id}`, {
+        withCredentials: true,
+      });
       showSuccessNotification("User deleted successfully!");
-      await fetchUsers(); // Re-fetch users after successful deletion
+      await fetchUsers();
       setShowDeleteModal(false);
       setSelectedUser(null);
     } catch (err) {
@@ -228,7 +297,6 @@ const UserManagement = () => {
         err.response?.data?.message ||
         "Failed to delete user. Please try again.";
       showErrorNotification(errorMessage);
-      // setError(errorMessage); // This would show the red error banner
     } finally {
       setFormSubmitting(false);
     }
@@ -280,7 +348,7 @@ const UserManagement = () => {
   }, [users, searchTerm, filterRole, filterStatus, sortBy, sortOrder]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 p-4 font-sans">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
         <Button
@@ -325,7 +393,7 @@ const UserManagement = () => {
             </select>
           </div>
         </div>
-        {error && ( // This error is for general fetch issues, not specific form submissions
+        {error && (
           <div
             className="p-4 text-red-700 bg-red-100 border-l-4 border-red-500"
             role="alert"
@@ -335,7 +403,10 @@ const UserManagement = () => {
           </div>
         )}
         {loading ? (
-          <div className="p-6 text-center text-gray-500">Loading users...</div>
+          <div className="p-6 text-center text-gray-500 flex justify-center items-center">
+            <Loader2 className="animate-spin h-6 w-6 mr-3 text-blue-500" />
+            Loading users...
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -409,7 +480,7 @@ const UserManagement = () => {
                 {filteredAndSortedUsers.length === 0 && !loading ? (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6" // Adjusted colspan to match new column count
                       className="px-6 py-4 text-center text-gray-500"
                     >
                       No users found.
@@ -473,6 +544,15 @@ const UserManagement = () => {
                           >
                             <Trash className="h-5 w-5" />
                           </button>
+                          {/* New Eye Icon for Login Trails */}
+                          <button
+                            onClick={() => handleViewLoginTrails(user)}
+                            className="text-gray-600 hover:text-gray-900"
+                            aria-label={`View login trails for ${user.username}`}
+                            title="View Login Trails"
+                          >
+                            <EyeIcon className="h-5 w-5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -533,12 +613,10 @@ const UserManagement = () => {
           onSubmit={handleFormSubmit}
           onClose={() => {
             setShowAddModal(false);
-            setSelectedUser(null); // Clear selected user if any, for clean add form
+            setSelectedUser(null);
           }}
-          // Pass the notification handlers to UserForm
           onSubmitSuccess={showSuccessNotification}
           onSubmitError={showErrorNotification}
-          // isLoading is now managed internally by UserForm for its own button
         />
       </Modal>
 
@@ -555,10 +633,8 @@ const UserManagement = () => {
             setShowEditModal(false);
             setSelectedUser(null);
           }}
-          // Pass the notification handlers to UserForm
           onSubmitSuccess={showSuccessNotification}
           onSubmitError={showErrorNotification}
-          // isLoading is now managed internally by UserForm for its own button
         />
       </Modal>
 
@@ -581,7 +657,7 @@ const UserManagement = () => {
               variant="secondary"
               onClick={() => {
                 setShowDeleteModal(false);
-                setSelectedUser(null); // Clear selected user on cancel
+                setSelectedUser(null);
               }}
               disabled={formSubmitting}
             >
@@ -620,6 +696,8 @@ const UserManagement = () => {
           </Button>
         </div>
       </Modal>
+
+      {/* --- Logout Warning Modal (for self-role change) --- */}
       <Modal
         isOpen={showLogoutWarning}
         onClose={handleCancelLogout}
@@ -639,6 +717,86 @@ const UserManagement = () => {
               Continue & Logout
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* --- New: Login Trails Modal --- */}
+      <Modal
+        isOpen={showLoginTrailsModal}
+        onClose={() => setShowLoginTrailsModal(false)}
+        title={`Login Trails for ${selectedUser ? selectedUser.username : ""}`}
+      >
+        <div className="p-4">
+          {loginTrailsLoading ? (
+            <div className="flex justify-center items-center py-6">
+              <Loader2 className="animate-spin h-6 w-6 mr-3 text-blue-500" />
+              Loading login history...
+            </div>
+          ) : loginTrailsError ? (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center">
+              <XCircle className="h-5 w-5 mr-2" />
+              <span className="block sm:inline">{loginTrailsError}</span>
+            </div>
+          ) : loginTrails.length === 0 ? (
+            <p className="text-center text-gray-600 py-4">
+              No login trails found for this user.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Timestamp
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      IP Address
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loginTrails.map((trail) => (
+                    <tr key={trail.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(trail.timestamp).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {trail.action}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            trail.status === "Success"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {trail.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {trail.ipAddress || "N/A"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        <div className="p-4 flex justify-end">
+          <Button
+            variant="secondary"
+            onClick={() => setShowLoginTrailsModal(false)}
+          >
+            Close
+          </Button>
         </div>
       </Modal>
     </div>

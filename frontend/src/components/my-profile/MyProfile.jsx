@@ -94,7 +94,8 @@ export default function MyProfile() {
             email: meResponse.data.email,
             cp_number: meResponse.data.cp_number,
             role: meResponse.data.role,
-            last_logout: meResponse.data.last_logout,
+            last_login: meResponse.data.last_login,
+            image: meResponse.data.image,
           };
           setUserData(fetchedData);
           setUserName(fetchedData.username || "");
@@ -264,20 +265,6 @@ export default function MyProfile() {
     }
   };
 
-  // Handler for profile picture upload (mock for now)
-  const handleProfilePictureUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUserData((prev) => ({ ...prev, profilePicture: reader.result }));
-        showNotification("Profile picture updated!", "success");
-        // In a real app, you'd send this file to your backend and update the user's profilePicture URL in the database.
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   if (fetchLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen text-gray-700">
@@ -314,8 +301,15 @@ export default function MyProfile() {
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b pb-6 mb-6">
           {/* Profile Picture Section */}
           <ProfilePicture
-            profilePicture={userData.profilePicture}
-            onUpload={handleProfilePictureUpload}
+            profilePicture={userData.image} // image is the correct field
+            userId={userData.id}
+            onUploadSuccess={(newImageUrl) => {
+              setUserData((prev) => ({ ...prev, image: newImageUrl }));
+              showNotification("Profile picture updated!", "success");
+            }}
+            onUploadError={(errorMsg) => {
+              showNotification(errorMsg, "error");
+            }}
           />
 
           {/* User Basic Info */}

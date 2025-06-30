@@ -30,11 +30,11 @@ exports.getAllBarangay = async () => {
 // Create a new barangay
 exports.createBarangay = async (name, user) => {
   // Check for duplicate name
-  const [existing] = await Connection(
+  const existing = await Connection(
     "SELECT * FROM barangays WHERE barangay_name = ?",
     [name.trim()]
   );
-  if (existing) {
+  if (existing.length > 0) {
     const error = new Error("Barangay already exists.");
     error.status = 409;
     throw error;
@@ -47,6 +47,7 @@ exports.createBarangay = async (name, user) => {
 
   if (result.affectedRows === 1 && user) {
     await logAudit(
+      user.id,
       user.email,
       user.role,
       "CREATE",
@@ -59,6 +60,16 @@ exports.createBarangay = async (name, user) => {
 
 // Update a barangay
 exports.updateBarangay = async (id, name, user) => {
+  const existing = await Connection(
+    "SELECT id FROM barangays WHERE barangay_name = ? AND id != ?",
+    [name.trim(), id]
+  );
+  if (existing.length > 0) {
+    const error = new Error("Another barangay with this name already exists.");
+    error.status = 409;
+    throw error;
+  }
+
   const [oldData] = await Connection(
     "SELECT barangay_name FROM barangays WHERE id = ?",
     [id]
@@ -71,11 +82,12 @@ exports.updateBarangay = async (id, name, user) => {
 
   if (result.affectedRows === 1 && user) {
     const changes =
-      oldData.name !== name
-        ? `name: '${oldData.barangay_name}' → '${name}'`
+      oldData.barangay_name !== name
+        ? `barangay_name: '${oldData.barangay_name}' → '${name}'`
         : "No changes.";
 
     await logAudit(
+      user.id,
       user.email,
       user.role,
       "UPDATE",
@@ -97,6 +109,7 @@ exports.deleteBarangay = async (id, user) => {
 
   if (result.affectedRows === 1 && user) {
     await logAudit(
+      user.id,
       user.email,
       user.role,
       "DELETE",

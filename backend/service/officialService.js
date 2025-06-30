@@ -45,7 +45,7 @@ const checkIfTypeExists = async (type, excludeId = null) => {
     params.push(excludeId);
   }
   const rows = await Connection(query, params);
-  return rows.length > 0;
+  return rows && rows.length > 0;
 };
 
 exports.addMunicipalOfficial = async (name, position, type, image, user) => {
@@ -66,6 +66,7 @@ exports.addMunicipalOfficial = async (name, position, type, image, user) => {
 
     if (result.affectedRows === 1 && user) {
       await logAudit(
+        user.id,
         user.email,
         user.role,
         "CREATE",
@@ -105,7 +106,8 @@ exports.updateMunicipalOfficial = async (
       }
     }
 
-    const finalImage = image || oldData.image;
+    const finalImage = image ?? oldData.image;
+
     const result = await Connection(
       `UPDATE municipal_officials SET name = ?, position = ?, type = ?, image = ? WHERE id = ?`,
       [name, position, type, finalImage, id]
@@ -144,6 +146,7 @@ exports.updateMunicipalOfficial = async (
 
       if (changes.length > 0) {
         await logAudit(
+          user.id,
           user.email,
           user.role,
           "UPDATE",
@@ -176,6 +179,7 @@ exports.deleteMunicipalOfficial = async (id, user) => {
 
   if (result.affectedRows === 1 && user) {
     await logAudit(
+      user.id,
       user.email,
       user.role,
       "DELETE",
@@ -223,6 +227,7 @@ exports.addBarangayOfficial = async (
 
     if (result.affectedRows === 1 && user) {
       await logAudit(
+        user.id,
         user.email,
         user.role,
         "CREATE",
@@ -265,7 +270,8 @@ exports.updateBarangayOfficial = async (
 
     if (!oldData) throw new Error("Barangay official not found for update.");
 
-    const finalImage = image || oldData.image;
+    const finalImage = image ?? oldData.image;
+
     const result = await Connection(
       `UPDATE barangay_officials SET barangay_name = ?, president_name = ?, position = ?, image = ? WHERE id = ?`,
       [barangay_name, president_name, position, finalImage, id]
@@ -313,6 +319,7 @@ exports.updateBarangayOfficial = async (
         );
 
       await logAudit(
+        user.id,
         user.email,
         user.role,
         "UPDATE",
@@ -343,6 +350,7 @@ exports.deleteBarangayOfficial = async (id, user) => {
 
     if (result.affectedRows === 1 && user) {
       await logAudit(
+        user.id,
         user.email,
         user.role,
         "DELETE",

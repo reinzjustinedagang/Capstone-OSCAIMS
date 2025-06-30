@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const userService = require("../service/userService");
+const upload = require("../middleware/upload");
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
 const { isAuthenticated } = require("../middleware/authMiddleware");
 
 // Get user by ID
@@ -17,7 +19,9 @@ router.get("/user/:id", async (req, res) => {
         cp_number: user.cp_number,
         role: user.role,
         last_logout: user.last_logout,
-        status: user.status, // include if present
+        status: user.status,
+        image: user.image,
+        last_login: user.last_login, // include if present
       });
     } else {
       res.status(404).json({ message: "User not found." });
@@ -71,7 +75,9 @@ router.delete("/:id", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await userService.login(email, password);
+    const ip = req.userIp;
+
+    const user = await userService.login(email, password, ip);
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -83,8 +89,10 @@ router.post("/login", async (req, res) => {
       email: user.email,
       cp_number: user.cp_number,
       role: user.role,
-      last_logout: user.last_logout,
       status: user.status,
+      last_logout: user.last_logout,
+      image: user.image,
+      last_login: user.last_login,
     };
     req.session.isAuthenticated = true;
 
@@ -229,8 +237,17 @@ router.post("/logout", async (req, res) => {
 
 // Get session user info (authenticated)
 router.get("/me", isAuthenticated, (req, res) => {
-  const { id, username, email, cp_number, role, last_logout, status } =
-    req.session.user;
+  const {
+    id,
+    username,
+    email,
+    cp_number,
+    role,
+    status,
+    last_logout,
+    image,
+    last_login,
+  } = req.session.user;
   res.status(200).json({
     isAuthenticated: true,
     id,
@@ -238,8 +255,10 @@ router.get("/me", isAuthenticated, (req, res) => {
     email,
     cp_number,
     role,
-    last_logout,
     status,
+    last_logout,
+    image,
+    last_login,
   });
 });
 
@@ -251,5 +270,38 @@ router.get("/session", (req, res) => {
     res.json({ user: null });
   }
 });
+
+// Upload profile picture
+router.post(
+  "/upload-profile-picture/:id",
+  isAuthenticated,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded." });
+      }
+
+      // Upload using helper
+      const imageUrl = await uploadToCloudinary(
+        req.file.buffer,
+        "user_profiles"
+      );
+
+      // Save in DB and remove old image if needed
+      await userService.updateUserProfileImage(id, imageUrl);
+
+      if (req.session.user && req.session.user.id === Number(id)) {
+        req.session.user.image = imageUrl;
+      }
+
+      return res.status(200).json({ imageUrl });
+    } catch (error) {
+      console.error("Upload error:", error);
+      return res.status(500).json({ message: "Image upload failed." });
+    }
+  }
+);
 
 module.exports = router;

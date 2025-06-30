@@ -23,7 +23,6 @@ export default function ChangePasswordForm({
         <input
           type="text"
           value={username}
-          autoComplete="username"
           readOnly
           tabIndex={-1}
           className="hidden"
@@ -38,7 +37,6 @@ export default function ChangePasswordForm({
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
-              autoComplete="current-password"
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
@@ -51,7 +49,6 @@ export default function ChangePasswordForm({
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
-              autoComplete="new-password"
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
@@ -64,7 +61,6 @@ export default function ChangePasswordForm({
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
               required
-              autoComplete="new-password"
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>

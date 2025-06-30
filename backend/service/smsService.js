@@ -4,7 +4,6 @@ const { logAudit } = require("./auditService");
 
 exports.sendSMS = async (message, recipients) => {
   try {
-    // 🟩 1. Fetch credentials from DB
     const [credentials] = await Connection(
       "SELECT * FROM sms_credentials LIMIT 1"
     );
@@ -13,30 +12,31 @@ exports.sendSMS = async (message, recipients) => {
       throw new Error("SMS credentials not found in database.");
     }
 
+    const authHeader =
+      "Basic " +
+      Buffer.from(`${credentials.email}:${credentials.password}`).toString(
+        "base64"
+      );
+
     const payload = {
-      Email: credentials.email,
-      Password: credentials.password,
       ApiCode: credentials.api_code,
-      ClientId: "SYSTEM_CLIENT_001", // or load from DB or env
-      SenderId: "ITEXMO SMS",
       Recipients: recipients,
       Message: message,
     };
 
-    // 🟩 2. Send SMS
     const response = await axios.post(
       "https://api.itexmo.com/api/broadcast",
       payload,
       {
         headers: {
           "Content-Type": "application/json",
+          Authorization: authHeader,
         },
       }
     );
 
     const data = response.data;
 
-    // 🟩 3. Log result in DB
     await Connection(
       `INSERT INTO sms_logs (recipients, message, status, reference_id, credit_used)
        VALUES (?, ?, ?, ?, ?)`,
@@ -143,12 +143,14 @@ exports.updateSmsCredentials = async (req, res) => {
     }
 
     // Get user info
+    const userId = req.user?.id || "0";
     const userEmail = req.user?.email || "Unknown";
     const userRole = req.user?.role || "Admin";
 
     // Log if any changes or insert happened
     if (changes.length > 0) {
       await logAudit(
+        userId,
         userEmail,
         userRole,
         actionType,

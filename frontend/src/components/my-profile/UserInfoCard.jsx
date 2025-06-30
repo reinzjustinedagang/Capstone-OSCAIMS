@@ -21,9 +21,17 @@ export default function UserInfoCard({ userData }) {
       </p>
       <p className="text-sm text-gray-500 flex items-center justify-center sm:justify-start mt-2">
         <Clock className="h-4 w-4 mr-2 text-gray-400" />
-        Last Logout:{" "}
-        {userData.last_logout
-          ? new Date(userData.last_logout).toLocaleString()
+        Last Login:{" "}
+        {userData.last_login
+          ? new Date(userData.last_login).toLocaleString("en-PH", {
+              timeZone: "Asia/Manila",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })
           : "N/A"}
       </p>
     </div>

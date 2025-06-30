@@ -5,6 +5,7 @@ import Modal from "../UI/Modal";
 import axios from "axios";
 
 const Header = () => {
+  const [profilePicture, setProfilePicture] = useState();
   const [userName, setUserName] = useState("Guest");
   const [userRole, setUserRole] = useState("User");
   const [loading, setLoading] = useState(true);
@@ -36,6 +37,7 @@ const Header = () => {
 
         if (response.status === 200 && response.data.isAuthenticated) {
           const user = response.data;
+          setProfilePicture(user.image);
           setUserName(user.username || "Guest");
           setUserRole(user.role || "User");
         } else {
@@ -86,7 +88,6 @@ const Header = () => {
       localStorage.clear();
       navigate("/login");
       // Close sidebar and confirmation dialog
-      setIsSidebarOpen(false);
       setShowLogoutConfirm(false);
     }
   };
@@ -143,9 +144,13 @@ const Header = () => {
             >
               <div
                 onClick={() => navigate("/admin-my-profile")}
-                className="bg-blue-700 text-white rounded-full p-2 cursor-pointer transition-all duration-800"
+                className="bg-blue-700 text-white rounded-full cursor-pointer transition-all duration-800 h-5 w-5 overflow-hidden"
               >
-                <UserIcon className="h-5 w-5" />
+                <img
+                  src={profilePicture || <UserIcon />}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               <div

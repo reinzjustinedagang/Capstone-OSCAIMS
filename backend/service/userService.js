@@ -1,13 +1,24 @@
 const Connection = require("../db/Connection");
 const { logAudit } = require("./auditService");
 const bcrypt = require("bcrypt");
+const cloudinary = require("../utils/cloudinary");
+const fs = require("fs/promises");
+const path = require("path");
 
 const SALT_ROUNDS = 10;
+
+const extractCloudinaryPublicId = (url) => {
+  if (!url.includes("res.cloudinary.com")) return null;
+  const parts = url.split("/");
+  const filename = parts.pop().split(".")[0];
+  const folder = parts.pop();
+  return `${folder}/${filename}`;
+};
 
 exports.getUser = async (id) => {
   try {
     const user = await Connection(
-      "SELECT id, username, email, cp_number, role, last_logout FROM users WHERE id = ?",
+      "SELECT id, username, email, cp_number, role, last_logout, status, last_login, image FROM users WHERE id = ?",
       [id]
     );
     return user.length > 0 ? user[0] : null;
@@ -58,10 +69,10 @@ exports.deleteUser = async (id, actingUserEmail, actingUserRole) => {
 };
 
 // LOGIN SERVICE
-exports.login = async (email, password) => {
+exports.login = async (email, password, ip) => {
   try {
     const results = await Connection(
-      "SELECT id, username, email, password, cp_number, role, last_logout, status FROM users WHERE email = ?",
+      "SELECT id, username, email, password, cp_number, role, status, last_logout, image, last_login FROM users WHERE email = ?",
       [email]
     );
 
@@ -78,10 +89,12 @@ exports.login = async (email, password) => {
     );
 
     await logAudit(
+      user.id,
       user.email,
       user.role,
       "LOGIN",
-      `User '${user.username}' logged in.`
+      `User '${user.username}' logged in.`,
+      ip
     );
 
     return {
@@ -90,8 +103,10 @@ exports.login = async (email, password) => {
       email: user.email,
       cp_number: user.cp_number,
       role: user.role,
-      last_logout: user.last_logout,
       status: user.status,
+      last_logout: user.last_logout,
+      image: user.image,
+      last_login: user.last_login,
     };
   } catch (error) {
     console.error("Error in login service:", error);
@@ -130,6 +145,7 @@ exports.register = async (username, email, password, cp_number, role) => {
     // ✅ Log registration
     if (result.affectedRows === 1) {
       await logAudit(
+        result.insertId,
         email,
         role,
         "REGISTER",
@@ -146,7 +162,16 @@ exports.register = async (username, email, password, cp_number, role) => {
 
 exports.updateUserProfile = async (id, username, email, cp_number) => {
   try {
-    // Fetch old data to compare for audit logging
+    const emailExists = await Connection(
+      "SELECT id FROM users WHERE email = ? AND id != ?",
+      [email, id]
+    );
+    if (emailExists.length > 0) {
+      const error = new Error("Email already in use by another user.");
+      error.statusCode = 409;
+      throw error;
+    }
+
     const [oldData] = await Connection(
       "SELECT username, email, cp_number, role FROM users WHERE id = ?",
       [id]
@@ -175,10 +200,11 @@ exports.updateUserProfile = async (id, username, email, cp_number) => {
 
       // Log the audit with specific changes
       await logAudit(
-        oldData.email, // Use old email for logging the actor if email was changed
-        oldData.role,
+        id,
+        email,
+        role,
         "UPDATE",
-        `Updated profile for user ${oldData.username}: ${details}`
+        `${oldData.username}: ${details}`
       );
     }
 
@@ -198,6 +224,16 @@ exports.updateUserInfo = async (
   role
 ) => {
   try {
+    const emailExists = await Connection(
+      "SELECT id FROM users WHERE email = ? AND id != ?",
+      [email, id]
+    );
+    if (emailExists.length > 0) {
+      const error = new Error("Email already in use by another user.");
+      error.statusCode = 409;
+      throw error;
+    }
+
     const [oldData] = await Connection(
       "SELECT username, email, password, cp_number, role FROM users WHERE id = ?",
       [id]
@@ -207,7 +243,7 @@ exports.updateUserInfo = async (
     let passwordChanged = false;
 
     // Check if password is being changed (non-empty and different)
-    if (password && password !== oldData.password) {
+    if (password) {
       hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
       passwordChanged = true;
     }
@@ -249,6 +285,7 @@ exports.updateUserInfo = async (
         changes.length > 0 ? changes.join(", ") : "No changes detected.";
 
       await logAudit(
+        id,
         email,
         oldData.role,
         "UPDATE",
@@ -286,6 +323,36 @@ exports.changePassword = async (id, currentPassword, newPassword) => {
   }
 };
 
+//Update profile image
+exports.updateUserProfileImage = async (userId, imageUrl) => {
+  try {
+    const [user] = await Connection(
+      "SELECT image, email, role FROM users WHERE id = ?",
+      [userId]
+    );
+    if (!user) throw new Error("User not found.");
+
+    // Delete old image (optional cleanup)
+    if (user.image) {
+      const oldPublicId = extractCloudinaryPublicId(user.image);
+      if (oldPublicId) {
+        await cloudinary.uploader.destroy(oldPublicId);
+      }
+    }
+
+    // Save new image URL
+    await Connection("UPDATE users SET image = ? WHERE id = ?", [
+      imageUrl,
+      userId,
+    ]);
+
+    return imageUrl;
+  } catch (error) {
+    console.error("Error updating profile picture:", error);
+    throw error;
+  }
+};
+
 // LOGOUT SERVICE
 exports.logout = async (userId) => {
   try {
@@ -303,6 +370,7 @@ exports.logout = async (userId) => {
 
     // ✅ Log logout
     await logAudit(
+      userId,
       user.email,
       user.role,
       "LOGOUT",

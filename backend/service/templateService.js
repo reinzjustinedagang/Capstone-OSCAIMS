@@ -23,6 +23,7 @@ exports.createTemplate = async (name, category, message, user) => {
 
   if (result.affectedRows === 1 && user) {
     await logAudit(
+      user.id,
       user.email,
       user.role,
       "CREATE",
@@ -59,6 +60,7 @@ exports.updateTemplate = async (id, name, category, message, user) => {
 
     const details = changes.length > 0 ? changes.join(", ") : "No changes.";
     await logAudit(
+      user.id,
       user.email,
       user.role,
       "UPDATE",
@@ -81,6 +83,7 @@ exports.deleteTemplate = async (id, user) => {
 
   if (result.affectedRows === 1 && user) {
     await logAudit(
+      user.id,
       user.email,
       user.role,
       "DELETE",
