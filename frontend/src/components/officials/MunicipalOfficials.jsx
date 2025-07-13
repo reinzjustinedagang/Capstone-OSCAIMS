@@ -391,7 +391,7 @@ const MunicipalOfficials = ({ title }) => {
 
               {/* Grid for other Officers */}
               {others.length > 0 && (
-                <div className="grid grid-cols-1 justify-items-center sm:grid-cols-2 md:grid-cols-2 gap-6 w-full max-w-2xl m-6">
+                <div className="grid grid-cols-1 justify-items-center sm:grid-cols-2 md:grid-cols-2 gap-6 w-full max-w-2xl">
                   {others.map((o) => (
                     <OfficialCard
                       key={o.id}

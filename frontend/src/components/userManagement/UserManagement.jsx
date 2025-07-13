@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Button from "../UI/Button"; // Assuming you have a Button component
 import Modal from "../UI/Modal"; // Assuming this is your general Modal component for all dialogs
+import Modal2 from "../UI/Modal2";
 import UserForm from "./UserForm";
 import axios from "axios";
 import {
@@ -547,7 +548,7 @@ const UserManagement = () => {
                           {/* New Eye Icon for Login Trails */}
                           <button
                             onClick={() => handleViewLoginTrails(user)}
-                            className="text-gray-600 hover:text-gray-900"
+                            className="text-green-600 hover:text-green-900"
                             aria-label={`View login trails for ${user.username}`}
                             title="View Login Trails"
                           >
@@ -721,10 +722,10 @@ const UserManagement = () => {
       </Modal>
 
       {/* --- New: Login Trails Modal --- */}
-      <Modal
+      <Modal2
         isOpen={showLoginTrailsModal}
         onClose={() => setShowLoginTrailsModal(false)}
-        title={`Login Trails for ${selectedUser ? selectedUser.username : ""}`}
+        title={`${selectedUser ? selectedUser.username : ""} Login Trails`}
       >
         <div className="p-4">
           {loginTrailsLoading ? (
@@ -798,7 +799,7 @@ const UserManagement = () => {
             Close
           </Button>
         </div>
-      </Modal>
+      </Modal2>
     </div>
   );
 };

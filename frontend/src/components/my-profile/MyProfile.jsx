@@ -154,12 +154,9 @@ export default function MyProfile() {
         {
           username,
           email,
-          cp_number, // Send cp_number as backend expects
+          cp_number,
         },
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
           withCredentials: true,
         }
       );

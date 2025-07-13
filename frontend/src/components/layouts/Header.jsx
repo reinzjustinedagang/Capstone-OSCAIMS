@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { BellIcon, MenuIcon, UserIcon, Loader2, LogOut } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import {
+  BellIcon,
+  MenuIcon,
+  UserIcon,
+  Loader2,
+  LogOut,
+  ChevronDown,
+} from "lucide-react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import Modal from "../UI/Modal";
 import axios from "axios";
 
@@ -14,7 +21,10 @@ const Header = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
+  const isProfilePage = location.pathname === "/admin-my-profile";
 
   const fetchUserData = async () => {
     setLoading(true);
@@ -101,7 +111,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white border-b border-gray-200">
       <div className="flex justify-between items-center px-4 py-3">
         <button className="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100">
           <MenuIcon className="h-6 w-6" />
@@ -111,15 +121,15 @@ const Header = () => {
           <NavLink
             to="/admin-notifications"
             className={({ isActive }) =>
-              `relative inline-block ${
-                isActive ? "bg-blue-200 rounded-full" : ""
+              `relative p-2 rounded-full transition duration-150 ${
+                isActive
+                  ? "bg-blue-100 text-blue-700 ring-2 ring-blue-500"
+                  : "text-gray-600 hover:bg-gray-100"
               }`
             }
           >
-            <div className="relative p-2 rounded-full text-gray-600 hover:bg-gray-100 transition duration-150">
-              <BellIcon className="h-5 w-5" />
-              <span className="absolute top-1 right-1 bg-red-500 border-2 border-white rounded-full w-2.5 h-2.5"></span>
-            </div>
+            <BellIcon className="h-5 w-5" />
+            <span className="absolute top-1 right-1 bg-red-500 border-2 border-white rounded-full w-2.5 h-2.5"></span>
           </NavLink>
 
           <div className="flex items-center">
@@ -130,42 +140,63 @@ const Header = () => {
                 <p className="text-sm font-medium text-red-500">Error</p>
               ) : (
                 <>
-                  <p className="text-sm font-medium text-gray-700">
+                  <p className="text-sm font-medium text-blue-800">
                     {userName}
                   </p>
                   <p className="text-xs text-gray-500 capitalize">{userRole}</p>
                 </>
               )}
             </div>
-            <div
-              className="relative flex items-center group"
-              onMouseEnter={() => setShowLogout(true)}
-              onMouseLeave={() => setShowLogout(false)}
-            >
-              <div
-                onClick={() => navigate("/admin-my-profile")}
-                className="bg-blue-700 text-white rounded-full cursor-pointer transition-all duration-800 h-5 w-5 overflow-hidden"
+            <div className="relative flex items-center">
+              <button
+                onClick={() => setShowLogout(!showLogout)}
+                className="h-10 w-10 rounded-full overflow-hidden border-2 border-blue-800 focus:outline-none"
+                aria-label="Toggle profile menu"
               >
-                <img
-                  src={profilePicture || <UserIcon />}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+                {profilePicture ? (
+                  <img
+                    src={profilePicture}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="bg-blue-200 w-full h-full flex items-center justify-center">
+                    <UserIcon className="h-6 w-6 text-blue-800" />
+                  </div>
+                )}
+              </button>
 
-              <div
-                className={`overflow-hidden transition-all duration-800 ease-in-out ml-1 ${
-                  showLogout ? "w-[100px] opacity-100" : "w-0 opacity-0"
-                }`}
-              >
-                <button
-                  onClick={confirmLogout}
-                  className="cursor-pointer flex items-center gap-1 bg-white border border-gray-300 text-sm text-red-600 px-2 py-1 rounded-r-md hover:bg-red-50 w-full"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-              </div>
+              {/* Dropdown Menu */}
+              {showLogout && (
+                <div className="absolute top-13 right-0 bg-white border border-gray-200 rounded-md shadow-md w-44 z-50">
+                  <button
+                    onClick={() => {
+                      navigate("/admin-my-profile");
+                      setShowLogout(false);
+                    }}
+                    className={`flex items-center gap-2 w-full px-4 py-2 text-sm text-left
+    ${
+      isProfilePage
+        ? "bg-blue-700 text-white"
+        : "text-blue-700 hover:bg-blue-700 hover:text-white hover:font-semibold"
+    }`}
+                  >
+                    <UserIcon className="h-4 w-4" />
+                    My Profile
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowLogout(false);
+                      confirmLogout();
+                    }}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-700 hover:font-semibold hover:bg-red-700 hover:text-white text-left"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

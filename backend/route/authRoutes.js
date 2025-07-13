@@ -45,18 +45,15 @@ router.get("/", async (req, res) => {
 // Delete user
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
-  const sessionUser = req.session.user;
+  const user = req.session.user;
+  const ip = req.userIp;
 
-  if (!sessionUser) {
+  if (!user) {
     return res.status(401).json({ message: "Unauthorized: Not logged in." });
   }
 
   try {
-    const deleted = await userService.deleteUser(
-      id,
-      sessionUser.email,
-      sessionUser.role
-    );
+    const deleted = await userService.deleteUser(id, user, ip);
 
     if (deleted) {
       return res.status(200).json({ message: "User deleted successfully." });
@@ -111,12 +108,15 @@ router.post("/login", async (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     const { username, email, password, cp_number, role } = req.body;
+    const ip = req.userIp;
+
     const result = await userService.register(
       username,
       email,
       password,
       cp_number,
-      role
+      role,
+      ip
     );
 
     if (result) {
@@ -138,13 +138,15 @@ router.post("/register", async (req, res) => {
 router.put("/updateProfile/:id", async (req, res) => {
   const { username, email, cp_number } = req.body;
   const { id } = req.params;
+  const ip = req.userIp;
 
   try {
     const success = await userService.updateUserProfile(
       id,
       username,
       email,
-      cp_number
+      cp_number,
+      ip
     );
 
     if (success) {
@@ -167,6 +169,8 @@ router.put("/updateProfile/:id", async (req, res) => {
 router.put("/update/:id", async (req, res) => {
   const { username, email, password, cp_number, role } = req.body;
   const { id } = req.params;
+  const user = req.session.user;
+  const ip = req.userIp;
 
   try {
     const success = await userService.updateUserInfo(
@@ -175,7 +179,9 @@ router.put("/update/:id", async (req, res) => {
       email,
       password,
       cp_number,
-      role
+      role,
+      user,
+      ip
     );
 
     if (success) {
@@ -216,9 +222,10 @@ router.put("/change-password/:id", async (req, res) => {
 
 // Logout
 router.post("/logout", async (req, res) => {
+  const ip = req.userIp;
   try {
     if (req.session.user) {
-      await userService.logout(req.session.user.id); // Optional: track logout
+      await userService.logout(req.session.user.id, ip);
     }
 
     req.session.destroy((err) => {
@@ -226,7 +233,7 @@ router.post("/logout", async (req, res) => {
         console.error("Session destruction error on logout:", err);
         return res.status(500).json({ message: "Logout failed" });
       }
-      res.clearCookie("oscaims_sid"); // Use your actual session cookie name
+      res.clearCookie("oscaims_sid");
       res.json({ message: "Logged out successfully" });
     });
   } catch (err) {
@@ -279,6 +286,7 @@ router.post(
   async (req, res) => {
     try {
       const { id } = req.params;
+      const ip = req.userIp;
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded." });
       }
@@ -290,7 +298,7 @@ router.post(
       );
 
       // Save in DB and remove old image if needed
-      await userService.updateUserProfileImage(id, imageUrl);
+      await userService.updateUserProfileImage(id, imageUrl, ip);
 
       if (req.session.user && req.session.user.id === Number(id)) {
         req.session.user.image = imageUrl;

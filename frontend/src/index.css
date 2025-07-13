@@ -4,6 +4,16 @@ html {
   scroll-behavior: smooth;
 }
 
+@layer components {
+  .nav {
+    @apply flex items-center px-6 py-3 text-blue-700 transition-colors duration-100 hover:bg-blue-600 hover:text-white hover:font-medium;
+  }
+
+  .active-nav {
+    @apply bg-blue-700 font-bold text-white;
+  }
+}
+
 .animate-blob {
   animation: blob 7s infinite;
 }

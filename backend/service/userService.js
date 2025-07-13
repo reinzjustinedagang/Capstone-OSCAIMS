@@ -43,21 +43,18 @@ exports.getAllUsers = async () => {
   }
 };
 
-exports.deleteUser = async (id, actingUserEmail, actingUserRole) => {
+exports.deleteUser = async (id, user, ip) => {
   try {
-    const user = await Connection("SELECT username FROM users WHERE id = ?", [
-      id,
-    ]);
-    if (user.length === 0) return false;
-
     const result = await Connection("DELETE FROM users WHERE id = ?", [id]);
 
     if (result.affectedRows === 1) {
       await logAudit(
-        actingUserEmail,
-        actingUserRole,
+        user.id,
+        user.email,
+        user.role,
         "DELETE",
-        `Deleted user '${user[0].username}' with ID ${id}.`
+        `'${user.username}'  has been deleted`,
+        ip
       );
     }
 
@@ -115,7 +112,7 @@ exports.login = async (email, password, ip) => {
 };
 
 // REGISTER SERVICE
-exports.register = async (username, email, password, cp_number, role) => {
+exports.register = async (username, email, password, cp_number, role, ip) => {
   try {
     const existingUsers = await Connection(
       "SELECT * FROM users WHERE email = ?",
@@ -140,6 +137,7 @@ exports.register = async (username, email, password, cp_number, role) => {
       hashedPassword,
       cp_number,
       role,
+      ip,
     ]);
 
     // ✅ Log registration
@@ -160,7 +158,7 @@ exports.register = async (username, email, password, cp_number, role) => {
   }
 };
 
-exports.updateUserProfile = async (id, username, email, cp_number) => {
+exports.updateUserProfile = async (id, username, email, cp_number, ip) => {
   try {
     const emailExists = await Connection(
       "SELECT id FROM users WHERE email = ? AND id != ?",
@@ -202,9 +200,10 @@ exports.updateUserProfile = async (id, username, email, cp_number) => {
       await logAudit(
         id,
         email,
-        role,
+        oldData.role,
         "UPDATE",
-        `${oldData.username}: ${details}`
+        `${oldData.username}: ${details}`,
+        ip
       );
     }
 
@@ -221,7 +220,9 @@ exports.updateUserInfo = async (
   email,
   password,
   cp_number,
-  role
+  role,
+  user,
+  ip
 ) => {
   try {
     const emailExists = await Connection(
@@ -285,11 +286,12 @@ exports.updateUserInfo = async (
         changes.length > 0 ? changes.join(", ") : "No changes detected.";
 
       await logAudit(
-        id,
+        user.id,
         email,
         oldData.role,
         "UPDATE",
-        `Updated user info for ${username}: ${details}`
+        `Updated user info for ${username}: ${details}`,
+        ip
       );
     }
 
@@ -324,10 +326,10 @@ exports.changePassword = async (id, currentPassword, newPassword) => {
 };
 
 //Update profile image
-exports.updateUserProfileImage = async (userId, imageUrl) => {
+exports.updateUserProfileImage = async (userId, imageUrl, ip) => {
   try {
     const [user] = await Connection(
-      "SELECT image, email, role FROM users WHERE id = ?",
+      "SELECT username, image, email, role FROM users WHERE id = ?",
       [userId]
     );
     if (!user) throw new Error("User not found.");
@@ -346,6 +348,16 @@ exports.updateUserProfileImage = async (userId, imageUrl) => {
       userId,
     ]);
 
+    // ✅ Log logout
+    await logAudit(
+      userId,
+      user.email,
+      user.role,
+      "LOGOUT",
+      `'${user.username}' Profile image updated.`,
+      ip
+    );
+
     return imageUrl;
   } catch (error) {
     console.error("Error updating profile picture:", error);
@@ -354,7 +366,7 @@ exports.updateUserProfileImage = async (userId, imageUrl) => {
 };
 
 // LOGOUT SERVICE
-exports.logout = async (userId) => {
+exports.logout = async (userId, ip) => {
   try {
     const [user] = await Connection(
       "SELECT username, email, role FROM users WHERE id = ?",
@@ -374,7 +386,8 @@ exports.logout = async (userId) => {
       user.email,
       user.role,
       "LOGOUT",
-      `User '${user.username}' logged out.`
+      `User '${user.username}' logged out.`,
+      ip
     );
 
     return true;
