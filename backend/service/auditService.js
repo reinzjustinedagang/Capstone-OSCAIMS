@@ -8,16 +8,18 @@ exports.logAudit = async (
   details,
   ipAddress
 ) => {
+  const safeIp = ipAddress || "UNKNOWN";
   try {
     await Connection(
       `
       INSERT INTO audit_logs (userId, user, userRole, action, details, ipAddress)
       VALUES (?, ?, ?, ?, ?, ?)
       `,
-      [userId, user, userRole, action, details, ipAddress]
+      [userId, user, userRole, action, details, safeIp]
     );
   } catch (err) {
     console.error("❌ Failed to log audit entry:", err);
+    throw err;
   }
 };
 

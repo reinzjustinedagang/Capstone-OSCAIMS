@@ -1,6 +1,7 @@
 import React from "react";
 import Sidebar from "./Sidebar"; // Ensure paths are correct
 import Header from "./Header";
+import Footer from "./Footer";
 
 const Layout = ({ children }) => {
   return (

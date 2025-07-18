@@ -19,8 +19,20 @@ router.get("/get/:id", async (req, res) => {
 
 // POST: Create new senior citizen
 router.post("/create", async (req, res) => {
+  const user = req.session.user;
+  const ip = req.userIp;
+
+  if (!user) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: No user session found." });
+  }
   try {
-    const insertId = await seniorCitizenService.createSeniorCitizen(req.body);
+    const insertId = await seniorCitizenService.createSeniorCitizen(
+      req.body,
+      user,
+      ip
+    );
     res.status(201).json({ message: "Senior citizen created.", insertId });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -29,10 +41,20 @@ router.post("/create", async (req, res) => {
 
 // PUT: Update senior citizen
 router.put("/update/:id", async (req, res) => {
+  const user = req.session.user;
+  const ip = req.userIp;
+
+  if (!user) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: No user session found." });
+  }
   try {
     const success = await seniorCitizenService.updateSeniorCitizen(
       req.params.id,
-      req.body
+      req.body,
+      user,
+      ip
     );
     if (!success) {
       return res
@@ -47,9 +69,19 @@ router.put("/update/:id", async (req, res) => {
 
 // DELETE: Remove senior citizen
 router.delete("/delete/:id", async (req, res) => {
+  const user = req.session.user;
+  const ip = req.userIp;
+
+  if (!user) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: No user session found." });
+  }
   try {
     const success = await seniorCitizenService.deleteSeniorCitizen(
-      req.params.id
+      req.params.id,
+      user,
+      ip
     );
     if (!success) {
       return res

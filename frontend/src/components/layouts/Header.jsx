@@ -24,7 +24,7 @@ const Header = () => {
   const location = useLocation();
 
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
-  const isProfilePage = location.pathname === "/admin-my-profile";
+  const isProfilePage = location.pathname === "/admin/my-profile";
 
   const fetchUserData = async () => {
     setLoading(true);
@@ -113,13 +113,24 @@ const Header = () => {
   return (
     <header className="bg-white border-b border-gray-200">
       <div className="flex justify-between items-center px-4 py-3">
-        <button className="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100">
+        <button className="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 mr-3">
           <MenuIcon className="h-6 w-6" />
         </button>
+        {/* Page Title */}
+        <div className="flex items-center">
+          <h1 className="text-2xl font-bold text-gray-800">
+            {location.pathname
+              .split("/")
+              .pop()
+              .split("-")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ")}
+          </h1>
+        </div>
 
         <div className="flex items-center space-x-4 ml-auto">
           <NavLink
-            to="/admin-notifications"
+            to="/admin/notifications"
             className={({ isActive }) =>
               `relative p-2 rounded-full transition duration-150 ${
                 isActive
@@ -171,7 +182,7 @@ const Header = () => {
                 <div className="absolute top-13 right-0 bg-white border border-gray-200 rounded-md shadow-md w-44 z-50">
                   <button
                     onClick={() => {
-                      navigate("/admin-my-profile");
+                      navigate("/admin/my-profile");
                       setShowLogout(false);
                     }}
                     className={`flex items-center gap-2 w-full px-4 py-2 text-sm text-left

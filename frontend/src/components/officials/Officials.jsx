@@ -37,7 +37,7 @@ const Officials = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">OSCA Officials Directory</h1>
+      {/* <h1 className="text-2xl font-bold mb-6">OSCA Officials Directory</h1> */}
       <MunicipalOfficials
         title="Municipal Federation Officer"
         members={municipalOfficials}

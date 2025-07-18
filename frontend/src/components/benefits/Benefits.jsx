@@ -9,7 +9,7 @@ const Benefits = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen rounded-lg">
-      <h1 className="text-2xl font-bold mb-6">Benefits</h1>
+      {/* <h1 className="text-2xl font-bold mb-6">Benefits</h1> */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="border-b border-gray-200">
           <nav className="flex flex-wrap -mb-px">

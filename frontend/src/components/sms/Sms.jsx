@@ -106,7 +106,7 @@ const Sms = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">SMS Management</h1>
+      {/* <h1 className="text-2xl font-bold mb-6">SMS Management</h1> */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {/* Tabs */}
         <div className="border-b border-gray-200">

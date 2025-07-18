@@ -25,24 +25,28 @@ const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const menuItems = [
-    { to: "/admin-dashboard", label: "Dashboard", icon: HomeIcon },
+    { to: "/admin/dashboard", label: "Dashboard", icon: HomeIcon },
     {
-      to: "/admin-senior-citizen-list",
+      to: "/admin/senior-citizen-list",
       label: "Senior Citizens",
       icon: UsersIcon,
     },
-    { to: "/admin-officials", label: "OSCA Officials", icon: UserCheck },
-    { to: "/admin-pension-list", label: "Pension List", icon: Wallet },
-    { to: "/admin-benefits", label: "Benefits", icon: GiftIcon },
-    { to: "/admin-sms", label: "SMS Management", icon: MessageSquareIcon },
-    { to: "/admin-reports", label: "Reports", icon: FileTextIcon },
-    { to: "/admin-audit-logs", label: "Audit Logs", icon: ClipboardListIcon },
+    { to: "/admin/osca-officials", label: "OSCA Officials", icon: UserCheck },
+    { to: "/admin/pension-list", label: "Pension List", icon: Wallet },
+    { to: "/admin/benefits", label: "Benefits", icon: GiftIcon },
     {
-      to: "/admin-user-management",
+      to: "/admin/sms-management",
+      label: "SMS Management",
+      icon: MessageSquareIcon,
+    },
+    { to: "/admin/reports", label: "Reports", icon: FileTextIcon },
+    { to: "/admin/audit-logs", label: "Audit Logs", icon: ClipboardListIcon },
+    {
+      to: "/admin/user-management",
       label: "User Management",
       icon: UserCogIcon,
     },
-    { to: "/admin-settings", label: "Settings", icon: SettingsIcon },
+    { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
   ];
 
   return (

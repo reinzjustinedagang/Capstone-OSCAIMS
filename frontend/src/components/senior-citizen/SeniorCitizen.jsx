@@ -122,7 +122,8 @@ const SeniorCitizen = () => {
   const handleDeleteConfirm = async () => {
     try {
       await axios.delete(
-        `${backendUrl}/api/senior-citizens/delete/${selectedCitizen.id}`
+        `${backendUrl}/api/senior-citizens/delete/${selectedCitizen.id}`,
+        { withCredentials: true }
       );
       await fetchCitizens();
       setShowDeleteModal(false);
@@ -230,7 +231,7 @@ const SeniorCitizen = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Senior Citizen List</h1>
+        {/* <h1 className="text-2xl font-bold">Senior Citizen List</h1> */}
         <Button
           onClick={() => {
             setShowAddModal(true);

@@ -137,7 +137,6 @@ exports.register = async (username, email, password, cp_number, role, ip) => {
       hashedPassword,
       cp_number,
       role,
-      ip,
     ]);
 
     // ✅ Log registration
@@ -147,7 +146,8 @@ exports.register = async (username, email, password, cp_number, role, ip) => {
         email,
         role,
         "REGISTER",
-        `New user '${username}' registered.`
+        `New user '${username}' registered.`,
+        ip
       );
     }
 

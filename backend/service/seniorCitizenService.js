@@ -1,4 +1,5 @@
 const Connection = require("../db/Connection");
+const { logAudit } = require("./auditService");
 
 // Fetch senior citizen by ID
 exports.getSeniorCitizenById = async (id) => {
@@ -15,10 +16,21 @@ exports.getSeniorCitizenById = async (id) => {
 };
 
 // Create a new senior citizen
-exports.createSeniorCitizen = async (seniorCitizenData) => {
+exports.createSeniorCitizen = async (seniorCitizenData, user, ip) => {
   try {
     const query = `INSERT INTO senior_citizens SET ?`;
     const result = await Connection(query, seniorCitizenData);
+
+    if (result.affectedRows === 1 && user) {
+      await logAudit(
+        user.id,
+        user.email,
+        user.role,
+        "CREATE",
+        `New Senior Citizen: '${seniorCitizenData.firstName} ${seniorCitizenData.lastName}'.`,
+        ip
+      );
+    }
     return result.insertId;
   } catch (error) {
     console.error("Error creating senior citizen:", error);
@@ -27,10 +39,21 @@ exports.createSeniorCitizen = async (seniorCitizenData) => {
 };
 
 // Update an existing senior citizen
-exports.updateSeniorCitizen = async (id, updatedData) => {
+exports.updateSeniorCitizen = async (id, updatedData, user, ip) => {
   try {
     const query = `UPDATE senior_citizens SET ? WHERE id = ?`;
     const result = await Connection(query, [updatedData, id]);
+
+    if (result.affectedRows > 0 && user) {
+      await logAudit(
+        user.id,
+        user.email,
+        user.role,
+        "UPDATE",
+        `Updated Senior Citizen: '${updatedData.firstName} ${updatedData.lastName}'.`,
+        ip
+      );
+    }
     return result.affectedRows > 0;
   } catch (error) {
     console.error(`Error updating senior citizen with ID ${id}:`, error);
@@ -39,10 +62,27 @@ exports.updateSeniorCitizen = async (id, updatedData) => {
 };
 
 // Delete a senior citizen
-exports.deleteSeniorCitizen = async (id) => {
+exports.deleteSeniorCitizen = async (id, user, ip) => {
   try {
+    // Fetch citizen data for audit log
+    const citizen = await Connection(
+      `SELECT firstName, lastName FROM senior_citizens WHERE id = ?`,
+      [id]
+    );
+
     const query = `DELETE FROM senior_citizens WHERE id = ?`;
     const result = await Connection(query, [id]);
+
+    if (result.affectedRows === 1 && user && citizen.length > 0) {
+      await logAudit(
+        user.id,
+        user.email,
+        user.role,
+        "DELETE",
+        `Senior Citizen Deleted: '${citizen[0].firstName} ${citizen[0].lastName}'.`,
+        ip
+      );
+    }
     return result.affectedRows > 0;
   } catch (error) {
     console.error(`Error deleting senior citizen with ID ${id}:`, error);

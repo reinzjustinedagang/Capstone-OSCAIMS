@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Button from "../UI/Button"; // Importing your Button component
-import { Loader2, SaveIcon, XCircle } from "lucide-react"; // Importing necessary icons
+import { Loader2, SaveIcon, XCircle, Upload, UserIcon } from "lucide-react"; // Importing necessary icons
+import user from "../../assets/user.png";
 
-const OfficialForm = ({
+const MunicipalForm = ({
   formData,
   onChange,
   onFileChange,
@@ -14,6 +15,20 @@ const OfficialForm = ({
   existingImage, // The filename of the existing image if in edit mode
   backendUrl, // Backend URL for constructing the image source
 }) => {
+  useEffect(() => {
+    let previewUrl;
+
+    if (formData.imageFile instanceof File) {
+      previewUrl = URL.createObjectURL(formData.imageFile);
+    }
+
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [formData.imageFile]);
+
   return (
     <form
       onSubmit={(e) => {
@@ -22,6 +37,38 @@ const OfficialForm = ({
       }}
       className="space-y-4"
     >
+      {/* Image Upload and Preview Section */}
+      <div className="flex justify-center">
+        <div className="relative w-32 h-32">
+          <img
+            src={
+              formData.imageFile instanceof File
+                ? URL.createObjectURL(formData.imageFile)
+                : existingImage || user
+            }
+            alt="Profile Preview"
+            className="w-full h-full object-cover rounded-full border-4 border-blue-700"
+          />
+
+          <label
+            htmlFor="image"
+            className="absolute bottom-0 right-2 bg-black bg-opacity-60 p-1 rounded-full cursor-pointer hover:bg-opacity-80"
+            title="Change Image"
+          >
+            <Upload className="text-white w-4 h-4" />
+          </label>
+        </div>
+
+        <input
+          type="file"
+          id="image"
+          name="image"
+          accept="image/*"
+          onChange={onFileChange}
+          className="hidden"
+        />
+      </div>
+
       <div>
         <label
           htmlFor="name"
@@ -82,40 +129,6 @@ const OfficialForm = ({
         </select>
       </div>
 
-      {/* Image Upload and Preview Section */}
-      <div>
-        <label
-          htmlFor="image"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Profile Image
-        </label>
-        <input
-          type="file"
-          id="image"
-          name="image"
-          accept="image/*"
-          onChange={onFileChange}
-          className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md shadow-sm file:bg-white file:border file:border-gray-300 file:rounded-md file:py-1 file:px-2 file:text-sm hover:file:bg-gray-50"
-        />
-        {/* Display existing image info only if editing, an existing image is present, and no new file is selected */}
-        {isEditing &&
-          existingImage &&
-          !formData.imageFile && ( // Assuming formData.imageFile would be set if a new file is chosen
-            <p className="text-sm text-gray-500 mt-1">
-              Current image:{" "}
-              <a
-                href={`${existingImage}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
-                {existingImage}
-              </a>
-            </p>
-          )}
-      </div>
-
       {/* Error display */}
       {error && (
         <div
@@ -164,4 +177,4 @@ const OfficialForm = ({
   );
 };
 
-export default OfficialForm;
+export default MunicipalForm;

@@ -87,7 +87,7 @@ function App() {
 
       {/* Admin Routes */}
       <Route
-        path="/admin-dashboard"
+        path="/admin/dashboard"
         element={
           <ProtectedRoute role="Admin">
             <DashboardPage />
@@ -95,7 +95,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-senior-citizen-list"
+        path="/admin/senior-citizen-list"
         element={
           <ProtectedRoute role="Admin">
             <SeniorCitizenPage />
@@ -103,7 +103,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-officials"
+        path="/admin/osca-officials"
         element={
           <ProtectedRoute role="Admin">
             <OfficialsPage />
@@ -111,7 +111,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-pension-list"
+        path="/admin/pension-list"
         element={
           <ProtectedRoute role="Admin">
             <PensionListPage />
@@ -119,7 +119,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-benefits"
+        path="/admin/benefits"
         element={
           <ProtectedRoute role="Admin">
             <BenefitsPage />
@@ -127,7 +127,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-sms"
+        path="/admin/sms-management"
         element={
           <ProtectedRoute role="Admin">
             <SmsPage />
@@ -135,7 +135,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-reports"
+        path="/admin/reports"
         element={
           <ProtectedRoute role="Admin">
             <ReportPage />
@@ -143,7 +143,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-audit-logs"
+        path="/admin/audit-logs"
         element={
           <ProtectedRoute role="Admin">
             <AuditLogsPage />
@@ -151,7 +151,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-my-profile"
+        path="/admin/my-profile"
         element={
           <ProtectedRoute role="Admin">
             <MyProfilePage />
@@ -159,7 +159,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-user-management"
+        path="/admin/user-management"
         element={
           <ProtectedRoute role="Admin">
             <UserManagementPage />
@@ -167,7 +167,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-settings"
+        path="/admin/settings"
         element={
           <ProtectedRoute role="Admin">
             <SettingsPage />
@@ -175,7 +175,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-barangays"
+        path="/admin/barangays"
         element={
           <ProtectedRoute role="Admin">
             <BarangayManagementPage />
@@ -183,7 +183,7 @@ function App() {
         }
       />
       <Route
-        path="/admin-notifications"
+        path="/admin/notifications"
         element={
           <ProtectedRoute role="Admin">
             <NotificationPage />
@@ -193,7 +193,7 @@ function App() {
 
       {/* Staff Routes */}
       <Route
-        path="/staff-dashboard"
+        path="/staff/dashboard"
         element={
           <ProtectedRoute role="Staff">
             <UserDashboard />

@@ -48,13 +48,16 @@ router.get("/count/all", async (req, res) => {
 router.post("/", async (req, res) => {
   const { name } = req.body;
   const user = req.session.user;
+  const ip = req.userIp;
+
+  console.log("Client IP:", req.userIp);
 
   if (!user) {
     return res.status(401).json({ message: "Unauthorized: Not logged in" });
   }
 
   try {
-    await barangayService.createBarangay(name, user);
+    await barangayService.createBarangay(name, user, ip);
     res.status(201).json({ message: "Barangay created successfully" });
   } catch (error) {
     console.error("Error creating barangay:", error);
@@ -68,13 +71,14 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { name } = req.body;
   const user = req.session.user;
+  const ip = req.userIp;
 
   if (!user) {
     return res.status(401).json({ message: "Unauthorized: Not logged in" });
   }
 
   try {
-    await barangayService.updateBarangay(req.params.id, name, user);
+    await barangayService.updateBarangay(req.params.id, name, user, ip);
     res.json({ message: "Barangay updated successfully" });
   } catch (error) {
     console.error("Error updating barangay:", error);
@@ -85,13 +89,14 @@ router.put("/:id", async (req, res) => {
 // DELETE a barangay
 router.delete("/:id", async (req, res) => {
   const user = req.session.user;
+  const ip = req.userIp;
 
   if (!user) {
     return res.status(401).json({ message: "Unauthorized: Not logged in" });
   }
 
   try {
-    await barangayService.deleteBarangay(req.params.id, user);
+    await barangayService.deleteBarangay(req.params.id, user, ip);
     res.json({ message: "Barangay deleted successfully" });
   } catch (error) {
     console.error("Error deleting barangay:", error);

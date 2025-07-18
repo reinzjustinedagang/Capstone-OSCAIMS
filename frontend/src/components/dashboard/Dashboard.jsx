@@ -42,9 +42,9 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      {/* <h1 className="text-2xl font-bold mb-6">Dashboard</h1> */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <NavLink to="/admin-senior-citizen-list">
+        <NavLink to="/admin/senior-citizen-list">
           <Card
             title="Total Senior Citizens"
             value={citizenCount}
@@ -53,7 +53,7 @@ const Dashboard = () => {
           />
         </NavLink>
 
-        <NavLink to="/admin-barangays">
+        <NavLink to="/admin/barangays">
           <Card
             title="No. of Barangay"
             value={barangayCount}

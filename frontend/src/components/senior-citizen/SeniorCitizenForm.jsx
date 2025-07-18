@@ -198,13 +198,15 @@ const SeniorCitizenForm = ({
       if (isEditing) {
         response = await axios.put(
           `${backendUrl}/api/senior-citizens/update/${citizen.id}`,
-          formData
+          formData,
+          { withCredentials: true }
         );
         onSubmitSuccess("Senior citizen record updated successfully!");
       } else {
         response = await axios.post(
           `${backendUrl}/api/senior-citizens/create`,
-          formData
+          formData,
+          { withCredentials: true }
         );
         onSubmitSuccess("New senior citizen registered successfully!");
       }

@@ -4,7 +4,6 @@ const cors = require("cors");
 const compression = require("compression");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
-const Connection = require("../db/Connection"); // Import your DB utility
 require("dotenv").config(); // Load environment variables
 
 const app = express();
@@ -57,7 +56,7 @@ app.use(
   })
 );
 
-const authRoutes = require("../route/authRoutes");
+const userRoutes = require("../route/userRoutes");
 const seniorCitizenRoutes = require("../route/seniorCitizenRoutes");
 const auditRoutes = require("../route/auditRoutes");
 const smsRoute = require("../route/smsRoute");
@@ -69,7 +68,7 @@ const getUserIp = require("../middleware/getUserIp");
 app.use(getUserIp);
 app.use("/api/officials", officialRoutes);
 app.use("/api/audit-logs", auditRoutes);
-app.use("/api/user", authRoutes);
+app.use("/api/user", userRoutes);
 app.use("/api/senior-citizens", seniorCitizenRoutes);
 app.use("/api/sms", smsRoute);
 app.use("/api/templates", templateRoutes);

@@ -46,9 +46,9 @@ export default function Login() {
       if (user && user.role) {
         const role = user.role.toLowerCase();
         if (role === "admin") {
-          navigate("/admin-dashboard");
+          navigate("/admin/dashboard");
         } else if (role === "staff") {
-          navigate("/staff-dashboard");
+          navigate("/staff/dashboard");
         } else {
           setError(
             "Login successful, but user role not recognized. Please contact support."

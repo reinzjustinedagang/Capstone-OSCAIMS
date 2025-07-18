@@ -293,7 +293,7 @@ export default function MyProfile() {
 
   return (
     <div className="bg-gray-100 min-h-screen rounded-lg font-inter">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
+      {/* <h1 className="text-2xl font-bold text-gray-800 mb-6">My Profile</h1> */}
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b pb-6 mb-6">
           {/* Profile Picture Section */}

@@ -26,6 +26,7 @@ router.post(
   async (req, res) => {
     const { name, position, type } = req.body;
     const user = req.session.user;
+    const ip = req.userIp;
     let imageUrl = null;
 
     try {
@@ -48,7 +49,8 @@ router.post(
         position,
         type,
         imageUrl,
-        user
+        user,
+        ip
       );
 
       res.status(201).json({
@@ -71,6 +73,7 @@ router.put(
   async (req, res) => {
     const { name, position, type, existing_image } = req.body;
     const user = req.session.user;
+    const ip = req.userIp;
     let imageUrl = existing_image;
 
     try {
@@ -99,7 +102,8 @@ router.put(
         position,
         type,
         imageUrl,
-        user
+        user,
+        ip
       );
       res.json({ message: "Municipal official updated successfully" });
     } catch (error) {
@@ -112,9 +116,10 @@ router.put(
 // DELETE municipal official
 router.delete("/municipal/:id", isAuthenticated, async (req, res) => {
   const user = req.session.user;
+  const ip = req.userIp;
 
   try {
-    await officialService.deleteMunicipalOfficial(req.params.id, user);
+    await officialService.deleteMunicipalOfficial(req.params.id, user, ip);
     res.json({ message: "Municipal official deleted successfully" });
   } catch (error) {
     console.error("Error deleting municipal official:", error);
@@ -143,6 +148,7 @@ router.post(
   async (req, res) => {
     const { barangay_name, president_name, position } = req.body;
     const user = req.session.user;
+    const ip = req.userIp;
     let imageUrl = null;
 
     try {
@@ -165,7 +171,8 @@ router.post(
         president_name,
         position,
         imageUrl,
-        user
+        user,
+        ip
       );
 
       res.status(201).json({
@@ -189,6 +196,7 @@ router.put(
     const { barangay_name, president_name, position, existing_image } =
       req.body;
     const user = req.session.user;
+    const ip = req.userIp;
     let imageUrl = existing_image;
 
     try {
@@ -217,7 +225,8 @@ router.put(
         president_name,
         position,
         imageUrl,
-        user
+        user,
+        ip
       );
       res.json({ message: "Barangay official updated successfully" });
     } catch (error) {
@@ -230,9 +239,10 @@ router.put(
 // DELETE barangay official
 router.delete("/barangay/:id", isAuthenticated, async (req, res) => {
   const user = req.session.user;
+  const ip = req.userIp;
 
   try {
-    await officialService.deleteBarangayOfficial(req.params.id, user);
+    await officialService.deleteBarangayOfficial(req.params.id, user, ip);
     res.json({ message: "Barangay official deleted successfully" });
   } catch (error) {
     console.error("Error deleting barangay official:", error);
