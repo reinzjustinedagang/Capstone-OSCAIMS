@@ -313,7 +313,7 @@ const MunicipalOfficials = ({ title }) => {
           {/* Others */}
           {others.length > 0 && (
             <>
-              <div className="relative flex justify-center items-center w-full">
+              <div className="relative flex justify-center items-center w-full mb-4">
                 <div className="w-1 h-6 bg-blue-400"></div>
                 <div className="absolute top-6 h-1 w-2/3 bg-blue-400"></div>
               </div>

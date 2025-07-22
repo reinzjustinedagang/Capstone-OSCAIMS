@@ -227,7 +227,7 @@ exports.addBarangayOfficial = async (
     );
     if (duplicateRows.length > 0) {
       throw new Error(
-        `A barangay official for '${barangay_name}' with position '${position}' already exists.`
+        `A barangay official in ${barangay_name} already exists.`
       );
     }
 
