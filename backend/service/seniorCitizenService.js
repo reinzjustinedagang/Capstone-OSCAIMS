@@ -364,3 +364,21 @@ exports.permanentlyDeleteSeniorCitizen = async (id, user, ip) => {
     );
   }
 };
+
+// Permanently delete records soft-deleted more than 30 days ago
+exports.cleanupOldSoftDeletedCitizens = async () => {
+  try {
+    const result = await Connection(`
+      DELETE FROM senior_citizens
+      WHERE deleted = 1 AND deleted_at IS NOT NULL AND deleted_at < NOW() - INTERVAL 30 DAY
+    `);
+
+    console.log(
+      `Cleanup complete. ${result.affectedRows} soft-deleted senior citizen(s) permanently removed.`
+    );
+    return result.affectedRows;
+  } catch (error) {
+    console.error("Error during cleanup of old soft-deleted records:", error);
+    throw new Error("Cleanup failed.");
+  }
+};

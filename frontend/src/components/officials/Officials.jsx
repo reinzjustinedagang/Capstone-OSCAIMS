@@ -6,8 +6,8 @@ import BarangayOfficials from "./BarangayOfficials";
 const Officials = () => {
   return (
     <>
-      <MunicipalOfficials title="Municipal Federation Officer" />
       <BarangayOfficials title="Barangay Association Presidents" />
+      <MunicipalOfficials title="Federation Officer" />
     </>
   );
 };

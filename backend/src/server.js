@@ -5,11 +5,24 @@ const compression = require("compression");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 require("dotenv").config(); // Load environment variables
+const cron = require("node-cron");
+const seniorCitizenService = require("../service/seniorCitizenService");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const fs = require("fs");
-const path = require("path");
+
+// Run cleanup every day at midnight
+cron.schedule("0 0 * * *", async () => {
+  try {
+    const deletedCount =
+      await seniorCitizenService.cleanupOldSoftDeletedCitizens();
+    console.log(
+      `[CRON] ${deletedCount} expired soft-deleted citizens removed.`
+    );
+  } catch (error) {
+    console.error("[CRON] Cleanup failed:", error);
+  }
+});
 
 // MySQL session store setup
 const sessionStore = new MySQLStore({

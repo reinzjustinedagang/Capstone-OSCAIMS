@@ -210,7 +210,7 @@ const BarangayOfficials = ({ title }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-4 mt-5">
+    <div className="bg-white rounded-xl shadow-lg p-4 mb-4">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
         <h3 className="text-xl font-semibold">{title}</h3>
         <Button

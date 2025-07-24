@@ -5,6 +5,7 @@ import { ArchiveRestore, Trash, ArrowUp } from "lucide-react";
 // Assuming you have a Modal component for notifications
 import Modal from "../UI/Modal"; // Adjust path if necessary
 import Button from "../UI/Button"; // Assuming you have a Button component
+import { formatDistanceToNow } from "date-fns";
 
 const backendUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -170,7 +171,9 @@ const RecycleBin = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {citizen.deleted_at
-                        ? new Date(citizen.deleted_at).toLocaleDateString()
+                        ? `${formatDistanceToNow(new Date(citizen.deleted_at), {
+                            addSuffix: true,
+                          })}`
                         : "Unknown"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -189,7 +192,7 @@ const RecycleBin = () => {
                           className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
                         >
                           <Trash className="h-4 w-4 mr-1" />
-                          Delete Forever
+                          Permanent Delete
                         </button>
                       </div>
                     </td>
