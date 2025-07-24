@@ -60,6 +60,12 @@ router.post(
       });
     } catch (error) {
       console.error("Error adding municipal official:", error);
+
+      // Handle duplicate error
+      if (error.message && error.message.includes("already exists")) {
+        return res.status(409).json({ message: error.message });
+      }
+
       res.status(500).json({ message: "Failed to add municipal official" });
     }
   }

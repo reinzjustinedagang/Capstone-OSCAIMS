@@ -14,7 +14,7 @@ const Card = ({ title, value, icon, color = "blue" }) => {
         <div className={`p-3 rounded-full ${colorClasses[color]}`}>{icon}</div>
         <div className="ml-5">
           <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-semibold">{value}</p>
+          <p className="text-xl font-semibold">{value}</p>
         </div>
       </div>
     </div>

@@ -30,6 +30,7 @@ import { BarangayManagementPage } from "./pages/admin/BarangayManagementPage.jsx
 // Staff Pages
 import { UserDashboard } from "./pages/user/UserDashboard";
 import { NotificationPage } from "./pages/admin/NotificationPage.jsx";
+import { RecycleBinPage } from "./pages/admin/RecycleBinPage.jsx";
 
 function App() {
   return (
@@ -187,6 +188,14 @@ function App() {
         element={
           <ProtectedRoute role="Admin">
             <NotificationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/recycle-bin"
+        element={
+          <ProtectedRoute role="Admin">
+            <RecycleBinPage />
           </ProtectedRoute>
         }
       />

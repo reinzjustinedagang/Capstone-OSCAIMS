@@ -11,6 +11,8 @@ const BarangayForm = ({
   onSubmit,
   formData,
   setFormData,
+  handleFileChange,
+  existingImage,
   error,
   loading,
   editingId,
@@ -35,35 +37,21 @@ const BarangayForm = ({
   }, []);
 
   useEffect(() => {
+    let previewUrl;
+
     if (formData.imageFile instanceof File) {
-      const objectUrl = URL.createObjectURL(formData.imageFile);
-      setPreviewUrl(objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
-    } else if (formData.existingImage) {
-      setPreviewUrl(`${backendUrl}/uploads/${formData.existingImage}`);
-    } else {
-      setPreviewUrl(user);
+      previewUrl = URL.createObjectURL(formData.imageFile);
     }
-  }, [formData.imageFile, formData.existingImage, backendUrl]);
 
-  const handleInput = (e) => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [formData.imageFile]);
+
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-    if (
-      !allowedTypes.includes(file.type.toLowerCase()) ||
-      file.size > 10 * 1024 * 1024
-    ) {
-      setValidationError("Only JPEG, JPG, PNG under 10MB are allowed.");
-      return;
-    }
-    setValidationError(null);
-    // setImageFile(file); // REMOVE THIS
-    setFormData({ ...formData, imageFile: file });
   };
 
   return (
@@ -87,7 +75,11 @@ const BarangayForm = ({
           <div className="flex justify-center">
             <div className="relative group w-32 h-32">
               <img
-                src={previewUrl}
+                src={
+                  formData.imageFile instanceof File
+                    ? URL.createObjectURL(formData.imageFile)
+                    : existingImage || user
+                }
                 alt="Profile Preview"
                 className="w-full h-full object-cover rounded-full border-4 border-blue-200 group-hover:border-blue-400 transition-all duration-300 shadow"
               />
@@ -119,7 +111,7 @@ const BarangayForm = ({
               id="barangay"
               name="barangay"
               value={formData.barangay}
-              onChange={handleInput}
+              onChange={handleChange}
               className="mt-1 block w-full border rounded-md px-3 py-2"
               required
             >
@@ -144,7 +136,7 @@ const BarangayForm = ({
               id="president"
               name="president"
               value={formData.president}
-              onChange={handleInput}
+              onChange={handleChange}
               className="mt-1 block w-full border rounded-md px-3 py-2"
               required
             />
@@ -161,7 +153,7 @@ const BarangayForm = ({
               id="position"
               name="position"
               value={formData.position}
-              onChange={handleInput}
+              onChange={handleChange}
               className="mt-1 block w-full border rounded-md px-3 py-2"
               required
             >

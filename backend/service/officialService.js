@@ -48,12 +48,25 @@ const checkIfTypeExists = async (type, excludeId = null) => {
   return rows && rows.length > 0;
 };
 
-exports.addMunicipalOfficial = async (name, position, type, image, user) => {
+function duplicateError(message) {
+  const err = new Error(message);
+  err.code = 409;
+  return err;
+}
+
+exports.addMunicipalOfficial = async (
+  name,
+  position,
+  type,
+  image,
+  user,
+  ip
+) => {
   try {
     if (type === "head" || type === "vice") {
       const typeAlreadyExists = await checkIfTypeExists(type);
       if (typeAlreadyExists) {
-        throw new Error(
+        throw duplicateError(
           `A municipal official with type '${type}' already exists.`
         );
       }
@@ -70,7 +83,8 @@ exports.addMunicipalOfficial = async (name, position, type, image, user) => {
         user.email,
         user.role,
         "CREATE",
-        `Added municipal official '${name}' as ${position} (${type})`
+        `Added municipal official '${name}' as ${position} (${type})`,
+        ip
       );
     }
     return result;
@@ -86,7 +100,8 @@ exports.updateMunicipalOfficial = async (
   position,
   type,
   image,
-  user
+  user,
+  ip
 ) => {
   try {
     const oldDataRows = await Connection(
@@ -100,7 +115,7 @@ exports.updateMunicipalOfficial = async (
     if ((type === "head" || type === "vice") && oldData.type !== type) {
       const typeAlreadyExists = await checkIfTypeExists(type, id);
       if (typeAlreadyExists) {
-        throw new Error(
+        throw duplicateError(
           `A municipal official with type '${type}' already exists. Cannot change.`
         );
       }
@@ -152,7 +167,8 @@ exports.updateMunicipalOfficial = async (
           "UPDATE",
           `Updated municipal official ${name} (ID: ${id}): ${changes.join(
             ", "
-          )}`
+          )}`,
+          ip
         );
       }
     }
@@ -164,7 +180,7 @@ exports.updateMunicipalOfficial = async (
   }
 };
 
-exports.deleteMunicipalOfficial = async (id, user) => {
+exports.deleteMunicipalOfficial = async (id, user, ip) => {
   const officialRows = await Connection(
     `SELECT name, image FROM municipal_officials WHERE id = ?`,
     [id]
@@ -183,7 +199,8 @@ exports.deleteMunicipalOfficial = async (id, user) => {
       user.email,
       user.role,
       "DELETE",
-      `Deleted municipal official '${official.name}'`
+      `Deleted municipal official '${official.name}'`,
+      ip
     );
 
     if (official.image) {
@@ -217,7 +234,8 @@ exports.addBarangayOfficial = async (
   president_name,
   position,
   image,
-  user
+  user,
+  ip
 ) => {
   try {
     // Check if a barangay official already exists for this barangay and position
@@ -226,7 +244,7 @@ exports.addBarangayOfficial = async (
       [barangay_name, position]
     );
     if (duplicateRows.length > 0) {
-      throw new Error(
+      throw duplicateError(
         `A barangay official in ${barangay_name} already exists.`
       );
     }
@@ -242,7 +260,8 @@ exports.addBarangayOfficial = async (
         user.email,
         user.role,
         "CREATE",
-        `Added barangay official '${barangay_name}'`
+        `Added barangay official '${barangay_name}'`,
+        ip
       );
     }
 
@@ -270,7 +289,8 @@ exports.updateBarangayOfficial = async (
   president_name,
   position,
   image,
-  user
+  user,
+  ip
 ) => {
   try {
     const oldDataRows = await Connection(
@@ -334,7 +354,8 @@ exports.updateBarangayOfficial = async (
         user.email,
         user.role,
         "UPDATE",
-        `Updated barangay official ${president_name}: ${changes.join(", ")}`
+        `Updated barangay official ${president_name}: ${changes.join(", ")}`,
+        ip
       );
     }
 
@@ -345,7 +366,7 @@ exports.updateBarangayOfficial = async (
   }
 };
 
-exports.deleteBarangayOfficial = async (id, user) => {
+exports.deleteBarangayOfficial = async (id, user, ip) => {
   try {
     const barangayRows = await Connection(
       `SELECT barangay_name, image FROM barangay_officials WHERE id = ?`,
@@ -365,7 +386,8 @@ exports.deleteBarangayOfficial = async (id, user) => {
         user.email,
         user.role,
         "DELETE",
-        `Deleted barangay official '${barangay.barangay_name}'`
+        `Deleted barangay official '${barangay.barangay_name}'`,
+        ip
       );
 
       if (barangay.image) {

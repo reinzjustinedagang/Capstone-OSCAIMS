@@ -119,7 +119,7 @@ const Header = () => {
         </button>
         {/* Page Title */}
         <div className="flex items-center">
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-xl font-bold text-gray-800">
             {location.pathname
               .split("/")
               .pop()

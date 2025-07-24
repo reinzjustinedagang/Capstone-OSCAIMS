@@ -292,6 +292,9 @@ export default function AuditLogs() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Details
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ip Address
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -328,6 +331,10 @@ export default function AuditLogs() {
                               ? "bg-red-100 text-red-800"
                               : log.action === "LOGOUT"
                               ? "bg-gray-300 text-black"
+                              : log.action === "RESTORE"
+                              ? "bg-green-300 text-green-800"
+                              : log.action === "PERMANENT_DELETE"
+                              ? "bg-red-500 text-white"
                               : "bg-gray-100 text-gray-800"
                           }`}
                         >
@@ -339,6 +346,9 @@ export default function AuditLogs() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {log.details}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {log.ipAddress}
                       </td>
                     </tr>
                   ))

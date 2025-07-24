@@ -55,6 +55,40 @@ const BarangayOfficials = ({ title }) => {
     fetchBarangays();
   }, [fetchBarangays]);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png"];
+    const allowedExtensions = ["jpg", "jpeg", "png"];
+    const maxSizeInBytes = 10 * 1024 * 1024;
+
+    const fileType = file.type.toLowerCase();
+    const fileExtension = file.name.toLowerCase().split(".").pop();
+
+    if (!allowedMimeTypes.includes(fileType)) {
+      setError("Only JPEG, JPG, and PNG files are allowed.");
+      return;
+    }
+
+    if (!allowedExtensions.includes(fileExtension)) {
+      setError("Only .jpeg, .jpg, and .png file extensions are allowed.");
+      return;
+    }
+
+    if (file.size > maxSizeInBytes) {
+      setError("File size exceeds 10MB. Please select a smaller image.");
+      return;
+    }
+
+    setError(null);
+    setImageFile(file);
+    setFormData((prev) => ({
+      ...prev,
+      imageFile: file,
+    }));
+  };
+
   const closeFormModal = () => {
     setShowFormModal(false);
     setFormData({
@@ -62,7 +96,6 @@ const BarangayOfficials = ({ title }) => {
       president: "",
       position: "",
       existingImage: "",
-      imageFile: null, // ADD THIS
     });
     setEditingId(null);
     setError("");
@@ -83,10 +116,10 @@ const BarangayOfficials = ({ title }) => {
         open: true,
         type: "save-update",
         id: editingId,
-        payload: { ...formData, imageFile: formData.imageFile },
+        payload: { ...formData, imageFile },
       });
     } else {
-      await saveOfficial(formData, formData.imageFile);
+      await saveOfficial(formData, imageFile);
     }
   };
 
@@ -99,8 +132,9 @@ const BarangayOfficials = ({ title }) => {
       form.append("barangay_name", dataToSave.barangay);
       form.append("president_name", dataToSave.president);
       form.append("position", dataToSave.position);
+
       if (dataToSave.id && dataToSave.existingImage) {
-        form.append("existing_image", dataToSave.existingImage);
+        form.append("existing_image", dataToSave.existingImage || "");
       }
       if (fileToUpload) {
         form.append("image", fileToUpload);
@@ -178,7 +212,7 @@ const BarangayOfficials = ({ title }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-4 mt-5">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-        <h3 className="text-2xl font-semibold">{title}</h3>
+        <h3 className="text-xl font-semibold">{title}</h3>
         <Button
           onClick={() => {
             setFormData({
@@ -225,9 +259,9 @@ const BarangayOfficials = ({ title }) => {
                       barangay: b.barangay_name,
                       president: b.president_name,
                       position: b.position,
-                      existingImage: b.image || "",
-                      imageFile: null,
+                      existingImage: b.image,
                     });
+                    setImageFile(null);
                     setEditingId(b.id);
                     setShowFormModal(true);
                   }}
@@ -246,8 +280,11 @@ const BarangayOfficials = ({ title }) => {
           onSubmit={handleSubmitFromForm}
           formData={formData}
           setFormData={setFormData}
+          handleFileChange={handleFileChange}
           error={error}
           loading={crudLoading}
+          existingImage={formData.existingImage}
+          imageFile={imageFile}
           editingId={editingId}
           backendUrl={backendUrl}
         />

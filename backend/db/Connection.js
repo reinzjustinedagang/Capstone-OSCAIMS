@@ -247,7 +247,10 @@ db.query(
     emergencyContactNumber VARCHAR(15),
     healthStatus VARCHAR(50),
     healthNotes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted TINYINT(1) DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )
 `,
   (err) => {

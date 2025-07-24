@@ -17,7 +17,7 @@ router.get("/get/:id", async (req, res) => {
   }
 });
 
-// POST: Create new senior citizen
+// POST: Create new senior citizen (with duplicate check)
 router.post("/create", async (req, res) => {
   const user = req.session.user;
   const ip = req.userIp;
@@ -35,6 +35,10 @@ router.post("/create", async (req, res) => {
     );
     res.status(201).json({ message: "Senior citizen created.", insertId });
   } catch (error) {
+    // Handle duplicate error (code 409 from service)
+    if (error.code === 409) {
+      return res.status(409).json({ message: error.message });
+    }
     res.status(500).json({ message: error.message });
   }
 });
@@ -96,19 +100,35 @@ router.delete("/delete/:id", async (req, res) => {
 
 // GET: Paginated list (e.g. /page?page=1&limit=10)
 router.get("/page", async (req, res) => {
+  const {
+    page = 1,
+    limit = 10,
+    search = "",
+    barangay = "All",
+    gender = "All",
+    ageRange = "All",
+    healthStatus = "All",
+    sortBy = "lastName",
+    sortOrder = "asc",
+  } = req.query;
+
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-
-    const data = await seniorCitizenService.getPaginatedSeniorCitizens(
+    const result = await seniorCitizenService.getPaginatedFilteredCitizens({
       page,
-      limit
-    );
+      limit,
+      search,
+      barangay,
+      gender,
+      ageRange,
+      healthStatus,
+      sortBy,
+      sortOrder,
+    });
 
-    res.status(200).json(data);
-  } catch (error) {
-    console.error("Failed to fetch paginated senior citizens:", error);
-    res.status(500).json({ message: error.message });
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Error getting filtered citizens:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -124,5 +144,88 @@ router.get("/count/all", async (req, res) => {
 });
 
 router.get("/sms-citizens", seniorCitizenService.getSmsRecipients);
+
+// PATCH: Soft delete (move to recycle bin)
+router.patch("/soft-delete/:id", async (req, res) => {
+  const { id } = req.params;
+  const user = req.session.user;
+  const ip = req.ip;
+
+  try {
+    const success = await seniorCitizenService.softDeleteSeniorCitizen(
+      id,
+      user,
+      ip
+    );
+    if (success) {
+      return res
+        .status(200)
+        .json({ message: "Senior citizen soft deleted successfully" });
+    } else {
+      return res.status(404).json({ message: "Senior citizen not found" });
+    }
+  } catch (error) {
+    console.error("Error in soft delete route:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// GET: List of soft-deleted citizens
+router.get("/deleted", async (req, res) => {
+  try {
+    const deletedCitizens =
+      await seniorCitizenService.getDeletedSeniorCitizens();
+    res.status(200).json(deletedCitizens);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// PATCH: Restore from recycle bin
+router.patch("/restore/:id", async (req, res) => {
+  const { id } = req.params;
+  const user = req.session.user;
+  const ip = req.userIp;
+
+  if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+  try {
+    const success = await seniorCitizenService.restoreSeniorCitizen(
+      id,
+      user,
+      ip
+    );
+    if (!success)
+      return res
+        .status(404)
+        .json({ message: "Senior citizen not found or not restored." });
+    res.status(200).json({ message: "Senior citizen restored." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// DELETE: Permanently delete
+router.delete("/permanent-delete/:id", async (req, res) => {
+  const user = req.session.user;
+  const ip = req.userIp;
+
+  if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+  try {
+    const success = await seniorCitizenService.permanentlyDeleteSeniorCitizen(
+      req.params.id,
+      user,
+      ip
+    );
+    if (!success)
+      return res.status(404).json({
+        message: "Senior citizen not found or not permanently deleted.",
+      });
+    res.status(200).json({ message: "Senior citizen permanently deleted." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports = router;
