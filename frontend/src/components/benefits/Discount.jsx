@@ -1,67 +1,146 @@
 import React, { useState, useEffect } from "react";
-import { Tag, Info, MapPin } from "lucide-react";
+import { PercentIcon, CheckCircle } from "lucide-react";
 import BenefitsCard from "../UI/BenefitsCard";
+import Modal from "../UI/Modal";
+import Button from "../UI/Button";
+import axios from "axios";
 
-const sampleDiscounts = [
-  {
-    id: 1,
-    title: "20% Discount on Medicines",
-    description:
-      "Senior citizens are entitled to a 20% discount and VAT exemption on the purchase of medicines and essential drugs.",
-    location: "All pharmacies in San Jose",
-    provider: "Republic Act 9994",
-  },
-  {
-    id: 2,
-    title: "Movie Ticket Discount",
-    description:
-      "Seniors can enjoy a 20% discount on movie tickets at local cinemas.",
-    location: "San Jose Public Market Cinema",
-    provider: "Local Government Ordinance",
-  },
-  {
-    id: 3,
-    title: "Public Transportation Discount",
-    description:
-      "20% fare discount for land, air, and sea travel for senior citizens.",
-    location: "Tricycles, Vans, Bus Terminals",
-    provider: "LTFRB Regulation",
-  },
-  {
-    id: 4,
-    title: "Utility Bill Discount",
-    description:
-      "A 5% discount on monthly water and electricity bills for low-income senior citizens consuming below threshold.",
-    location: "San Jose Electric & Water Services",
-    provider: "RA 9994 Section 4",
-  },
-];
-
-const Discount = () => {
+const Discount = ({ onEdit }) => {
   const [discounts, setDiscounts] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+
+  const backendUrl =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
   useEffect(() => {
-    // Replace this with API fetch later
-    setDiscounts(sampleDiscounts);
+    fetchDiscounts();
   }, []);
+
+  const fetchDiscounts = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await axios.get(`${backendUrl}/api/benefits/discount`);
+      setDiscounts(response.data);
+    } catch (error) {
+      console.error("Failed to fetch Discounts: ", error);
+      setError(error.message || "Failed to fetch discounts");
+      setDiscounts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmDelete = (id) => {
+    setSelectedId(id);
+    setShowConfirmModal(true);
+  };
+
+  const handleDelete = async () => {
+    try {
+      setLoading(true); // Set loading to true while deleting
+      await axios.delete(`${backendUrl}/api/benefits/${selectedId}`, {
+        withCredentials: true,
+      });
+      setDiscounts((prev) => prev.filter((type) => type.id !== selectedId));
+      setShowConfirmModal(false);
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.error("Error deleting benefits:", err);
+      alert("Failed to delete");
+    } finally {
+      setLoading(false); // Reset loading state
+    }
+  };
 
   return (
     <>
-      <h1 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
-        <Tag className="w-6 h-6 text-blue-600" />
+      <h1 className="text-lg font-medium mb-4 text-gray-800 flex items-center gap-2">
+        <PercentIcon className="w-6 h-6 text-blue-600" />
         Senior Citizen Discounts in San Jose, Occidental Mindoro
       </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {discounts.map((item) => (
-          <BenefitsCard
-            key={item.id}
-            type={item}
-            textColor="text-blue-700"
-            textIcon="text-blue-500"
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center items-center h-32">
+          <p className="text-gray-500">Loading discounts...</p>
+        </div>
+      ) : error ? (
+        <div className="flex justify-center items-center h-32">
+          <p className="text-red-500">{error}</p>
+        </div>
+      ) : discounts.length === 0 ? (
+        <div className="flex justify-center items-center h-32">
+          <p className="text-gray-500">No discounts available at the moment.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {discounts.map((type) => (
+            <BenefitsCard
+              key={type.id}
+              type={type}
+              icon={<PercentIcon className="w-5 h-5 text-blue-500" />}
+              textColor="text-blue-700"
+              textIcon="text-blue-500"
+              onDelete={confirmDelete}
+              onEdit={onEdit}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Confirm Delete Modal */}
+      {showConfirmModal && (
+        <Modal
+          isOpen={showConfirmModal}
+          onClose={() => !loading && setShowConfirmModal(false)}
+          title="Confirm Delete"
+        >
+          <div className="p-6">
+            <p className="mb-4 text-gray-700">
+              Are you sure you want to delete this?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="secondary"
+                onClick={() => setShowConfirmModal(false)}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={handleDelete} loading={loading}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <Modal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          title=""
+        >
+          <div className="p-6 text-center">
+            <div className="mx-auto mb-4 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-500" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-800 mb-2">Delete</h3>
+            <p className="text-sm text-gray-600 mb-4">Deleted Successfully!</p>
+            <Button
+              variant="primary"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              OK
+            </Button>
+          </div>
+        </Modal>
+      )}
     </>
   );
 };

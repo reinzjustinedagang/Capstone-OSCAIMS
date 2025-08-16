@@ -1,5 +1,5 @@
 import React from "react";
-import { EditIcon, TrashIcon } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import user from "../../assets/user.png";
 
 const BarangayCard = ({ official, onEdit, onDelete }) => {
@@ -47,14 +47,14 @@ const BarangayCard = ({ official, onEdit, onDelete }) => {
           className="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
           aria-label={`Edit ${official.president_name}`}
         >
-          <EditIcon className="h-5 w-5" />
+          <Edit className="h-5 w-5" />
         </button>
         <button
           onClick={onDelete}
           className="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-red-300 transition"
           aria-label={`Delete ${official.president_name}`}
         >
-          <TrashIcon className="h-5 w-5" />
+          <Trash2 className="h-5 w-5" />
         </button>
       </div>
     </div>

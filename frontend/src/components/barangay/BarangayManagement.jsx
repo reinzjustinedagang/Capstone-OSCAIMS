@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
   Plus,
-  Edit as EditIcon,
-  Trash as TrashIcon,
+  Edit,
+  Trash2,
   ArrowUp,
   ArrowDown,
   Search,
@@ -277,7 +277,7 @@ const BarangayManagement = () => {
                             }}
                             className="text-blue-600 hover:text-blue-900"
                           >
-                            <EditIcon className="h-5 w-5" />
+                            <Edit className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => {
@@ -286,7 +286,7 @@ const BarangayManagement = () => {
                             }}
                             className="text-red-600 hover:text-red-900"
                           >
-                            <TrashIcon className="h-5 w-5" />
+                            <Trash2 className="h-5 w-5" />
                           </button>
                         </div>
                       </td>

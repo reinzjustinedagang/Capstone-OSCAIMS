@@ -5,11 +5,13 @@ import Delete from "../UI/Button/Delete";
 import SeniorCitizenForm from "./SeniorCitizenForm";
 import Modal from "../UI/Modal"; // This will be your smaller modal (for notifications and delete confirmation)
 import Modal2 from "../UI/Modal2"; // This is your larger modal for the form
+import Pagination from "../UI/Component/Pagination";
+import SearchAndFilterBar from "../UI/Component/SearchAndFilterBar";
 import {
   Search,
   Plus,
-  EditIcon,
-  Trash,
+  Edit,
+  Trash2,
   ArrowDown,
   ArrowUp,
   ArchiveRestore,
@@ -274,137 +276,32 @@ const SeniorCitizen = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="p-4 border-b border-gray-200 space-y-4">
-          {/* Top Bar: Search + Filter Button */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-            {/* Search Input */}
-            <div className="relative w-full sm:w-64">
-              <input
-                type="text"
-                placeholder="Search senior citizens..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-            </div>
-
-            {/* Filter Controls */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors ${
-                  showFilters ? "text-gray-900 font-semibold" : ""
-                }`}
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Advanced Filters
-                <ArrowDown
-                  className={`h-4 w-4 ml-2 transform transition-transform ${
-                    showFilters ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {(filterBarangay !== "All Barangays" ||
-                filterHealthStatus !== "All Health Status" ||
-                filterAge !== "All" ||
-                filterGender !== "All") && (
-                <button
-                  onClick={clearFilters}
-                  className="flex items-center text-sm text-red-600 hover:text-red-700 transition-colors"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Clear Filters
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Advanced Filters Section */}
-          {showFilters && (
-            <div className="grid grid-cols-4 md:grid-cols-5 gap-4 pt-2 border-t border-gray-200">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Age
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={filterAge}
-                  onChange={(e) => setFilterAge(e.target.value)}
-                >
-                  {AgeOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Gender
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={filterGender}
-                  onChange={(e) => setFilterGender(e.target.value)}
-                >
-                  {genderOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Barangay
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={filterBarangay}
-                  onChange={(e) => setFilterBarangay(e.target.value)}
-                >
-                  {barangayOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Health Status
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={filterHealthStatus}
-                  onChange={(e) => setFilterHealthStatus(e.target.value)}
-                >
-                  {healthStatusOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-        </div>
+        <SearchAndFilterBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          filterAge={filterAge}
+          setFilterAge={setFilterAge}
+          filterGender={filterGender}
+          setFilterGender={setFilterGender}
+          filterBarangay={filterBarangay}
+          setFilterBarangay={setFilterBarangay}
+          filterHealthStatus={filterHealthStatus}
+          setFilterHealthStatus={setFilterHealthStatus}
+          clearFilters={clearFilters}
+          AgeOptions={AgeOptions}
+          genderOptions={genderOptions}
+          barangayOptions={barangayOptions}
+          healthStatusOptions={healthStatusOptions}
+        />
 
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 {[
-                  // Option 1 (Recommended): Sort by last name for "Name"
                   { label: "Name", key: "lastName" },
-                  // Option 2: If you want to sort by first name
-                  // { label: "Name", key: "firstName" },
-
                   { label: "Age", key: "age" }, // Backend provides 'age', so this is fine
                   { label: "Gender", key: "gender" },
                   { label: "Address", key: "barangay" }, // Backend allows sorting by 'barangay', so this is fine.
@@ -479,14 +376,14 @@ const SeniorCitizen = () => {
                           className="text-blue-600 hover:text-blue-900"
                           aria-label={`Edit ${citizen.firstName} ${citizen.lastName}`}
                         >
-                          <EditIcon className="h-5 w-5" />
+                          <Edit className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDelete(citizen)}
                           className="text-red-600 hover:text-red-900"
                           aria-label={`Delete ${citizen.firstName} ${citizen.lastName}`}
                         >
-                          <Trash className="h-5 w-5" />
+                          <Trash2 className="h-5 w-5" />
                         </button>
                       </div>
                     </td>
@@ -508,48 +405,12 @@ const SeniorCitizen = () => {
           </table>
         </div>
 
-        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-          <p className="text-sm text-gray-700">
-            Showing{" "}
-            <span className="font-medium">{(page - 1) * limit + 1}</span> to{" "}
-            <span className="font-medium">
-              {Math.min(page * limit, totalCount)}
-            </span>{" "}
-            of <span className="font-medium">{totalCount}</span> results
-          </p>
-          <nav
-            className="inline-flex -space-x-px rounded-md shadow-sm"
-            aria-label="Pagination"
-          >
-            <button
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => setPage(i + 1)}
-                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                  page === i + 1
-                    ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={page === totalPages}
-              className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </nav>
-        </div>
+        <Pagination
+          page={page}
+          limit={limit}
+          totalCount={totalCount}
+          setPage={setPage}
+        />
       </div>
 
       {/* Add/Edit Modal (combined) */}

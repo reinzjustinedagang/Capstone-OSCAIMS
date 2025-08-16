@@ -184,8 +184,6 @@ exports.getPaginatedFilteredCitizens = async (options) => {
   try {
     // Log the constructed query for total count (for verification)
     const totalQuery = `SELECT COUNT(*) AS total FROM senior_citizens ${where}`;
-    console.log("Total Count Query (After Filter Logic):", totalQuery);
-    console.log("Total Count Params (After Filter Logic):", params);
 
     const totalResult = await Connection(totalQuery, params);
     const total = totalResult[0].total;
@@ -201,10 +199,6 @@ exports.getPaginatedFilteredCitizens = async (options) => {
        ORDER BY ${orderBy} ${order}
        LIMIT ? OFFSET ?`,
       [...params, safeLimit, offset]
-    );
-
-    console.log(
-      `Fetched ${data.length} senior citizens on page ${safePage} with limit ${safeLimit}`
     );
 
     return {
@@ -312,7 +306,7 @@ exports.restoreSeniorCitizen = async (id, user, ip) => {
       [id]
     );
 
-    const query = `UPDATE senior_citizens SET deleted = 0 WHERE id = ?`;
+    const query = `UPDATE senior_citizens SET deleted = 0, deleted_at = NULL WHERE id = ?`;
     const result = await Connection(query, [id]);
 
     if (result.affectedRows === 1 && user && citizen.length > 0) {

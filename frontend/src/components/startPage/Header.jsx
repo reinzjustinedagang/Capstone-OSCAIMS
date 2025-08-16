@@ -102,13 +102,13 @@ const Header = () => {
             <img
               src={logo}
               alt="OSCA Logo"
-              className="h-14 w-auto object-contain"
+              className="h-20 w-auto object-contain"
             />
             <div className="ml-3 flex flex-col">
-              <span className="font-bold text-blue-800 text-lg sm:text-xl leading-tight">
+              <span className="font-bold text-blue-800 text-xl">
                 Office of the Senior Citizen Affairs
               </span>
-              <span className="font-medium text-blue-700 text-sm sm:text-base">
+              <span className=" text-gray-600 text-sm">
                 San Jose, Occidental Mindoro
               </span>
             </div>

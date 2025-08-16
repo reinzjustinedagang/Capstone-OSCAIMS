@@ -2,24 +2,28 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "./Header"; // Assuming Header is in the same directory
 import {
-  ShieldCheckIcon,
-  MessageSquareTextIcon,
-  FileBarChartIcon,
-  HandshakeIcon,
-  LightbulbIcon,
-  MailIcon,
-  PhoneCallIcon,
-  MapPinIcon,
-  BookOpenTextIcon,
-  CalendarDaysIcon,
   UsersIcon,
-  ArrowRightIcon,
-} from "lucide-react"; // Import more icons for visual appeal
+  Newspaper,
+  Star,
+  BookOpenText,
+  MessageCircle,
+  MapPin,
+  Calendar,
+  Phone,
+  ArrowRight,
+  UserPlus,
+  Info,
+  CalendarDays,
+  CircleCheck,
+} from "lucide-react";
 
-// FeatureCard Component (reusable for the Features section)
-const FeatureCard = ({ icon, title, description }) => (
+// Reusable component for a feature or program card
+const InfoCard = ({ icon, title, description, color }) => (
   <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center transform transition-transform duration-300 hover:scale-105 hover:shadow-xl border border-gray-100">
-    <div className="bg-blue-100 p-4 rounded-full mb-4 text-blue-600">
+    <div
+      className={`p-4 rounded-full mb-4 text-white`}
+      style={{ backgroundColor: color }}
+    >
       {icon}
     </div>
     <h3 className="text-xl font-semibold text-gray-800 mb-2">{title}</h3>
@@ -27,7 +31,7 @@ const FeatureCard = ({ icon, title, description }) => (
   </div>
 );
 
-// RACard Component (reusable for Republic Acts section)
+// RACard Component (reused from the original page)
 const RACard = ({ icon, title, description }) => (
   <div className="bg-white rounded-xl shadow-md p-5 flex items-start space-x-4 transform transition-transform duration-300 hover:scale-103 hover:shadow-lg border border-gray-100">
     <div className="bg-green-100 p-3 rounded-full text-green-600 flex-shrink-0">
@@ -40,9 +44,29 @@ const RACard = ({ icon, title, description }) => (
   </div>
 );
 
-export const Home = () => {
+const Home = () => {
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [registeredCount, setRegisteredCount] = useState(1250); // Initial mock count
+  const [animatedCount, setAnimatedCount] = useState(0); // For animation
+
+  // Animate the registered count on component mount
+  useEffect(() => {
+    let start = 0;
+    const end = registeredCount;
+    if (start === end) return;
+
+    const incrementTime = 2000 / end;
+    const timer = setInterval(() => {
+      start += 1;
+      setAnimatedCount(start);
+      if (start === end) {
+        clearInterval(timer);
+      }
+    }, incrementTime);
+
+    return () => clearInterval(timer);
+  }, [registeredCount]);
 
   useEffect(() => {
     // Scroll to section if scrollToId is present in location state
@@ -54,135 +78,202 @@ export const Home = () => {
     }
   }, [location]);
 
-  // Function to toggle sidebar visibility (passed to Header)
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Mock data for the new sections
+  const programs = [
+    {
+      icon: <UsersIcon className="h-8 w-8" />,
+      title: "Social Pension Program",
+      description:
+        "Providing monthly financial assistance to indigent senior citizens to augment their daily subsistence.",
+      color: "#3B82F6", // blue-500
+    },
+    {
+      icon: <Star className="h-8 w-8" />,
+      title: "Health & Wellness Programs",
+      description:
+        "Regular health check-ups, wellness seminars, and fitness activities to promote an active lifestyle.",
+      color: "#EC4899", // pink-500
+    },
+    {
+      icon: <CalendarDays className="h-8 w-8" />,
+      title: "Community Events",
+      description:
+        "Organizing social gatherings, celebrations, and recreational trips to foster a strong sense of community.",
+      color: "#10B981", // green-500
+    },
+  ];
+
+  const newsItems = [
+    {
+      id: 1,
+      title: "OSCA announces new schedule for pension payout",
+      date: "October 26, 2023",
+      snippet:
+        "The Office of Senior Citizen Affairs has released the new payout schedule for social pension. Beneficiaries are advised to check the official notice board.",
+    },
+    {
+      id: 2,
+      title: "Free flu shots offered for senior citizens this November",
+      date: "October 19, 2023",
+      snippet:
+        "In partnership with the local health office, OSCA is providing free flu vaccinations. Please register at the OSCA office to secure a slot.",
+    },
+    {
+      id: 3,
+      title: "Senior Citizen Fun Run for a Cause set for December",
+      date: "October 10, 2023",
+      snippet:
+        "Join us for a day of fun and fitness! All proceeds from the fun run will be used to fund health programs for indigent seniors.",
+    },
+  ];
+
+  const howToRegisterSteps = [
+    {
+      icon: <UserPlus className="h-8 w-8" />,
+      title: "Step 1: Get an application form",
+      description:
+        "Visit the Office of Senior Citizen Affairs (OSCA) at the Municipal Hall to get your application form.",
+      color: "#F59E0B", // amber-500
+    },
+    {
+      icon: <Info className="h-8 w-8" />,
+      title: "Step 2: Submit requirements",
+      description:
+        "Provide a photocopy of your birth certificate and a valid ID to verify your age and residency.",
+      color: "#EF4444", // red-500
+    },
+    {
+      icon: <CircleCheck className="h-8 w-8" />,
+      title: "Step 3: Receive your ID",
+      description:
+        "Upon successful verification, you will receive your official Senior Citizen ID, granting you access to all benefits.",
+      color: "#3B82F6", // blue-500
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-inter">
-      {" "}
-      {/* Applied font-inter */}
-      {/* Header component, passing the toggle function for mobile menu */}
       <Header onMenuClick={toggleSidebar} />
-      {/* Hero Section */}
+
+      {/* Banner Section */}
       <section
-        id="home"
+        id="banner"
         className="relative min-h-[calc(100vh-64px)] flex flex-col items-center justify-center px-6 py-16 text-center overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100"
       >
-        {/* Background animation elements */}
-        <div className="absolute inset-0 z-0 opacity-20">
-          <div className="absolute w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob top-0 left-0"></div>
-          <div className="absolute w-64 h-64 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000 top-0 right-0"></div>
-          <div className="absolute w-64 h-64 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000 bottom-0 left-1/4"></div>
-        </div>
-
         <div className="relative z-10 max-w-5xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 leading-tight animate-fade-in-up">
-            Empowering Seniors with a{" "}
-            <span className="text-blue-600">Smarter Tomorrow</span>
+            Your Hub for Senior Citizen Services
           </h1>
           <p className="mt-8 text-lg md:text-xl font-medium text-gray-600 leading-relaxed animate-fade-in-up animation-delay-500">
-            A centralized system to manage benefits, pensions, and real-time
-            updates for senior citizens in San Jose, Occidental Mindoro,
-            ensuring efficiency and transparency.
+            A centralized platform for managing programs, benefits, and
+            information for seniors in San Jose, Occidental Mindoro.
           </p>
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-1000">
-            {/* <button
-              onClick={() => navigate("/login")} // Example: Link to login or registration
-              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Get Started
-              <ArrowRightIcon className="ml-2 h-5 w-5" />
-            </button> */}
             <a
-              href="#features"
+              href="#how-to-register"
               className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-blue-700 bg-white rounded-full shadow-md hover:bg-gray-50 transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              Learn More
+              How to Register
+              <ArrowRight className="ml-2 h-5 w-5" />
             </a>
           </div>
         </div>
       </section>
-      {/* Features Section (New) */}
+
+      {/* Total Registered Section */}
       <section
-        id="features"
+        id="total-registered"
         className="py-20 px-6 bg-white border-t border-gray-100"
+      >
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-lg text-gray-600 uppercase tracking-wider mb-2">
+            San Jose, Occidental Mindoro
+          </p>
+          <h2 className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-blue-600 mb-2 animate-pulse-count">
+            {animatedCount.toLocaleString()}
+          </h2>
+          <p className="text-2xl font-semibold text-gray-900">
+            Registered Senior Citizens
+          </p>
+        </div>
+      </section>
+
+      {/* Programs Section */}
+      <section
+        id="programs"
+        className="py-20 px-6 bg-gray-50 border-t border-gray-100"
       >
         <div className="max-w-6xl mx-auto text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Key Features of Our System
+            Our Programs & Services
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Streamlining operations and enhancing communication for the benefit
-            of our senior community.
+            We are committed to providing comprehensive support through various
+            programs designed to meet the needs of our senior community.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <FeatureCard
-            icon={<UsersIcon className="h-8 w-8" />}
-            title="Comprehensive Senior Citizen Database"
-            description="Securely manage detailed profiles, health status, and contact information for all registered senior citizens."
-          />
-          <FeatureCard
-            icon={<MessageSquareTextIcon className="h-8 w-8" />}
-            title="Automated SMS Notifications"
-            description="Send timely updates, announcements, and reminders directly to senior citizens' mobile phones."
-          />
-          <FeatureCard
-            icon={<FileBarChartIcon className="h-8 w-8" />}
-            title="Robust Reporting & Analytics"
-            description="Generate insightful reports on demographics, benefits distribution, and system activity for better decision-making."
-          />
-          <FeatureCard
-            icon={<HandshakeIcon className="h-8 w-8" />}
-            title="Efficient Benefits & Pension Management"
-            description="Track and manage the distribution of financial assistance and other benefits with ease and transparency."
-          />
-          <FeatureCard
-            icon={<ShieldCheckIcon className="h-8 w-8" />}
-            title="Secure & Accessible Platform"
-            description="Ensuring data privacy and ease of access for authorized OSCA officials and staff."
-          />
-          <FeatureCard
-            icon={<CalendarDaysIcon className="h-8 w-8" />}
-            title="Activity & Event Tracking"
-            description="Organize and monitor community events, health programs, and social gatherings for seniors."
-          />
+          {programs.map((program, index) => (
+            <InfoCard key={index} {...program} />
+          ))}
         </div>
       </section>
-      {/* About Section */}
+
+      {/* How to Register Section */}
       <section
-        id="about"
+        id="how-to-register"
+        className="py-20 px-6 bg-white border-t border-gray-100"
+      >
+        <div className="max-w-6xl mx-auto text-center mb-12">
+          <h2 className="text-4xl font-bold text-purple-700 mb-4">
+            How to Register as a Senior Citizen
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Follow these simple steps to get your Senior Citizen ID and enjoy
+            the benefits.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {howToRegisterSteps.map((step, index) => (
+            <InfoCard key={index} {...step} />
+          ))}
+        </div>
+      </section>
+
+      {/* Latest News Section */}
+      <section
+        id="news"
         className="py-20 px-6 bg-gray-50 border-t border-gray-100"
       >
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
-          <div className="md:w-1/2 text-center md:text-left">
-            <h2 className="text-4xl font-bold text-blue-800 mb-6 leading-tight">
-              About the Senior Citizen Information Management System
-            </h2>
-            <p className="text-lg text-gray-600 mb-4">
-              Designed specifically for the Office of the Senior Citizen Affairs
-              (OSCA) in San Jose, Occidental Mindoro, this platform is a leap
-              forward in public service.
-            </p>
-            <p className="text-lg text-gray-600">
-              It simplifies complex information management, enhances
-              communication through automation, and ensures transparency in all
-              operations. Our goal is to empower OSCA officials and staff,
-              enabling them to provide better, more efficient services, and
-              ensuring that no senior is left behind in the digital age.
-            </p>
-          </div>
-          <div className="md:w-1/2 flex justify-center">
-            {/* Placeholder for an image or illustration */}
-            <div className="w-full max-w-md h-64 bg-blue-200 rounded-xl flex items-center justify-center text-blue-700 text-xl font-semibold shadow-xl animate-fade-in-right">
-              <LightbulbIcon className="h-12 w-12 mr-3" />
-              Innovative Solution
+        <div className="max-w-6xl mx-auto text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            Latest News & Updates
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Stay informed with the latest announcements, events, and important
+            notices from OSCA.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {newsItems.map((news) => (
+            <div
+              key={news.id}
+              className="bg-white rounded-xl shadow-md p-6 border border-gray-100 transition-all duration-200 hover:shadow-lg"
+            >
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {news.title}
+              </h3>
+              <p className="text-sm text-gray-500 mb-3">{news.date}</p>
+              <p className="text-gray-700">{news.snippet}</p>
             </div>
-          </div>
+          ))}
         </div>
       </section>
+
       {/* Republic Acts Section */}
       <section id="ra" className="py-20 px-6 bg-white border-t border-gray-100">
         <div className="max-w-6xl mx-auto text-center mb-12">
@@ -196,29 +287,30 @@ export const Home = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <RACard
-            icon={<BookOpenTextIcon className="h-8 w-8" />}
+            icon={<BookOpenText className="h-8 w-8" />}
             title="RA 9994 – Expanded Senior Citizens Act of 2010"
             description="This act provides additional benefits and privileges to senior citizens, including discounts on various goods and services, and expanded healthcare benefits."
           />
           <RACard
-            icon={<BookOpenTextIcon className="h-8 w-8" />}
+            icon={<BookOpenText className="h-8 w-8" />}
             title="RA 10645 – Mandatory PhilHealth Coverage"
             description="Ensures that all senior citizens are automatically covered by the National Health Insurance Program (PhilHealth), providing them with essential healthcare access."
           />
           <RACard
-            icon={<BookOpenTextIcon className="h-8 w-8" />}
+            icon={<BookOpenText className="h-8 w-8" />}
             title="RA 7432 – Original Senior Citizens Act"
             description="The foundational law that first granted benefits and privileges to the elderly, recognizing their vital contributions to nation-building."
           />
         </div>
       </section>
+
       {/* Contact Section */}
       <section
         id="contact"
         className="py-20 px-6 bg-gray-50 border-t border-gray-100"
       >
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl font-bold text-purple-700 mb-4">
+          <h2 className="text-4xl font-bold text-blue-700 mb-4">
             Get in Touch with OSCA
           </h2>
           <p className="text-lg text-gray-600">
@@ -228,28 +320,23 @@ export const Home = () => {
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mt-8">
             <div className="flex items-center text-lg text-gray-700">
-              <MailIcon className="h-6 w-6 mr-3 text-blue-600" />
-              <a
-                href="mailto:support@seniorims.ph"
-                className="hover:underline text-blue-700 font-medium"
-              >
-                support@seniorims.ph
-              </a>
+              <MessageCircle className="h-6 w-6 mr-3 text-blue-600" />
+              <span className="font-medium">OSCA Facebook Page</span>
             </div>
             <div className="flex items-center text-lg text-gray-700">
-              <PhoneCallIcon className="h-6 w-6 mr-3 text-green-600" />
+              <Phone className="h-6 w-6 mr-3 text-green-600" />
               <span className="font-medium">0912-345-6789</span>
             </div>
             <div className="flex items-center text-lg text-gray-700 text-left">
-              <MapPinIcon className="h-6 w-6 mr-3 text-red-600" />
+              <MapPin className="h-6 w-6 mr-3 text-red-600" />
               <span className="font-medium">
                 San Jose Municipal Hall, Occidental Mindoro
               </span>
             </div>
           </div>
-          {/* You could add a simple contact form here if desired */}
         </div>
       </section>
+
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-8 px-6 text-center">
         <div className="max-w-6xl mx-auto">
@@ -271,3 +358,5 @@ export const Home = () => {
     </div>
   );
 };
+
+export default Home;

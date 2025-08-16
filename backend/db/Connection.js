@@ -207,6 +207,56 @@ db.query(
   }
 );
 
+// Create the 'events' table if it does not already exist.
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS events (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    date DATE NOT NULL,
+    image_url VARCHAR(500),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted TINYINT(1) DEFAULT 0,
+    deleted_at TIMESTAMP NULL
+  )
+  `,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create events table:", err);
+    } else {
+      console.log("✅ events table ready.");
+    }
+  }
+);
+
+// Create the 'benefits' table if it does not already exist.
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS benefits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    location VARCHAR(255),
+    provider VARCHAR(255),
+    type VARCHAR(255),
+    enacted_date DATE NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted TINYINT(1) DEFAULT 0,
+    deleted_at TIMESTAMP NULL
+  )
+  `,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create benefits table:", err);
+    } else {
+      console.log("✅ benefits table ready.");
+    }
+  }
+);
+
 // Create the 'senior_citizens' table if it does not already exist.
 db.query(
   `

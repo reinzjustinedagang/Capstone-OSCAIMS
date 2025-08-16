@@ -26,6 +26,7 @@ import { UserManagementPage } from "./pages/admin/UserManagementPage.jsx";
 import { MyProfilePage } from "./pages/admin/MyProfilePage.jsx";
 import { AuditLogsPage } from "./pages/admin/AuditLogsPage.jsx";
 import { BarangayManagementPage } from "./pages/admin/BarangayManagementPage.jsx";
+import { LoginTrailPage } from "./pages/admin/LoginTrailPage.jsx";
 
 // Staff Pages
 import { UserDashboard } from "./pages/user/UserDashboard";
@@ -196,6 +197,14 @@ function App() {
         element={
           <ProtectedRoute role="Admin">
             <RecycleBinPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/login-trail/:userId"
+        element={
+          <ProtectedRoute role="Admin">
+            <LoginTrailPage />
           </ProtectedRoute>
         }
       />

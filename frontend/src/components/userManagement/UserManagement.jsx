@@ -7,15 +7,16 @@ import axios from "axios";
 import {
   Search,
   Plus,
-  EditIcon,
-  Trash,
+  Edit,
+  Trash2,
   ArrowDown,
   ArrowUp,
-  EyeIcon, // Added EyeIcon for viewing login trails
+  ScrollText, // Added ScrollText for viewing login trails
   Loader2, // For loading indicators
   XCircle, // For error messages
   CheckCircle, // For success messages
 } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -32,12 +33,6 @@ const UserManagement = () => {
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("success"); // 'success' or 'error'
-
-  // --- States for Login Trails Modal ---
-  const [showLoginTrailsModal, setShowLoginTrailsModal] = useState(false);
-  const [loginTrails, setLoginTrails] = useState([]);
-  const [loginTrailsLoading, setLoginTrailsLoading] = useState(false);
-  const [loginTrailsError, setLoginTrailsError] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("All Roles");
@@ -114,67 +109,6 @@ const UserManagement = () => {
     setSelectedUser(user);
     setShowDeleteModal(true);
     setError(null); // Clear any previous general errors when opening form
-  };
-
-  // --- New: Handle View Login Trails ---
-  const handleViewLoginTrails = async (user) => {
-    setSelectedUser(user);
-    setLoginTrailsLoading(true);
-    setLoginTrailsError(null);
-    setShowLoginTrailsModal(true); // Open modal immediately to show loading state
-
-    try {
-      // --- MOCK API CALL FOR LOGIN TRAILS ---
-      // In a real application, you would make an API call like this:
-      // const response = await axios.get(`${backendUrl}/api/user/${user.id}/login-trails`, { withCredentials: true });
-      // setLoginTrails(response.data.trails);
-
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-
-      // Mock data based on user (replace with actual fetch)
-      const mockTrails = [
-        {
-          id: 1,
-          timestamp: "2024-05-29 14:30:00",
-          action: "LOGIN",
-          status: "Success",
-          ipAddress: "192.168.1.100",
-        },
-        {
-          id: 2,
-          timestamp: "2024-05-29 14:35:15",
-          action: "LOGOUT",
-          status: "Success",
-          ipAddress: "192.168.1.100",
-        },
-        {
-          id: 3,
-          timestamp: "2024-05-29 14:40:30",
-          action: "LOGIN_ATTEMPT",
-          status: "Failed",
-          ipAddress: "192.168.1.101",
-        },
-        {
-          id: 4,
-          timestamp: "2024-05-29 14:42:00",
-          action: "LOGIN",
-          status: "Success",
-          ipAddress: "192.168.1.101",
-        },
-      ].filter((trail) =>
-        user.id % 2 === 0 ? trail.id % 2 === 0 : trail.id % 2 !== 0
-      ); // Simple mock filter
-
-      setLoginTrails(mockTrails);
-    } catch (err) {
-      console.error("Failed to fetch login trails:", err);
-      setLoginTrailsError(
-        err.response?.data?.message || "Failed to load login trails."
-      );
-      setLoginTrails([]); // Clear trails on error
-    } finally {
-      setLoginTrailsLoading(false);
-    }
   };
 
   const handleFormSubmit = async (formData) => {
@@ -350,8 +284,7 @@ const UserManagement = () => {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-6">
-        {/* <h1 className="text-2xl font-bold text-gray-800">User Management</h1> */}
+      <div className="flex justify-end items-center mb-4">
         <Button
           onClick={handleAddUser}
           variant="primary"
@@ -536,24 +469,24 @@ const UserManagement = () => {
                             className="text-blue-600 hover:text-blue-900"
                             aria-label={`Edit ${user.username}`}
                           >
-                            <EditIcon className="h-5 w-5" />
+                            <Edit className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => handleDeleteUser(user)}
                             className="text-red-600 hover:text-red-900"
                             aria-label={`Delete ${user.username}`}
                           >
-                            <Trash className="h-5 w-5" />
+                            <Trash2 className="h-5 w-5" />
                           </button>
                           {/* New Eye Icon for Login Trails */}
-                          <button
-                            onClick={() => handleViewLoginTrails(user)}
+                          <NavLink
                             className="text-green-600 hover:text-green-900"
                             aria-label={`View login trails for ${user.username}`}
                             title="View Login Trails"
+                            to={`/admin/login-trail/${user.id}`} // Adjusted to use user.id
                           >
-                            <EyeIcon className="h-5 w-5" />
-                          </button>
+                            <ScrollText className="h-5 w-5" />
+                          </NavLink>
                         </div>
                       </td>
                     </tr>
@@ -611,6 +544,7 @@ const UserManagement = () => {
         title="Add New User"
       >
         <UserForm
+          user={selectedUser}
           onSubmit={handleFormSubmit}
           onClose={() => {
             setShowAddModal(false);
@@ -720,86 +654,6 @@ const UserManagement = () => {
           </div>
         </div>
       </Modal>
-
-      {/* --- New: Login Trails Modal --- */}
-      <Modal2
-        isOpen={showLoginTrailsModal}
-        onClose={() => setShowLoginTrailsModal(false)}
-        title={`${selectedUser ? selectedUser.username : ""} Login Trails`}
-      >
-        <div className="p-4">
-          {loginTrailsLoading ? (
-            <div className="flex justify-center items-center py-6">
-              <Loader2 className="animate-spin h-6 w-6 mr-3 text-blue-500" />
-              Loading login history...
-            </div>
-          ) : loginTrailsError ? (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center">
-              <XCircle className="h-5 w-5 mr-2" />
-              <span className="block sm:inline">{loginTrailsError}</span>
-            </div>
-          ) : loginTrails.length === 0 ? (
-            <p className="text-center text-gray-600 py-4">
-              No login trails found for this user.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Timestamp
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      IP Address
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {loginTrails.map((trail) => (
-                    <tr key={trail.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(trail.timestamp).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {trail.action}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            trail.status === "Success"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {trail.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {trail.ipAddress || "N/A"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-        <div className="p-4 flex justify-end">
-          <Button
-            variant="secondary"
-            onClick={() => setShowLoginTrailsModal(false)}
-          >
-            Close
-          </Button>
-        </div>
-      </Modal2>
     </>
   );
 };

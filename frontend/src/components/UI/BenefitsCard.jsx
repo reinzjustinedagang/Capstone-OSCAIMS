@@ -1,15 +1,41 @@
 import React from "react";
-import { Info, MapPin } from "lucide-react";
+import { Info, MapPin, Edit, Trash2 } from "lucide-react";
 
-const BenefitsCard = ({ type, textColor, textIcon }) => {
+const BenefitsCard = ({
+  type,
+  icon = <Info className="w-5 h-5 text-blue-500" />,
+  textColor,
+  textIcon,
+  onEdit,
+  onDelete,
+}) => {
   return (
     <div className="bg-white rounded-2xl shadow p-4 border border-gray-200 hover:shadow-lg transition">
-      <h2
-        className={`text-lg font-semibold ${textColor} flex items-center gap-2`}
-      >
-        <Info className={`w-4 h-4 ${textIcon}`} />
-        {type.title}
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2
+          className={`text-lg font-semibold ${textColor} flex items-center gap-2`}
+        >
+          {icon}
+          {type.title}
+        </h2>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onEdit && onEdit(type.id)}
+            className="text-blue-500 hover:text-blue-700 transition"
+            title="Edit"
+          >
+            <Edit className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onDelete && onDelete(type.id)}
+            className="text-red-500 hover:text-red-700 transition"
+            title="Delete"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       <p className="text-sm text-gray-600 mt-1">{type.description}</p>
 
       <div className="mt-3 text-sm text-gray-500 flex items-center gap-2">

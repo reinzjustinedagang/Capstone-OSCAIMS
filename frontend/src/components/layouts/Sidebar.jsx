@@ -31,22 +31,23 @@ const Sidebar = () => {
       label: "Senior Citizens",
       icon: UsersIcon,
     },
-    { to: "/admin/osca-officials", label: "OSCA Officials", icon: UserCheck },
+
     { to: "/admin/pension-list", label: "Pension List", icon: Wallet },
-    { to: "/admin/benefits", label: "Benefits", icon: GiftIcon },
     {
       to: "/admin/sms-management",
       label: "SMS Management",
       icon: MessageSquareIcon,
     },
+    { to: "/admin/benefits", label: "Benefits", icon: GiftIcon },
+
     { to: "/admin/reports", label: "Reports", icon: FileTextIcon },
+    { to: "/admin/osca-officials", label: "OSCA Officials", icon: UserCheck },
     { to: "/admin/audit-logs", label: "Audit Logs", icon: ClipboardListIcon },
     {
       to: "/admin/user-management",
       label: "User Management",
       icon: UserCogIcon,
     },
-    { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
   ];
 
   return (
@@ -103,7 +104,9 @@ const Sidebar = () => {
           <h1 className="text-xl font-bold text-blue-800">
             Office of the Senior Citizen Affairs
           </h1>
-          <p className="text-sm text-gray-600">San Jose, Occidental Mindoro</p>
+          <p className="text-sm font-medium text-gray-800">
+            San Jose, Occidental Mindoro
+          </p>
         </div>
 
         <nav className="mt-6">

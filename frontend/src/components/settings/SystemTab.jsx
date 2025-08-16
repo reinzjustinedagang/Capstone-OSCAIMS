@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Button from "../UI/Button";
 import axios from "axios";
+import CropperModal from "../UI/CropperModal"; // adjust path
 
 const SystemTab = () => {
   const [systemName, setSystemName] = useState(
@@ -28,22 +29,46 @@ const SystemTab = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const fileInputRef = useRef(null);
 
+  const [showCropper, setShowCropper] = useState(false);
+  const [rawImage, setRawImage] = useState(null); // before crop
+
   const handleSealChange = (e) => {
     const file = e.target.files[0];
+
     if (!file) return;
+
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-    if (!allowedTypes.includes(file.type)) {
+    const allowedExtensions = ["jpg", "jpeg", "png"];
+    const maxSizeInBytes = 10 * 1024 * 1024;
+
+    const fileType = file.type.toLowerCase();
+    const fileExtension = file.name.toLowerCase().split(".").pop();
+
+    if (!allowedTypes.includes(fileType)) {
       setError("Only JPG, JPEG, or PNG files are allowed.");
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
+
+    if (!allowedExtensions.includes(fileExtension)) {
+      setError("Only .jpeg, .jpg, and .png file are allowed.");
+      return;
+    }
+
+    if (file.size > maxSizeInBytes) {
       setError("File must be under 10MB.");
       return;
     }
 
-    setSealFile(file);
-    setSealPreview(URL.createObjectURL(file));
+    const imageUrl = URL.createObjectURL(file);
     setError(null);
+    setRawImage(imageUrl); // for Cropper
+    setShowCropper(true); // show crop modal
+  };
+
+  const handleCropComplete = (croppedFile) => {
+    setSealFile(croppedFile);
+    setSealPreview(URL.createObjectURL(croppedFile));
+    setShowCropper(false);
   };
 
   const handleSystemSave = async (e) => {
@@ -210,6 +235,13 @@ const SystemTab = () => {
           {loading ? "Saving..." : "Save Settings"}
         </Button>
       </div>
+      {showCropper && rawImage && (
+        <CropperModal
+          imageSrc={rawImage}
+          onClose={() => setShowCropper(false)}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </form>
   );
 };

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Button from "../UI/Button"; // Assuming you have a Button component
-// No need to import Modal here, as it's handled by the parent component
-
+import Button from "../UI/Button";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 const UserForm = ({
   user,
   onSubmit,
@@ -24,20 +23,27 @@ const UserForm = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false); // New state for form submission loading
   const [formError, setFormError] = useState(""); // New state for displaying inline form errors
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    // Update form data when `user` prop changes (e.g., when editing a different user or resetting for add)
-    setFormData(
-      user || {
+    if (user) {
+      const { password, ...rest } = user; // Remove password if editing
+      setFormData({
+        ...rest,
+        password: "", // Always start with blank password field
+      });
+    } else {
+      setFormData({
         username: "",
         email: "",
         role: "staff",
         status: "active",
         cp_number: "",
         password: "",
-      }
-    );
-    setFormError(""); // Clear any previous form errors when the user changes
+      });
+    }
+
+    setFormError("");
   }, [user]);
 
   const handleChange = (e) => {
@@ -89,6 +95,10 @@ const UserForm = ({
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="p-4">
       <div className="mb-4">
@@ -106,6 +116,7 @@ const UserForm = ({
           onChange={handleChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           required
+          autoComplete="off"
         />
       </div>
       <div className="mb-4">
@@ -123,6 +134,7 @@ const UserForm = ({
           onChange={handleChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           required
+          autoComplete="off"
         />
       </div>
       <div className="mb-4">
@@ -130,18 +142,33 @@ const UserForm = ({
           htmlFor="password"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Password {user ? "(leave blank to keep current)" : ""}
+          Password
         </label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          value={formData.password || ""}
-          onChange={handleChange}
-          placeholder={user ? "Leave blank to keep current password" : ""}
-          required={!user} // Required only when adding a new user
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            autoComplete={user ? "current-password" : "new-password"}
+            placeholder={user ? "Leave blank to keep current password" : ""}
+            required={!user}
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+          <button
+            type="button" // Important: Prevent form submission
+            onClick={togglePasswordVisibility}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 hover:text-gray-900 focus:outline-none"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <EyeOffIcon className="h-5 w-5" />
+            ) : (
+              <EyeIcon className="h-5 w-5" />
+            )}
+          </button>
+        </div>
       </div>
       <div className="mb-4">
         <label

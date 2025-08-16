@@ -76,6 +76,9 @@ const smsRoute = require("../route/smsRoute");
 const templateRoutes = require("../route/templateRoutes");
 const officialRoutes = require("../route/officialRoutes");
 const barangayRoutes = require("../route/barangayRoutes");
+const benefitRoutes = require("../route/benefitRoutes");
+const eventRoutes = require("../route/eventRoutes");
+const reportRoutes = require("../route/reportRoutes");
 const getUserIp = require("../middleware/getUserIp");
 
 app.use(getUserIp);
@@ -86,6 +89,9 @@ app.use("/api/senior-citizens", seniorCitizenRoutes);
 app.use("/api/sms", smsRoute);
 app.use("/api/templates", templateRoutes);
 app.use("/api/barangays", barangayRoutes);
+app.use("/api/benefits", benefitRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/charts", reportRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

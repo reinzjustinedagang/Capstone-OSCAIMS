@@ -29,6 +29,10 @@ const BarangayOfficials = ({ title }) => {
   const [crudLoading, setCrudLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const [showCropper, setShowCropper] = useState(false);
+  const [rawImage, setRawImage] = useState(null);
+
   const backendUrl =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -59,14 +63,14 @@ const BarangayOfficials = ({ title }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png"];
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
     const allowedExtensions = ["jpg", "jpeg", "png"];
     const maxSizeInBytes = 10 * 1024 * 1024;
 
     const fileType = file.type.toLowerCase();
     const fileExtension = file.name.toLowerCase().split(".").pop();
 
-    if (!allowedMimeTypes.includes(fileType)) {
+    if (!allowedTypes.includes(fileType)) {
       setError("Only JPEG, JPG, and PNG files are allowed.");
       return;
     }
@@ -77,7 +81,7 @@ const BarangayOfficials = ({ title }) => {
     }
 
     if (file.size > maxSizeInBytes) {
-      setError("File size exceeds 10MB. Please select a smaller image.");
+      setError("File must be under 10MB.");
       return;
     }
 
@@ -87,6 +91,12 @@ const BarangayOfficials = ({ title }) => {
       ...prev,
       imageFile: file,
     }));
+  };
+
+  const handleCropComplete = (croppedFile) => {
+    setImageFile(croppedFile);
+    setSealPreview(URL.createObjectURL(croppedFile));
+    setShowCropper(false);
   };
 
   const closeFormModal = () => {
@@ -212,7 +222,7 @@ const BarangayOfficials = ({ title }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-4 mb-4">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-        <h3 className="text-xl font-semibold">{title}</h3>
+        <h3 className="text-lg font-medium">{title}</h3>
         <Button
           onClick={() => {
             setFormData({

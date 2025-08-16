@@ -57,3 +57,23 @@ exports.getPaginatedAuditLogs = async (page, limit) => {
     throw err;
   }
 };
+
+// Get all login records for a specific user
+exports.getLoginTrailsByUserId = async (userId) => {
+  try {
+    const results = await Connection(
+      `
+      SELECT id,timestamp, userId, user, userRole, action, ipAddress
+      FROM audit_logs
+      WHERE userId = ? AND action = 'LOGIN'
+      ORDER BY timestamp DESC
+      `,
+      [userId]
+    );
+
+    return results;
+  } catch (err) {
+    console.error("❌ Error fetching login trails:", err);
+    throw err;
+  }
+};

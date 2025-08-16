@@ -47,6 +47,8 @@ export default function MyProfile() {
   const [confirmationAction, setConfirmationAction] = useState(null); // 'profile' or 'password'
   const [confirmationMessage, setConfirmationMessage] = useState("");
 
+  const [croppedImageBlob, setCroppedImageBlob] = useState(null);
+
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -149,12 +151,31 @@ export default function MyProfile() {
     setShowConfirmationModal(false);
     setProfileLoading(true);
     try {
+      let uploadedImageUrl = userData.image;
+
+      // Upload image only if a new one is cropped
+      if (croppedImageBlob) {
+        const formData = new FormData();
+        formData.append("image", croppedImageBlob);
+
+        const uploadResponse = await axios.post(
+          `${backendUrl}/api/user/upload-profile-picture/${userData.id}`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            withCredentials: true,
+          }
+        );
+        uploadedImageUrl = uploadResponse.data.imageUrl;
+      }
+
       const response = await axios.put(
         `${backendUrl}/api/user/updateProfile/${userData.id}`,
         {
           username,
           email,
           cp_number,
+          image: uploadedImageUrl,
         },
         {
           withCredentials: true,
@@ -167,7 +188,9 @@ export default function MyProfile() {
           username,
           email,
           cp_number,
+          image: uploadedImageUrl,
         }));
+        setCroppedImageBlob(null); // Clear blob after upload
         window.dispatchEvent(new Event("profileUpdated"));
         showNotification("Profile updated successfully!", "success");
       } else {
@@ -298,15 +321,8 @@ export default function MyProfile() {
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b pb-6 mb-6">
           {/* Profile Picture Section */}
           <ProfilePicture
-            profilePicture={userData.image} // image is the correct field
-            userId={userData.id}
-            onUploadSuccess={(newImageUrl) => {
-              setUserData((prev) => ({ ...prev, image: newImageUrl }));
-              showNotification("Profile picture updated!", "success");
-            }}
-            onUploadError={(errorMsg) => {
-              showNotification(errorMsg, "error");
-            }}
+            profilePicture={userData.image}
+            onCropReady={(blob) => setCroppedImageBlob(blob)}
           />
 
           {/* User Basic Info */}

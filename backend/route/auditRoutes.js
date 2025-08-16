@@ -24,4 +24,23 @@ router.get("/getAll", async (req, res) => {
   }
 });
 
+// GET /api/login-trails/:id → Get login trails for specific user
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const trails = await auditService.getLoginTrailsByUserId(id);
+
+    if (!trails || trails.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No login trails found for this user." });
+    }
+
+    res.status(200).json(trails);
+  } catch (err) {
+    console.error("Error in GET /:id:", err);
+    res.status(500).json({ error: "Failed to fetch login trails." });
+  }
+});
+
 module.exports = router;

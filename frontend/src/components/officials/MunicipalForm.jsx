@@ -101,16 +101,30 @@ const MunicipalForm = ({
         >
           Position
         </label>
-        <input
-          type="text"
+
+        <select
           id="position"
           name="position"
-          placeholder="Enter position"
           value={formData.position}
           onChange={onChange}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           required
-        />
+        >
+          <option value="">Select Position</option>
+          <option value="President">President</option>
+          <option value="Vice President">Vice President</option>
+          <option value="Secretary">Secretary</option>
+          <option value="Assistant Secretary">Assistant Secretary</option>
+          <option value="Treasurer">Treasurer</option>
+          <option value="Assistant Treasurer">Assistant Treasurer</option>
+          <option value="Auditor">Auditor</option>
+          <option value="Public Relations Officer">
+            Public Relations Officer
+          </option>
+          <option value="PIO">Public Information Officer</option>
+          <option value="Sgt-at-Arms">Sgt-at-Arms</option>
+          <option value="Council Members">Council Members</option>
+        </select>
       </div>
 
       <div>

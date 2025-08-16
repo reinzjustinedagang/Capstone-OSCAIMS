@@ -149,7 +149,7 @@ router.get("/sms-citizens", seniorCitizenService.getSmsRecipients);
 router.patch("/soft-delete/:id", async (req, res) => {
   const { id } = req.params;
   const user = req.session.user;
-  const ip = req.ip;
+  const ip = req.userIp;
 
   try {
     const success = await seniorCitizenService.softDeleteSeniorCitizen(
