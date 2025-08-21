@@ -3,13 +3,13 @@ import { FileTextIcon, ImageIcon, PlusIcon } from "lucide-react";
 import Button from "../UI/Button";
 import Card from "../UI/Card";
 import DemographicReports from "./DemographicReports";
-import Events from "./Events";
 import axios from "axios";
+import OscaReports from "./OscaReports";
 
 // This component displays various reports and summaries, including a count of all events.
 const Reports = () => {
   // State to manage the active tab for the reports section
-  const [activeTab, setActiveTab] = useState("events");
+  const [activeTab, setActiveTab] = useState("reports");
   // State to store the total count of events
   const [eventsCount, setEventsCount] = useState(0);
 
@@ -37,12 +37,7 @@ const Reports = () => {
       {/* Summary Cards section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         {/* Card to display the total number of events */}
-        <Card
-          title="Total Events Posted"
-          value={eventsCount}
-          icon={<ImageIcon />}
-          color="purple"
-        />
+        <Card title="Reports" value="2" icon={<ImageIcon />} color="purple" />
         {/* Card for registered senior citizens (hardcoded value) */}
         <Card
           title="Registered Senior Citizens"
@@ -57,14 +52,14 @@ const Reports = () => {
         <div className="border-b border-gray-300">
           <nav className="flex -mb-px">
             <button
-              onClick={() => setActiveTab("events")}
+              onClick={() => setActiveTab("reports")}
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                activeTab === "events"
+                activeTab === "reports"
                   ? "border-blue-500 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              Events
+              Reports
             </button>
             <button
               onClick={() => setActiveTab("demographics")}
@@ -78,15 +73,10 @@ const Reports = () => {
             </button>
           </nav>
         </div>
-        <div className="p-6">
+        <div className="p-4">
           {/* Conditionally render the correct component based on the active tab */}
-          {activeTab === "events" ? (
-            // Pass the fetchEventsCount function as a prop to Events
-            // This allows the Events component to update the count after a deletion
-            <Events eventRefresh={fetchEventsCount} />
-          ) : (
-            <DemographicReports />
-          )}
+          {activeTab === "reports" && <OscaReports />}
+          {activeTab === "demographics" && <DemographicReports />}
         </div>
       </div>
     </>

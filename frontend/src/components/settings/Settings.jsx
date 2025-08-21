@@ -11,7 +11,7 @@ import SecurityTab from "./SecurityTab";
 import NotificationTab from "./NotificationTab";
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState("sms");
+  const [activeTab, setActiveTab] = useState("system");
 
   return (
     <>
@@ -21,18 +21,6 @@ const Settings = () => {
           <nav className="flex flex-wrap -mb-px">
             {" "}
             {/* Added flex-wrap for responsiveness */}
-            <button
-              onClick={() => setActiveTab("sms")}
-              className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
-                ${
-                  activeTab === "sms"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-            >
-              <MessageSquare className="inline-block h-4 w-4 mr-2" /> SMS
-              Settings
-            </button>
             <button
               onClick={() => setActiveTab("system")}
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
@@ -46,6 +34,18 @@ const Settings = () => {
               System Settings
             </button>
             <button
+              onClick={() => setActiveTab("sms")}
+              className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
+                ${
+                  activeTab === "sms"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+            >
+              <MessageSquare className="inline-block h-4 w-4 mr-2" /> SMS
+              Settings
+            </button>
+            {/* <button
               onClick={() => setActiveTab("security")}
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
                 ${
@@ -66,7 +66,7 @@ const Settings = () => {
                 }`}
             >
               <BellRing className="inline-block h-4 w-4 mr-2" /> Notifications
-            </button>
+            </button> */}
           </nav>
         </div>
         <div className="p-6">

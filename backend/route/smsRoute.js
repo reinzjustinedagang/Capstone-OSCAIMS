@@ -108,8 +108,45 @@ router.get("/history", async (req, res) => {
   }
 });
 
-router.put("/sms-credentials", smsService.updateSmsCredentials);
+// GET
+router.get("/sms-credentials", async (req, res) => {
+  try {
+    const credentials = await smsService.getSmsCredentials();
+    if (!credentials) {
+      return res.status(404).json({ message: "Credentials not found" });
+    }
+    res.json(credentials);
+  } catch (error) {
+    console.error("Error fetching SMS credentials:", error);
+    res.status(500).json({ message: "Failed to fetch SMS credentials" });
+  }
+});
 
-router.get("/sms-credentials", smsService.getSmsCredentials);
+// PUT
+router.put("/sms-credentials", async (req, res) => {
+  try {
+    const { email, password, api_code } = req.body;
+    const ip = req.userIp;
+    const user = req.session.user;
+
+    const result = await smsService.updateSmsCredentials(
+      email,
+      password,
+      api_code,
+      user,
+      ip
+    );
+    res.status(200).json({
+      message:
+        result.actionType === "INSERT"
+          ? "✅ SMS credentials added successfully."
+          : "✅ SMS credentials updated successfully.",
+      changes: result.changes,
+    });
+  } catch (error) {
+    console.error("Error updating SMS credentials:", error);
+    res.status(500).json({ message: "Failed to update SMS credentials" });
+  }
+});
 
 module.exports = router;

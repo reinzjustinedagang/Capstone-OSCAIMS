@@ -182,10 +182,7 @@ const BarangayManagement = () => {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-6">
-        {/* <h1 className="text-2xl font-bold text-gray-800">
-          Barangay Management
-        </h1> */}
+      <div className="flex justify-end items-center mb-4">
         <Button
           onClick={() => setShowAddModal(true)}
           variant="primary"

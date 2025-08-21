@@ -32,6 +32,7 @@ import { LoginTrailPage } from "./pages/admin/LoginTrailPage.jsx";
 import { UserDashboard } from "./pages/user/UserDashboard";
 import { NotificationPage } from "./pages/admin/NotificationPage.jsx";
 import { RecycleBinPage } from "./pages/admin/RecycleBinPage.jsx";
+import { EventPage } from "./pages/admin/EventPage.jsx";
 
 function App() {
   return (
@@ -205,6 +206,14 @@ function App() {
         element={
           <ProtectedRoute role="Admin">
             <LoginTrailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/events"
+        element={
+          <ProtectedRoute role="Admin">
+            <EventPage />
           </ProtectedRoute>
         }
       />

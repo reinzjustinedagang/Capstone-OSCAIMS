@@ -257,6 +257,38 @@ db.query(
   }
 );
 
+// Create the 'reports' table if it does not already exist.
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    year INT NOT NULL,
+    month INT NOT NULL,
+    socpen INT DEFAULT 0,
+    nonsocpen INT DEFAULT 0,
+    deceased INT DEFAULT 0,
+    transferee INT DEFAULT 0,
+    pdl_male INT DEFAULT 0,
+    pdl_female INT DEFAULT 0,
+    new_male INT DEFAULT 0,
+    new_female INT DEFAULT 0,
+    utp_male INT DEFAULT 0,
+    utp_female INT DEFAULT 0,
+    booklet_male INT DEFAULT 0,
+    booklet_female INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)
+  `,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create reports table:", err);
+    } else {
+      console.log("✅ reports table ready.");
+    }
+  }
+);
+
 // Create the 'senior_citizens' table if it does not already exist.
 db.query(
   `
@@ -308,6 +340,25 @@ db.query(
       console.error("❌ Failed to create senior_citizens table:", err);
     } else {
       console.log("✅ senior_citizens table ready.");
+    }
+  }
+);
+
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS system (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    system_name VARCHAR(255) NOT NULL,
+    municipality VARCHAR(255) NOT NULL,
+    seal VARCHAR(500), -- path or URL of uploaded seal image,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )
+  `,
+  (err) => {
+    if (err) {
+      console.error("❌ Failed to create system table:", err);
+    } else {
+      console.log("✅ system table ready.");
     }
   }
 );

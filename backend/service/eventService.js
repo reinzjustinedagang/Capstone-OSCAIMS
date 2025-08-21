@@ -75,15 +75,18 @@ exports.update = async (id, data, user, ip) => {
 };
 
 // DELETE event
+// DELETE event
 exports.remove = async (id, user, ip) => {
-  const event = await Connection(
+  // Fetch the event first
+  const events = await Connection(
     `SELECT title, image_url FROM events WHERE id = ?`,
     [id]
   );
-  if (event.length === 0) return false;
+  const event = events[0];
+  if (!event) return false;
 
-  const query = `DELETE FROM events WHERE id = ?`;
-  const result = await Connection(query, [id]);
+  // Delete the event from DB first
+  const result = await Connection(`DELETE FROM events WHERE id = ?`, [id]);
 
   if (result.affectedRows > 0) {
     await logAudit(
@@ -91,11 +94,12 @@ exports.remove = async (id, user, ip) => {
       user.email,
       user.role,
       "DELETE",
-      `Deleted event: '${event[0].title}'`,
+      `Deleted event: '${event.title}'`,
       ip
     );
   }
 
+  // Delete image from Cloudinary or local
   if (event.image_url) {
     const publicId = extractCloudinaryPublicId(event.image_url);
     if (publicId) {
@@ -106,12 +110,13 @@ exports.remove = async (id, user, ip) => {
         console.error("Failed to delete Cloudinary image:", err);
       }
     } else {
+      // Local file fallback
       const imagePath = path.join(__dirname, "../uploads", event.image_url);
       try {
         await fs.unlink(imagePath);
-        console.log(`Deleted local image file: ${imagePath}`);
+        console.log(`Deleted local image: ${imagePath}`);
       } catch (err) {
-        console.error(`Failed to delete local image file ${imagePath}:`, err);
+        console.error(`Failed to delete local image ${imagePath}:`, err);
       }
     }
   }

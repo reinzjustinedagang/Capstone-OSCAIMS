@@ -79,6 +79,7 @@ const barangayRoutes = require("../route/barangayRoutes");
 const benefitRoutes = require("../route/benefitRoutes");
 const eventRoutes = require("../route/eventRoutes");
 const reportRoutes = require("../route/reportRoutes");
+const systemRoutes = require("../route/systemRoutes");
 const getUserIp = require("../middleware/getUserIp");
 
 app.use(getUserIp);
@@ -92,6 +93,7 @@ app.use("/api/barangays", barangayRoutes);
 app.use("/api/benefits", benefitRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/charts", reportRoutes);
+app.use("/api/settings/", systemRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
