@@ -7,15 +7,27 @@ import axios from "axios";
 import {
   Search,
   Plus,
+<<<<<<< HEAD
   EditIcon,
   Trash,
   ArrowDown,
   ArrowUp,
   EyeIcon, // Added EyeIcon for viewing login trails
+=======
+  Edit,
+  Trash2,
+  ArrowDown,
+  ArrowUp,
+  History, // Added History for viewing login trails
+>>>>>>> master
   Loader2, // For loading indicators
   XCircle, // For error messages
   CheckCircle, // For success messages
 } from "lucide-react";
+<<<<<<< HEAD
+=======
+import { NavLink } from "react-router-dom";
+>>>>>>> master
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -33,12 +45,15 @@ const UserManagement = () => {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("success"); // 'success' or 'error'
 
+<<<<<<< HEAD
   // --- States for Login Trails Modal ---
   const [showLoginTrailsModal, setShowLoginTrailsModal] = useState(false);
   const [loginTrails, setLoginTrails] = useState([]);
   const [loginTrailsLoading, setLoginTrailsLoading] = useState(false);
   const [loginTrailsError, setLoginTrailsError] = useState(null);
 
+=======
+>>>>>>> master
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("All Roles");
   const [filterStatus, setFilterStatus] = useState("All Status");
@@ -116,6 +131,7 @@ const UserManagement = () => {
     setError(null); // Clear any previous general errors when opening form
   };
 
+<<<<<<< HEAD
   // --- New: Handle View Login Trails ---
   const handleViewLoginTrails = async (user) => {
     setSelectedUser(user);
@@ -177,6 +193,8 @@ const UserManagement = () => {
     }
   };
 
+=======
+>>>>>>> master
   const handleFormSubmit = async (formData) => {
     setFormSubmitting(true);
 
@@ -349,9 +367,14 @@ const UserManagement = () => {
   }, [users, searchTerm, filterRole, filterStatus, sortBy, sortOrder]);
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-gray-100 p-4 font-sans">
       <div className="flex justify-between items-center mb-6">
         {/* <h1 className="text-2xl font-bold text-gray-800">User Management</h1> */}
+=======
+    <>
+      <div className="flex justify-end items-center mb-4">
+>>>>>>> master
         <Button
           onClick={handleAddUser}
           variant="primary"
@@ -536,13 +559,18 @@ const UserManagement = () => {
                             className="text-blue-600 hover:text-blue-900"
                             aria-label={`Edit ${user.username}`}
                           >
+<<<<<<< HEAD
                             <EditIcon className="h-5 w-5" />
+=======
+                            <Edit className="h-5 w-5" />
+>>>>>>> master
                           </button>
                           <button
                             onClick={() => handleDeleteUser(user)}
                             className="text-red-600 hover:text-red-900"
                             aria-label={`Delete ${user.username}`}
                           >
+<<<<<<< HEAD
                             <Trash className="h-5 w-5" />
                           </button>
                           {/* New Eye Icon for Login Trails */}
@@ -554,6 +582,19 @@ const UserManagement = () => {
                           >
                             <EyeIcon className="h-5 w-5" />
                           </button>
+=======
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                          {/* New Eye Icon for Login Trails */}
+                          <NavLink
+                            className="text-green-600 hover:text-green-900"
+                            aria-label={`View login trails for ${user.username}`}
+                            title="View Login Trails"
+                            to={`/admin/login-trail/${user.id}`} // Adjusted to use user.id
+                          >
+                            <History className="h-5 w-5" />
+                          </NavLink>
+>>>>>>> master
                         </div>
                       </td>
                     </tr>
@@ -611,6 +652,10 @@ const UserManagement = () => {
         title="Add New User"
       >
         <UserForm
+<<<<<<< HEAD
+=======
+          user={selectedUser}
+>>>>>>> master
           onSubmit={handleFormSubmit}
           onClose={() => {
             setShowAddModal(false);
@@ -720,6 +765,7 @@ const UserManagement = () => {
           </div>
         </div>
       </Modal>
+<<<<<<< HEAD
 
       {/* --- New: Login Trails Modal --- */}
       <Modal2
@@ -801,6 +847,9 @@ const UserManagement = () => {
         </div>
       </Modal2>
     </div>
+=======
+    </>
+>>>>>>> master
   );
 };
 

@@ -176,6 +176,10 @@ const MunicipalOfficials = ({ title }) => {
       closeFormModal();
       fetchOfficials();
     } catch (err) {
+<<<<<<< HEAD
+=======
+      console.error("Error saving barangay official:", err);
+>>>>>>> master
       setError(
         err.response?.data?.message ||
           "Failed to save official. Please try again."
@@ -257,7 +261,11 @@ const MunicipalOfficials = ({ title }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-4">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
+<<<<<<< HEAD
         <h2 className="text-2xl font-semibold">{title}</h2>
+=======
+        <h2 className="text-lg font-medium text-blue-700">{title}</h2>
+>>>>>>> master
         <Button
           onClick={openAddModal}
           variant="primary"
@@ -285,7 +293,11 @@ const MunicipalOfficials = ({ title }) => {
       ) : null}
 
       {!isLoading && !error && (
+<<<<<<< HEAD
         <div className="flex flex-col items-center space-y-2">
+=======
+        <div className="flex flex-col items-center space-y-0">
+>>>>>>> master
           {/* Head */}
           {head && (
             <MunicipalCard
@@ -313,11 +325,19 @@ const MunicipalOfficials = ({ title }) => {
           {/* Others */}
           {others.length > 0 && (
             <>
+<<<<<<< HEAD
               <div className="relative flex justify-center items-center w-full">
                 <div className="w-1 h-6 bg-blue-400"></div>
                 <div className="absolute top-6 h-1 w-2/3 bg-blue-400"></div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full max-w-4xl">
+=======
+              <div className="relative flex justify-center items-center w-full mb-2">
+                <div className="w-1 h-6 bg-blue-400"></div>
+                <div className="absolute top-6 h-1 w-2/3 bg-blue-400"></div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full place-items-center">
+>>>>>>> master
                 {others.map((o) => (
                   <MunicipalCard
                     key={o.id}
@@ -337,9 +357,13 @@ const MunicipalOfficials = ({ title }) => {
         <Modal
           isOpen={showFormModal}
           title={
+<<<<<<< HEAD
             editingId
               ? "Edit Municipal Federation Officer"
               : "Add New Municipal Federation Officer"
+=======
+            editingId ? "Edit Federation Officer" : "Add New Federation Officer"
+>>>>>>> master
           }
           onClose={closeFormModal}
         >

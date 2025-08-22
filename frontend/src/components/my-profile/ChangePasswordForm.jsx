@@ -37,7 +37,12 @@ export default function ChangePasswordForm({
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
+<<<<<<< HEAD
               autoComplete="off"
+=======
+              name="currentPassword"
+              autoComplete="current-password"
+>>>>>>> master
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
@@ -50,7 +55,11 @@ export default function ChangePasswordForm({
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
+<<<<<<< HEAD
               autoComplete="off"
+=======
+              autoComplete="new-password"
+>>>>>>> master
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
@@ -63,7 +72,11 @@ export default function ChangePasswordForm({
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
               required
+<<<<<<< HEAD
               autoComplete="off"
+=======
+              autoComplete="new-password"
+>>>>>>> master
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>

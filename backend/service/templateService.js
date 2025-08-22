@@ -15,7 +15,11 @@ exports.getTemplateById = async (id) => {
   return result[0];
 };
 
+<<<<<<< HEAD
 exports.createTemplate = async (name, category, message, user) => {
+=======
+exports.createTemplate = async (name, category, message, user, ip) => {
+>>>>>>> master
   const result = await Connection(
     "INSERT INTO sms_templates (name, category, message) VALUES (?, ?, ?)",
     [name, category, message]
@@ -27,14 +31,23 @@ exports.createTemplate = async (name, category, message, user) => {
       user.email,
       user.role,
       "CREATE",
+<<<<<<< HEAD
       `Created SMS template '${name}' under category '${category}'.`
+=======
+      `Created SMS template '${name}' under category '${category}'.`,
+      ip
+>>>>>>> master
     );
   }
 
   return result;
 };
 
+<<<<<<< HEAD
 exports.updateTemplate = async (id, name, category, message, user) => {
+=======
+exports.updateTemplate = async (id, name, category, message, user, ip) => {
+>>>>>>> master
   const [oldData] = await Connection(
     "SELECT name, category, message FROM sms_templates WHERE id = ?",
     [id]
@@ -64,14 +77,23 @@ exports.updateTemplate = async (id, name, category, message, user) => {
       user.email,
       user.role,
       "UPDATE",
+<<<<<<< HEAD
       `Updated template ${name}: ${details}`
+=======
+      `Updated template ${name}: ${details}`,
+      ip
+>>>>>>> master
     );
   }
 
   return result;
 };
 
+<<<<<<< HEAD
 exports.deleteTemplate = async (id, user) => {
+=======
+exports.deleteTemplate = async (id, user, ip) => {
+>>>>>>> master
   const [template] = await Connection(
     "SELECT name FROM sms_templates WHERE id = ?",
     [id]
@@ -87,7 +109,12 @@ exports.deleteTemplate = async (id, user) => {
       user.email,
       user.role,
       "DELETE",
+<<<<<<< HEAD
       `Deleted SMS template '${template?.name}'`
+=======
+      `Deleted SMS template '${template?.name}'`,
+      ip
+>>>>>>> master
     );
   }
 

@@ -90,6 +90,7 @@ exports.deleteSms = async (id) => {
 
 // In your smsService.js
 
+<<<<<<< HEAD
 exports.getSmsCredentials = async (req, res) => {
   try {
     const [credentials] = await Connection(
@@ -169,6 +170,61 @@ exports.updateSmsCredentials = async (req, res) => {
     console.error("Error updating/adding SMS credentials:", err);
     res.status(500).json({ message: "Failed to save credentials." });
   }
+=======
+exports.getSmsCredentials = async () => {
+  const result = await Connection(
+    "SELECT email, password, api_code FROM sms_credentials WHERE id = 1"
+  );
+  return result.length > 0 ? result[0] : null;
+};
+
+exports.updateSmsCredentials = async (email, password, api_code, user, ip) => {
+  const existing = await Connection(
+    `SELECT * FROM sms_credentials WHERE id = 1`
+  );
+
+  let actionType = "UPDATE";
+  const oldData = existing[0];
+
+  if (!oldData) {
+    // Insert new credentials
+    await Connection(
+      `INSERT INTO sms_credentials (id, email, password, api_code) VALUES (1, ?, ?, ?)`,
+      [email, password, api_code]
+    );
+    actionType = "INSERT";
+
+    if (user) {
+      await logAudit(
+        user.id,
+        user.email,
+        user.role,
+        actionType,
+        `Created initial SMS credentials: email='${email}'`,
+        ip
+      );
+    }
+  } else {
+    // Update existing credentials
+    await Connection(
+      `UPDATE sms_credentials SET email = ?, password = ?, api_code = ? WHERE id = 1`,
+      [email, password, api_code]
+    );
+
+    if (user) {
+      await logAudit(
+        user.id,
+        user.email,
+        user.role,
+        "UPDATE",
+        `Updated SMS credentials (ID: 1)`,
+        ip
+      );
+    }
+  }
+
+  return { actionType };
+>>>>>>> master
 };
 
 exports.getPaginatedSMSHistory = async (limit, offset) => {

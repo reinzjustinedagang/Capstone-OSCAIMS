@@ -11,10 +11,17 @@ import SecurityTab from "./SecurityTab";
 import NotificationTab from "./NotificationTab";
 
 const Settings = () => {
+<<<<<<< HEAD
   const [activeTab, setActiveTab] = useState("sms");
 
   return (
     <div className="bg-gray-100 min-h-screen rounded-lg">
+=======
+  const [activeTab, setActiveTab] = useState("system");
+
+  return (
+    <>
+>>>>>>> master
       {/* <h1 className="text-2xl font-bold mb-6">Settings</h1> */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="border-b border-gray-200">
@@ -22,6 +29,7 @@ const Settings = () => {
             {" "}
             {/* Added flex-wrap for responsiveness */}
             <button
+<<<<<<< HEAD
               onClick={() => setActiveTab("sms")}
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
                 ${
@@ -34,6 +42,8 @@ const Settings = () => {
               Settings
             </button>
             <button
+=======
+>>>>>>> master
               onClick={() => setActiveTab("system")}
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
                 ${
@@ -46,6 +56,21 @@ const Settings = () => {
               System Settings
             </button>
             <button
+<<<<<<< HEAD
+=======
+              onClick={() => setActiveTab("sms")}
+              className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
+                ${
+                  activeTab === "sms"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+            >
+              <MessageSquare className="inline-block h-4 w-4 mr-2" /> SMS
+              Settings
+            </button>
+            {/* <button
+>>>>>>> master
               onClick={() => setActiveTab("security")}
               className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
                 ${
@@ -66,7 +91,11 @@ const Settings = () => {
                 }`}
             >
               <BellRing className="inline-block h-4 w-4 mr-2" /> Notifications
+<<<<<<< HEAD
             </button>
+=======
+            </button> */}
+>>>>>>> master
           </nav>
         </div>
         <div className="p-6">
@@ -76,7 +105,11 @@ const Settings = () => {
           {activeTab === "notifications" && <NotificationTab />}
         </div>
       </div>
+<<<<<<< HEAD
     </div>
+=======
+    </>
+>>>>>>> master
   );
 };
 

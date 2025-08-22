@@ -1,6 +1,16 @@
 import React, { useEffect } from "react";
 import Button from "../UI/Button"; // Importing your Button component
+<<<<<<< HEAD
 import { Loader2, SaveIcon, XCircle, Upload, UserIcon } from "lucide-react"; // Importing necessary icons
+=======
+import {
+  Loader2,
+  SaveIcon,
+  XCircle,
+  UploadCloud,
+  UserIcon,
+} from "lucide-react"; // Importing necessary icons
+>>>>>>> master
 import user from "../../assets/user.png";
 
 const MunicipalForm = ({
@@ -37,9 +47,15 @@ const MunicipalForm = ({
       }}
       className="space-y-4"
     >
+<<<<<<< HEAD
       {/* Image Upload and Preview Section */}
       <div className="flex justify-center">
         <div className="relative w-32 h-32">
+=======
+      {/* Image  and Preview Section */}
+      <div className="flex justify-center">
+        <div className="relative group w-32 h-32">
+>>>>>>> master
           <img
             src={
               formData.imageFile instanceof File
@@ -47,15 +63,26 @@ const MunicipalForm = ({
                 : existingImage || user
             }
             alt="Profile Preview"
+<<<<<<< HEAD
             className="w-full h-full object-cover rounded-full border-4 border-blue-700"
+=======
+            className="w-full h-full object-cover rounded-full border-4 border-blue-200 group-hover:border-blue-400 transition-all duration-300 shadow"
+>>>>>>> master
           />
 
           <label
             htmlFor="image"
+<<<<<<< HEAD
             className="absolute bottom-0 right-2 bg-black bg-opacity-60 p-1 rounded-full cursor-pointer hover:bg-opacity-80"
             title="Change Image"
           >
             <Upload className="text-white w-4 h-4" />
+=======
+            className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-1.5 cursor-pointer opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0 shadow-lg hover:bg-blue-700"
+            title="Change Image"
+          >
+            <UploadCloud className="w-4 h-4" />
+>>>>>>> master
           </label>
         </div>
 
@@ -95,16 +122,42 @@ const MunicipalForm = ({
         >
           Position
         </label>
+<<<<<<< HEAD
         <input
           type="text"
           id="position"
           name="position"
           placeholder="Enter position"
+=======
+
+        <select
+          id="position"
+          name="position"
+>>>>>>> master
           value={formData.position}
           onChange={onChange}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           required
+<<<<<<< HEAD
         />
+=======
+        >
+          <option value="">Select Position</option>
+          <option value="President">President</option>
+          <option value="Vice President">Vice President</option>
+          <option value="Secretary">Secretary</option>
+          <option value="Assistant Secretary">Assistant Secretary</option>
+          <option value="Treasurer">Treasurer</option>
+          <option value="Assistant Treasurer">Assistant Treasurer</option>
+          <option value="Auditor">Auditor</option>
+          <option value="Public Relations Officer">
+            Public Relations Officer
+          </option>
+          <option value="PIO">Public Information Officer</option>
+          <option value="Sgt-at-Arms">Sgt-at-Arms</option>
+          <option value="Council Members">Council Members</option>
+        </select>
+>>>>>>> master
       </div>
 
       <div>
@@ -168,8 +221,13 @@ const MunicipalForm = ({
           {isLoading
             ? "Saving..." // Text when loading
             : isEditing
+<<<<<<< HEAD
             ? "Update Official" // Text when editing
             : "Add Official"}{" "}
+=======
+            ? "Update Municipal Federation Officer" // Text when editing
+            : "Add Municipal Federation Officer "}{" "}
+>>>>>>> master
           {/* Text when adding new */}
         </Button>
       </div>

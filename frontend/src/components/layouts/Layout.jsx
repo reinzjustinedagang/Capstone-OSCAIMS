@@ -9,7 +9,11 @@ const Layout = ({ children }) => {
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header />
+<<<<<<< HEAD
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+=======
+        <main className="flex-1 overflow-y-auto p-4">{children}</main>
+>>>>>>> master
       </div>
     </div>
   );

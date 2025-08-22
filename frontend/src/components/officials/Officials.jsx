@@ -4,6 +4,7 @@ import MunicipalOfficials from "./MunicipalOfficials";
 import BarangayOfficials from "./BarangayOfficials";
 
 const Officials = () => {
+<<<<<<< HEAD
   const [municipalOfficials, setMunicipalOfficials] = useState([]);
   const [barangayOfficials, setBarangayOfficials] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +45,13 @@ const Officials = () => {
       />
       <BarangayOfficials barangays={barangayOfficials} />
     </div>
+=======
+  return (
+    <>
+      <BarangayOfficials title="Barangay Association Presidents" />
+      <MunicipalOfficials title="Federation Officer" />
+    </>
+>>>>>>> master
   );
 };
 

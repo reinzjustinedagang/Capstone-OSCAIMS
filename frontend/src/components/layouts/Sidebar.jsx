@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState } from "react";
+=======
+import React, { useState, useEffect } from "react";
+>>>>>>> master
 import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Modal from "../UI/Modal";
@@ -18,11 +22,37 @@ import {
   XIcon,
   UserCheck,
   ClipboardListIcon,
+<<<<<<< HEAD
+=======
+  Calendar,
+  InfoIcon,
+>>>>>>> master
 } from "lucide-react";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+<<<<<<< HEAD
+=======
+  const [systemSettings, setSystemSettings] = useState({
+    system_name: "",
+    municipality: "",
+    seal: null,
+  });
+  const backendUrl = import.meta.env.VITE_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchSystemSettings = async () => {
+      try {
+        const res = await axios.get(`${backendUrl}/api/settings/`);
+        setSystemSettings(res.data);
+      } catch (err) {
+        console.error("Failed to fetch system settings:", err);
+      }
+    };
+    fetchSystemSettings();
+  }, []);
+>>>>>>> master
 
   const menuItems = [
     { to: "/admin/dashboard", label: "Dashboard", icon: HomeIcon },
@@ -31,22 +61,39 @@ const Sidebar = () => {
       label: "Senior Citizens",
       icon: UsersIcon,
     },
+<<<<<<< HEAD
     { to: "/admin/osca-officials", label: "OSCA Officials", icon: UserCheck },
     { to: "/admin/pension-list", label: "Pension List", icon: Wallet },
     { to: "/admin/benefits", label: "Benefits", icon: GiftIcon },
+=======
+
+    { to: "/admin/pension-list", label: "Pension List", icon: Wallet },
+>>>>>>> master
     {
       to: "/admin/sms-management",
       label: "SMS Management",
       icon: MessageSquareIcon,
     },
+<<<<<<< HEAD
     { to: "/admin/reports", label: "Reports", icon: FileTextIcon },
+=======
+    { to: "/admin/benefits", label: "Benefits", icon: GiftIcon },
+
+    { to: "/admin/reports", label: "Reports", icon: FileTextIcon },
+    { to: "/admin/events", label: "Events", icon: Calendar },
+    { to: "/admin/osca-officials", label: "OSCA Officials", icon: UserCheck },
+>>>>>>> master
     { to: "/admin/audit-logs", label: "Audit Logs", icon: ClipboardListIcon },
     {
       to: "/admin/user-management",
       label: "User Management",
       icon: UserCogIcon,
     },
+<<<<<<< HEAD
     { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
+=======
+    { to: "/admin/about", label: "About OSCA", icon: InfoIcon },
+>>>>>>> master
   ];
 
   return (
@@ -96,14 +143,27 @@ const Sidebar = () => {
 
         <div className="p-6 flex flex-col items-center text-center">
           <img
+<<<<<<< HEAD
             src={logo}
+=======
+            src={systemSettings.seal || logo}
+>>>>>>> master
             alt="OSCA Logo"
             className="h-20 w-auto object-contain border-2 rounded-full border-blue-800"
           />
           <h1 className="text-xl font-bold text-blue-800">
+<<<<<<< HEAD
             Office of the Senior Citizen Affairs
           </h1>
           <p className="text-sm text-gray-600">San Jose, Occidental Mindoro</p>
+=======
+            {systemSettings.system_name ||
+              "Office of the Senior Citizen Affairs"}
+          </h1>
+          <p className="text-sm font-medium text-gray-800">
+            {systemSettings.municipality || "San Jose, Occidental Mindoro"}
+          </p>
+>>>>>>> master
         </div>
 
         <nav className="mt-6">

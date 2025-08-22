@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
+<<<<<<< HEAD
 import { SaveIcon, Loader2, XCircle, Upload } from "lucide-react";
 import Button from "../UI/Button";
 import Modal from "../UI/Modal";
+=======
+import Button from "../UI/Button";
+import Modal from "../UI/Modal";
+import { Loader2, SaveIcon, XCircle, UploadCloud } from "lucide-react";
+import user from "../../assets/user.png";
+>>>>>>> master
 import axios from "axios";
 
 const BarangayForm = ({
@@ -11,6 +18,7 @@ const BarangayForm = ({
   formData,
   setFormData,
   handleFileChange,
+<<<<<<< HEAD
   imageFile,
   error,
   loading,
@@ -24,6 +32,17 @@ const BarangayForm = ({
   const handleInput = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+=======
+  existingImage,
+  error,
+  loading,
+  editingId,
+  backendUrl,
+}) => {
+  const [barangayOptions, setBarangayOptions] = useState([]);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [validationError, setValidationError] = useState(null);
+>>>>>>> master
 
   const fetchBarangays = async () => {
     try {
@@ -53,14 +72,26 @@ const BarangayForm = ({
     };
   }, [formData.imageFile]);
 
+<<<<<<< HEAD
+=======
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+>>>>>>> master
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={
         editingId
+<<<<<<< HEAD
           ? "Edit Barangay Association President"
           : "Add New Barangay Association President"
+=======
+          ? "Edit Barangay Association Official"
+          : "Add Barangay Association Official"
+>>>>>>> master
       }
     >
       <div className="p-6">
@@ -72,6 +103,7 @@ const BarangayForm = ({
           }}
         >
           <div className="flex justify-center">
+<<<<<<< HEAD
             <div className="relative w-32 h-32">
               <img
                 src={
@@ -128,6 +160,35 @@ const BarangayForm = ({
               </p>
             )}
           </div>
+=======
+            <div className="relative group w-32 h-32">
+              <img
+                src={
+                  formData.imageFile instanceof File
+                    ? URL.createObjectURL(formData.imageFile)
+                    : existingImage || user
+                }
+                alt="Profile Preview"
+                className="w-full h-full object-cover rounded-full border-4 border-blue-200 group-hover:border-blue-400 transition-all duration-300 shadow"
+              />
+              <label
+                htmlFor="image"
+                className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-1.5 cursor-pointer opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0 shadow-lg hover:bg-blue-700"
+                title="Change Image"
+              >
+                <UploadCloud className="text-white w-4 h-4" />
+              </label>
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+          </div>
+
+>>>>>>> master
           <div>
             <label
               htmlFor="barangay"
@@ -139,7 +200,11 @@ const BarangayForm = ({
               id="barangay"
               name="barangay"
               value={formData.barangay}
+<<<<<<< HEAD
               onChange={handleInput}
+=======
+              onChange={handleChange}
+>>>>>>> master
               className="mt-1 block w-full border rounded-md px-3 py-2"
               required
             >
@@ -151,36 +216,60 @@ const BarangayForm = ({
               ))}
             </select>
           </div>
+<<<<<<< HEAD
           <div></div>
+=======
+
+>>>>>>> master
           <div>
             <label
               htmlFor="president"
               className="block text-sm font-medium text-gray-700"
             >
+<<<<<<< HEAD
               President Name
+=======
+              Name <span className="text-red-500">*</span>
+>>>>>>> master
             </label>
             <input
               type="text"
               id="president"
               name="president"
               value={formData.president}
+<<<<<<< HEAD
               onChange={handleInput}
+=======
+              onChange={handleChange}
+>>>>>>> master
               className="mt-1 block w-full border rounded-md px-3 py-2"
               required
             />
           </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
           <div>
             <label
               htmlFor="position"
               className="block text-sm font-medium text-gray-700"
             >
+<<<<<<< HEAD
               Position
+=======
+              Position <span className="text-red-500">*</span>
+>>>>>>> master
             </label>
             <select
               id="position"
               name="position"
               value={formData.position}
+<<<<<<< HEAD
               onChange={handleInput}
+=======
+              onChange={handleChange}
+>>>>>>> master
               className="mt-1 block w-full border rounded-md px-3 py-2"
               required
             >
@@ -189,12 +278,22 @@ const BarangayForm = ({
             </select>
           </div>
 
+<<<<<<< HEAD
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center">
               <XCircle className="h-5 w-5 mr-2" />
               <span>{error}</span>
             </div>
           )}
+=======
+          {(validationError || error) && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center">
+              <XCircle className="h-5 w-5 mr-2" />
+              <span>{validationError || error}</span>
+            </div>
+          )}
+
+>>>>>>> master
           <div className="flex justify-end space-x-3 pt-4">
             <Button variant="secondary" onClick={onClose} disabled={loading}>
               Cancel
@@ -214,8 +313,13 @@ const BarangayForm = ({
               {loading
                 ? "Saving..."
                 : editingId
+<<<<<<< HEAD
                 ? "Update Official"
                 : "Add Official"}
+=======
+                ? "Update Barangay Association Presidents"
+                : "Add Barangay Association Presidents"}
+>>>>>>> master
             </Button>
           </div>
         </form>

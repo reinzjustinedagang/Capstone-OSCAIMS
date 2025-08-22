@@ -183,9 +183,13 @@ export default function AuditLogs() {
   };
 
   return (
+<<<<<<< HEAD
     <div className=" bg-gray-100 min-h-screen rounded-lg font-inter">
       {/* <h1 className="text-2xl font-bold text-gray-800 mb-6">Audit Logs</h1> */}
 
+=======
+    <>
+>>>>>>> master
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
           {/* Search Input */}
@@ -294,6 +298,12 @@ export default function AuditLogs() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Details
                   </th>
+<<<<<<< HEAD
+=======
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ip Address
+                  </th>
+>>>>>>> master
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -330,6 +340,13 @@ export default function AuditLogs() {
                               ? "bg-red-100 text-red-800"
                               : log.action === "LOGOUT"
                               ? "bg-gray-300 text-black"
+<<<<<<< HEAD
+=======
+                              : log.action === "RESTORE"
+                              ? "bg-green-300 text-green-800"
+                              : log.action === "PERMANENT_DELETE"
+                              ? "bg-red-500 text-white"
+>>>>>>> master
                               : "bg-gray-100 text-gray-800"
                           }`}
                         >
@@ -342,6 +359,12 @@ export default function AuditLogs() {
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {log.details}
                       </td>
+<<<<<<< HEAD
+=======
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {log.ipAddress}
+                      </td>
+>>>>>>> master
                     </tr>
                   ))
                 )}
@@ -408,6 +431,10 @@ export default function AuditLogs() {
           </div>
         </div>
       </div>
+<<<<<<< HEAD
     </div>
+=======
+    </>
+>>>>>>> master
   );
 }

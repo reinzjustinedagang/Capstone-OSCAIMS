@@ -8,7 +8,11 @@ import ConfirmationModal from "./ConfirmationModal";
 import StatusMessage from "./StatusMessage";
 import { PlusIcon, Loader2 } from "lucide-react";
 
+<<<<<<< HEAD
 const BarangayOfficials = () => {
+=======
+const BarangayOfficials = ({ title }) => {
+>>>>>>> master
   const [barangays, setBarangays] = useState([]);
   const [showFormModal, setShowFormModal] = useState(false);
   const [imageFile, setImageFile] = useState(null);
@@ -29,6 +33,13 @@ const BarangayOfficials = () => {
   const [crudLoading, setCrudLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+<<<<<<< HEAD
+=======
+
+  const [showCropper, setShowCropper] = useState(false);
+  const [rawImage, setRawImage] = useState(null);
+
+>>>>>>> master
   const backendUrl =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -55,6 +66,49 @@ const BarangayOfficials = () => {
     fetchBarangays();
   }, [fetchBarangays]);
 
+<<<<<<< HEAD
+=======
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    const allowedExtensions = ["jpg", "jpeg", "png"];
+    const maxSizeInBytes = 10 * 1024 * 1024;
+
+    const fileType = file.type.toLowerCase();
+    const fileExtension = file.name.toLowerCase().split(".").pop();
+
+    if (!allowedTypes.includes(fileType)) {
+      setError("Only JPEG, JPG, and PNG files are allowed.");
+      return;
+    }
+
+    if (!allowedExtensions.includes(fileExtension)) {
+      setError("Only .jpeg, .jpg, and .png file extensions are allowed.");
+      return;
+    }
+
+    if (file.size > maxSizeInBytes) {
+      setError("File must be under 10MB.");
+      return;
+    }
+
+    setError(null);
+    setImageFile(file);
+    setFormData((prev) => ({
+      ...prev,
+      imageFile: file,
+    }));
+  };
+
+  const handleCropComplete = (croppedFile) => {
+    setImageFile(croppedFile);
+    setSealPreview(URL.createObjectURL(croppedFile));
+    setShowCropper(false);
+  };
+
+>>>>>>> master
   const closeFormModal = () => {
     setShowFormModal(false);
     setFormData({
@@ -63,7 +117,10 @@ const BarangayOfficials = () => {
       position: "",
       existingImage: "",
     });
+<<<<<<< HEAD
     setImageFile(null);
+=======
+>>>>>>> master
     setEditingId(null);
     setError("");
   };
@@ -99,8 +156,14 @@ const BarangayOfficials = () => {
       form.append("barangay_name", dataToSave.barangay);
       form.append("president_name", dataToSave.president);
       form.append("position", dataToSave.position);
+<<<<<<< HEAD
       if (dataToSave.id && dataToSave.existingImage) {
         form.append("existing_image", dataToSave.existingImage);
+=======
+
+      if (dataToSave.id && dataToSave.existingImage) {
+        form.append("existing_image", dataToSave.existingImage || "");
+>>>>>>> master
       }
       if (fileToUpload) {
         form.append("image", fileToUpload);
@@ -176,15 +239,25 @@ const BarangayOfficials = () => {
   };
 
   return (
+<<<<<<< HEAD
     <div className="bg-white rounded-xl shadow-lg p-4 mt-5">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
         <h3 className="text-2xl font-bold">Barangay Association Presidents</h3>
+=======
+    <div className="bg-white rounded-xl shadow-lg p-4 mb-4">
+      <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
+        <h3 className="text-lg font-medium text-blue-700">{title}</h3>
+>>>>>>> master
         <Button
           onClick={() => {
             setFormData({
               barangay: "",
               president: "",
+<<<<<<< HEAD
               position: "",
+=======
+              position: "President",
+>>>>>>> master
               existingImage: "",
             });
             setImageFile(null);
@@ -210,7 +283,11 @@ const BarangayOfficials = () => {
           <StatusMessage type="error" message={error} />
           <StatusMessage type="success" message={successMessage} />
 
+<<<<<<< HEAD
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+=======
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center">
+>>>>>>> master
             {barangays.length === 0 ? (
               <p className="col-span-full text-center text-gray-600 py-4">
                 No barangay officials found.
@@ -225,7 +302,11 @@ const BarangayOfficials = () => {
                       barangay: b.barangay_name,
                       president: b.president_name,
                       position: b.position,
+<<<<<<< HEAD
                       existingImage: b.image || "",
+=======
+                      existingImage: b.image,
+>>>>>>> master
                     });
                     setImageFile(null);
                     setEditingId(b.id);
@@ -246,6 +327,7 @@ const BarangayOfficials = () => {
           onSubmit={handleSubmitFromForm}
           formData={formData}
           setFormData={setFormData}
+<<<<<<< HEAD
           handleFileChange={(e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -264,6 +346,15 @@ const BarangayOfficials = () => {
           error={error}
           loading={crudLoading}
           editingId={editingId}
+=======
+          handleFileChange={handleFileChange}
+          error={error}
+          loading={crudLoading}
+          existingImage={formData.existingImage}
+          imageFile={imageFile}
+          editingId={editingId}
+          backendUrl={backendUrl}
+>>>>>>> master
         />
       )}
 

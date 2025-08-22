@@ -7,5 +7,9 @@
 <li>For frontend</li>
 <h1>Terminal 2</h1>
 <p>cd frontend</p>
+<<<<<<< HEAD
 <p>npm install</p>
+=======
+<p>npm</p>
+>>>>>>> master
 <p>npm run dev</p>

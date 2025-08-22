@@ -105,11 +105,15 @@ const Notification = () => {
   };
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 font-sans">
       <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-6">
         Notifications
       </h1>
 
+=======
+    <>
+>>>>>>> master
       {notifications.length === 0 ? (
         <p className="text-gray-600 text-center mt-10">
           No notifications available.
@@ -141,7 +145,11 @@ const Notification = () => {
           )}
         </div>
       )}
+<<<<<<< HEAD
     </div>
+=======
+    </>
+>>>>>>> master
   );
 };
 

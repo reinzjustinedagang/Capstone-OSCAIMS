@@ -86,6 +86,10 @@ const SmsCredentialsForm = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+<<<<<<< HEAD
+=======
+              autoComplete="false"
+>>>>>>> master
               className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
             <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -102,6 +106,10 @@ const SmsCredentialsForm = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+<<<<<<< HEAD
+=======
+              autoComplete="false"
+>>>>>>> master
               className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
             <KeyRound className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -118,6 +126,10 @@ const SmsCredentialsForm = () => {
               value={apiCode}
               onChange={(e) => setApiCode(e.target.value)}
               required
+<<<<<<< HEAD
+=======
+              autoComplete="false"
+>>>>>>> master
               className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
             <MessageCircleCode className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />

@@ -136,7 +136,11 @@ const MessageHistory = () => {
 
   return (
     <div className="p-6 bg-white rounded-xl shadow-lg">
+<<<<<<< HEAD
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Message History</h2>
+=======
+      <h2 className="text-lg font-medium mb-6">Message History</h2>
+>>>>>>> master
 
       {loading ? (
         <div className="flex justify-center items-center py-10">

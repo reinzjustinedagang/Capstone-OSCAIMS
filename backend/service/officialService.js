@@ -48,12 +48,33 @@ const checkIfTypeExists = async (type, excludeId = null) => {
   return rows && rows.length > 0;
 };
 
+<<<<<<< HEAD
 exports.addMunicipalOfficial = async (name, position, type, image, user) => {
+=======
+function duplicateError(message) {
+  const err = new Error(message);
+  err.code = 409;
+  return err;
+}
+
+exports.addMunicipalOfficial = async (
+  name,
+  position,
+  type,
+  image,
+  user,
+  ip
+) => {
+>>>>>>> master
   try {
     if (type === "head" || type === "vice") {
       const typeAlreadyExists = await checkIfTypeExists(type);
       if (typeAlreadyExists) {
+<<<<<<< HEAD
         throw new Error(
+=======
+        throw duplicateError(
+>>>>>>> master
           `A municipal official with type '${type}' already exists.`
         );
       }
@@ -70,7 +91,12 @@ exports.addMunicipalOfficial = async (name, position, type, image, user) => {
         user.email,
         user.role,
         "CREATE",
+<<<<<<< HEAD
         `Added municipal official '${name}' as ${position} (${type})`
+=======
+        `Added municipal official '${name}' as ${position} (${type})`,
+        ip
+>>>>>>> master
       );
     }
     return result;
@@ -86,7 +112,12 @@ exports.updateMunicipalOfficial = async (
   position,
   type,
   image,
+<<<<<<< HEAD
   user
+=======
+  user,
+  ip
+>>>>>>> master
 ) => {
   try {
     const oldDataRows = await Connection(
@@ -100,7 +131,11 @@ exports.updateMunicipalOfficial = async (
     if ((type === "head" || type === "vice") && oldData.type !== type) {
       const typeAlreadyExists = await checkIfTypeExists(type, id);
       if (typeAlreadyExists) {
+<<<<<<< HEAD
         throw new Error(
+=======
+        throw duplicateError(
+>>>>>>> master
           `A municipal official with type '${type}' already exists. Cannot change.`
         );
       }
@@ -152,7 +187,12 @@ exports.updateMunicipalOfficial = async (
           "UPDATE",
           `Updated municipal official ${name} (ID: ${id}): ${changes.join(
             ", "
+<<<<<<< HEAD
           )}`
+=======
+          )}`,
+          ip
+>>>>>>> master
         );
       }
     }
@@ -164,7 +204,11 @@ exports.updateMunicipalOfficial = async (
   }
 };
 
+<<<<<<< HEAD
 exports.deleteMunicipalOfficial = async (id, user) => {
+=======
+exports.deleteMunicipalOfficial = async (id, user, ip) => {
+>>>>>>> master
   const officialRows = await Connection(
     `SELECT name, image FROM municipal_officials WHERE id = ?`,
     [id]
@@ -183,7 +227,12 @@ exports.deleteMunicipalOfficial = async (id, user) => {
       user.email,
       user.role,
       "DELETE",
+<<<<<<< HEAD
       `Deleted municipal official '${official.name}'`
+=======
+      `Deleted municipal official '${official.name}'`,
+      ip
+>>>>>>> master
     );
 
     if (official.image) {
@@ -217,9 +266,27 @@ exports.addBarangayOfficial = async (
   president_name,
   position,
   image,
+<<<<<<< HEAD
   user
 ) => {
   try {
+=======
+  user,
+  ip
+) => {
+  try {
+    // Check if a barangay official already exists for this barangay and position
+    const duplicateRows = await Connection(
+      `SELECT id FROM barangay_officials WHERE barangay_name = ? AND position = ?`,
+      [barangay_name, position]
+    );
+    if (duplicateRows.length > 0) {
+      throw duplicateError(
+        `A barangay official in ${barangay_name} already exists.`
+      );
+    }
+
+>>>>>>> master
     const result = await Connection(
       `INSERT INTO barangay_officials (barangay_name, president_name, position, image) VALUES (?, ?, ?, ?)`,
       [barangay_name, president_name, position, image]
@@ -231,7 +298,12 @@ exports.addBarangayOfficial = async (
         user.email,
         user.role,
         "CREATE",
+<<<<<<< HEAD
         `Added barangay official '${barangay_name}'`
+=======
+        `Added barangay official '${barangay_name}'`,
+        ip
+>>>>>>> master
       );
     }
 
@@ -259,7 +331,12 @@ exports.updateBarangayOfficial = async (
   president_name,
   position,
   image,
+<<<<<<< HEAD
   user
+=======
+  user,
+  ip
+>>>>>>> master
 ) => {
   try {
     const oldDataRows = await Connection(
@@ -323,7 +400,12 @@ exports.updateBarangayOfficial = async (
         user.email,
         user.role,
         "UPDATE",
+<<<<<<< HEAD
         `Updated barangay official ${president_name}: ${changes.join(", ")}`
+=======
+        `Updated barangay official ${president_name}: ${changes.join(", ")}`,
+        ip
+>>>>>>> master
       );
     }
 
@@ -334,7 +416,11 @@ exports.updateBarangayOfficial = async (
   }
 };
 
+<<<<<<< HEAD
 exports.deleteBarangayOfficial = async (id, user) => {
+=======
+exports.deleteBarangayOfficial = async (id, user, ip) => {
+>>>>>>> master
   try {
     const barangayRows = await Connection(
       `SELECT barangay_name, image FROM barangay_officials WHERE id = ?`,
@@ -354,7 +440,12 @@ exports.deleteBarangayOfficial = async (id, user) => {
         user.email,
         user.role,
         "DELETE",
+<<<<<<< HEAD
         `Deleted barangay official '${barangay.barangay_name}'`
+=======
+        `Deleted barangay official '${barangay.barangay_name}'`,
+        ip
+>>>>>>> master
       );
 
       if (barangay.image) {

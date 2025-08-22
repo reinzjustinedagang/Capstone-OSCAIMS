@@ -208,8 +208,13 @@ export default function Register() {
                 onChange={(e) => setRole(e.target.value)}
                 className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent text-base transition-all duration-200"
               >
+<<<<<<< HEAD
                 <option>Staff</option>
                 <option>Admin</option>
+=======
+                <option>staff</option>
+                <option>admin</option>
+>>>>>>> master
               </select>
             </div>
 

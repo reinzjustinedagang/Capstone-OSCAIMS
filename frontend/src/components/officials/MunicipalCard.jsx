@@ -1,5 +1,9 @@
 import React from "react";
+<<<<<<< HEAD
 import { UserIcon, EditIcon, TrashIcon } from "lucide-react";
+=======
+import { UserIcon, Edit, Trash2 } from "lucide-react";
+>>>>>>> master
 import user from "../../assets/user.png";
 
 const MunicipalCard = ({ official, onEdit, onDelete, isHead = false }) => {
@@ -7,7 +11,11 @@ const MunicipalCard = ({ official, onEdit, onDelete, isHead = false }) => {
 
   return (
     <div
+<<<<<<< HEAD
       className={`relative flex flex-col items-center bg-white p-4 rounded-2xl shadow-md w-48 transition-transform transform hover:scale-105 ${
+=======
+      className={`relative flex flex-col items-center bg-white p-4 rounded-2xl shadow-md w-48 transition-transform transform ${
+>>>>>>> master
         isHead ? "border-2 border-blue-500" : "border border-gray-200"
       }`}
     >
@@ -35,10 +43,22 @@ const MunicipalCard = ({ official, onEdit, onDelete, isHead = false }) => {
       </div>
 
       {/* Name */}
+<<<<<<< HEAD
       <h3 className="text-lg font-semibold text-center">{official.name}</h3>
 
       {/* Position */}
       <span className="text-xs bg-blue-100 text-blue-700 mt-1 px-3 py-0.5 rounded-full font-medium">
+=======
+      <p
+        className="text-sm font-medium max-w-full text-center truncate"
+        title={official.name}
+      >
+        {official.name}
+      </p>
+
+      {/* Position */}
+      <span className="text-sm bg-blue-100 text-blue-700 mt-1 px-3 py-0.5 rounded-md font-medium">
+>>>>>>> master
         {official.position}
       </span>
 
@@ -50,7 +70,11 @@ const MunicipalCard = ({ official, onEdit, onDelete, isHead = false }) => {
           title="Edit Official"
           className="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
         >
+<<<<<<< HEAD
           <EditIcon className="h-5 w-5" />
+=======
+          <Edit className="h-5 w-5" />
+>>>>>>> master
         </button>
         <button
           onClick={onDelete}
@@ -58,7 +82,11 @@ const MunicipalCard = ({ official, onEdit, onDelete, isHead = false }) => {
           title="Delete Official"
           className="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-red-300 transition"
         >
+<<<<<<< HEAD
           <TrashIcon className="h-5 w-5" />
+=======
+          <Trash2 className="h-5 w-5" />
+>>>>>>> master
         </button>
       </div>
     </div>

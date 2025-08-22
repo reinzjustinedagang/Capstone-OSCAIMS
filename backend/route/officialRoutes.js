@@ -60,6 +60,15 @@ router.post(
       });
     } catch (error) {
       console.error("Error adding municipal official:", error);
+<<<<<<< HEAD
+=======
+
+      // Handle duplicate error
+      if (error.message && error.message.includes("already exists")) {
+        return res.status(409).json({ message: error.message });
+      }
+
+>>>>>>> master
       res.status(500).json({ message: "Failed to add municipal official" });
     }
   }
@@ -182,6 +191,15 @@ router.post(
       });
     } catch (error) {
       console.error("Error adding barangay official:", error);
+<<<<<<< HEAD
+=======
+
+      // Handle duplicate error
+      if (error.message && error.message.includes("already exists")) {
+        return res.status(409).json({ message: error.message });
+      }
+
+>>>>>>> master
       res.status(500).json({ message: "Failed to add barangay official" });
     }
   }

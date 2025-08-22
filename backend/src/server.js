@@ -5,11 +5,32 @@ const compression = require("compression");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 require("dotenv").config(); // Load environment variables
+<<<<<<< HEAD
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const fs = require("fs");
 const path = require("path");
+=======
+const cron = require("node-cron");
+const seniorCitizenService = require("../service/seniorCitizenService");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Run cleanup every day at midnight
+cron.schedule("0 0 * * *", async () => {
+  try {
+    const deletedCount =
+      await seniorCitizenService.cleanupOldSoftDeletedCitizens();
+    console.log(
+      `[CRON] ${deletedCount} expired soft-deleted citizens removed.`
+    );
+  } catch (error) {
+    console.error("[CRON] Cleanup failed:", error);
+  }
+});
+>>>>>>> master
 
 // MySQL session store setup
 const sessionStore = new MySQLStore({
@@ -63,6 +84,13 @@ const smsRoute = require("../route/smsRoute");
 const templateRoutes = require("../route/templateRoutes");
 const officialRoutes = require("../route/officialRoutes");
 const barangayRoutes = require("../route/barangayRoutes");
+<<<<<<< HEAD
+=======
+const benefitRoutes = require("../route/benefitRoutes");
+const eventRoutes = require("../route/eventRoutes");
+const reportRoutes = require("../route/reportRoutes");
+const systemRoutes = require("../route/systemRoutes");
+>>>>>>> master
 const getUserIp = require("../middleware/getUserIp");
 
 app.use(getUserIp);
@@ -73,6 +101,13 @@ app.use("/api/senior-citizens", seniorCitizenRoutes);
 app.use("/api/sms", smsRoute);
 app.use("/api/templates", templateRoutes);
 app.use("/api/barangays", barangayRoutes);
+<<<<<<< HEAD
+=======
+app.use("/api/benefits", benefitRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/charts", reportRoutes);
+app.use("/api/settings/", systemRoutes);
+>>>>>>> master
 
 // Global error handler
 app.use((err, req, res, next) => {

@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import {
   Plus,
+<<<<<<< HEAD
   Edit as EditIcon,
   Trash as TrashIcon,
+=======
+  Edit,
+  Trash2,
+>>>>>>> master
   ArrowUp,
   ArrowDown,
   Search,
@@ -181,11 +186,16 @@ const BarangayManagement = () => {
   };
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-gray-100 ">
       <div className="flex justify-between items-center mb-6">
         {/* <h1 className="text-2xl font-bold text-gray-800">
           Barangay Management
         </h1> */}
+=======
+    <>
+      <div className="flex justify-end items-center mb-4">
+>>>>>>> master
         <Button
           onClick={() => setShowAddModal(true)}
           variant="primary"
@@ -277,7 +287,11 @@ const BarangayManagement = () => {
                             }}
                             className="text-blue-600 hover:text-blue-900"
                           >
+<<<<<<< HEAD
                             <EditIcon className="h-5 w-5" />
+=======
+                            <Edit className="h-5 w-5" />
+>>>>>>> master
                           </button>
                           <button
                             onClick={() => {
@@ -286,7 +300,11 @@ const BarangayManagement = () => {
                             }}
                             className="text-red-600 hover:text-red-900"
                           >
+<<<<<<< HEAD
                             <TrashIcon className="h-5 w-5" />
+=======
+                            <Trash2 className="h-5 w-5" />
+>>>>>>> master
                           </button>
                         </div>
                       </td>
@@ -416,7 +434,11 @@ const BarangayManagement = () => {
           </div>
         </div>
       </Modal>
+<<<<<<< HEAD
     </div>
+=======
+    </>
+>>>>>>> master
   );
 };
 

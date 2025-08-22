@@ -47,6 +47,11 @@ export default function MyProfile() {
   const [confirmationAction, setConfirmationAction] = useState(null); // 'profile' or 'password'
   const [confirmationMessage, setConfirmationMessage] = useState("");
 
+<<<<<<< HEAD
+=======
+  const [croppedImageBlob, setCroppedImageBlob] = useState(null);
+
+>>>>>>> master
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -149,12 +154,37 @@ export default function MyProfile() {
     setShowConfirmationModal(false);
     setProfileLoading(true);
     try {
+<<<<<<< HEAD
+=======
+      let uploadedImageUrl = userData.image;
+
+      // Upload image only if a new one is cropped
+      if (croppedImageBlob) {
+        const formData = new FormData();
+        formData.append("image", croppedImageBlob);
+
+        const uploadResponse = await axios.post(
+          `${backendUrl}/api/user/upload-profile-picture/${userData.id}`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            withCredentials: true,
+          }
+        );
+        uploadedImageUrl = uploadResponse.data.imageUrl;
+      }
+
+>>>>>>> master
       const response = await axios.put(
         `${backendUrl}/api/user/updateProfile/${userData.id}`,
         {
           username,
           email,
           cp_number,
+<<<<<<< HEAD
+=======
+          image: uploadedImageUrl,
+>>>>>>> master
         },
         {
           withCredentials: true,
@@ -167,7 +197,13 @@ export default function MyProfile() {
           username,
           email,
           cp_number,
+<<<<<<< HEAD
         }));
+=======
+          image: uploadedImageUrl,
+        }));
+        setCroppedImageBlob(null); // Clear blob after upload
+>>>>>>> master
         window.dispatchEvent(new Event("profileUpdated"));
         showNotification("Profile updated successfully!", "success");
       } else {
@@ -292,12 +328,17 @@ export default function MyProfile() {
   }
 
   return (
+<<<<<<< HEAD
     <div className="bg-gray-100 min-h-screen rounded-lg font-inter">
+=======
+    <>
+>>>>>>> master
       {/* <h1 className="text-2xl font-bold text-gray-800 mb-6">My Profile</h1> */}
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b pb-6 mb-6">
           {/* Profile Picture Section */}
           <ProfilePicture
+<<<<<<< HEAD
             profilePicture={userData.image} // image is the correct field
             userId={userData.id}
             onUploadSuccess={(newImageUrl) => {
@@ -307,6 +348,10 @@ export default function MyProfile() {
             onUploadError={(errorMsg) => {
               showNotification(errorMsg, "error");
             }}
+=======
+            profilePicture={userData.image}
+            onCropReady={(blob) => setCroppedImageBlob(blob)}
+>>>>>>> master
           />
 
           {/* User Basic Info */}
@@ -383,6 +428,10 @@ export default function MyProfile() {
           </div>
         </div>
       </Modal>
+<<<<<<< HEAD
     </div>
+=======
+    </>
+>>>>>>> master
   );
 }

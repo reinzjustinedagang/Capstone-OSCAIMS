@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { PlusIcon, EditIcon, TrashIcon } from "lucide-react";
 import Button from "../UI/Button";
 import Modal2 from "../UI/Modal2";
+=======
+import { PlusIcon, EditIcon, TrashIcon, ImageIcon } from "lucide-react";
+import Button from "../UI/Button";
+import Modal from "../UI/Modal";
+>>>>>>> master
 import axios from "axios";
 
 const MessageTemplates = () => {
@@ -114,6 +120,7 @@ const MessageTemplates = () => {
         <p className="text-gray-500">Loading templates...</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<<<<<<< HEAD
           {templates.map((template) => (
             <div
               key={template.id}
@@ -150,6 +157,51 @@ const MessageTemplates = () => {
       )}
       {/* Add Template Modal */}
       <Modal2
+=======
+          {templates.length === 0 ? (
+            <div className="text-center py-16 text-gray-400 col-span-full">
+              <ImageIcon className="w-12 h-12 mx-auto mb-4" />
+              <p className="text-sm">No message templates found.</p>
+            </div>
+          ) : (
+            templates.map((template) => (
+              <div
+                key={template.id}
+                className="border border-gray-200 rounded-md overflow-hidden"
+              >
+                <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                  <div>
+                    <h3 className="font-medium">{template.name}</h3>
+                    <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">
+                      {template.category}
+                    </span>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(template)}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      <EditIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(template)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-4 bg-white">
+                  <p className="text-sm text-gray-600">{template.message}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+      {/* Add Template Modal */}
+      <Modal
+>>>>>>> master
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         title="Add Message Template"
@@ -228,9 +280,15 @@ const MessageTemplates = () => {
             </div>
           </form>
         </div>
+<<<<<<< HEAD
       </Modal2>
       {/* Edit Template Modal */}
       <Modal2
+=======
+      </Modal>
+      {/* Edit Template Modal */}
+      <Modal
+>>>>>>> master
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         title="Edit Message Template"
@@ -315,9 +373,15 @@ const MessageTemplates = () => {
             </div>
           </form>
         </div>
+<<<<<<< HEAD
       </Modal2>
       {/* Delete Confirmation Modal */}
       <Modal2
+=======
+      </Modal>
+      {/* Delete Confirmation Modal */}
+      <Modal
+>>>>>>> master
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         title="Confirm Deletion"
@@ -339,7 +403,11 @@ const MessageTemplates = () => {
             </Button>
           </div>
         </div>
+<<<<<<< HEAD
       </Modal2>
+=======
+      </Modal>
+>>>>>>> master
     </div>
   );
 };
