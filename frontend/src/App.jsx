@@ -12,6 +12,7 @@ import { RegisterPage } from "./pages/public/RegisterPage";
 import { ForgotPasswordPage } from "./pages/public/ForgotPasswordPage";
 import { VerifyOTPPage } from "./pages/public/VerifyOTPPage";
 import { ResetPasswordPage } from "./pages/public/ResetPasswordPage";
+import { RegisterSeniorPage } from "./pages/public/RegisterSeniorPage.jsx";
 
 // Admin Pages
 import { DashboardPage } from "./pages/admin/DashboardPage";
@@ -68,6 +69,14 @@ function App() {
         element={
           <PublicOnlyRoute>
             <RegisterPage />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/register-senior"
+        element={
+          <PublicOnlyRoute>
+            <RegisterSeniorPage />
           </PublicOnlyRoute>
         }
       />
