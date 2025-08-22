@@ -40,6 +40,9 @@ exports.updateSystemSettings = async (
   systemName,
   municipality,
   sealPath,
+  mission,
+  vision,
+  preamble,
   user,
   ip
 ) => {
@@ -58,14 +61,21 @@ exports.updateSystemSettings = async (
 
   if (existingRows.length === 0) {
     await Connection(
-      `INSERT INTO system (id, system_name, municipality, seal) VALUES (1, ?, ?, ?)`,
-      [systemName, municipality, sealPath || null]
+      `INSERT INTO system (id, system_name, municipality, seal, mission, vision, preamble) VALUES (1, ?, ?, ?, ?, ?, ?)`,
+      [systemName, municipality, sealPath, mission, vision, preamble || null]
     );
     changes.push("Initial system settings created.");
   } else {
     await Connection(
-      `UPDATE system SET system_name = ?, municipality = ?, seal = ? WHERE id = 1`,
-      [systemName, municipality, sealPath || old.seal]
+      `UPDATE system SET system_name = ?, municipality = ?, seal = ?, mission = ?, vision = ?, preamble = ? WHERE id = 1`,
+      [
+        systemName,
+        municipality,
+        sealPath,
+        mission,
+        vision,
+        preamble || old.seal,
+      ]
     );
   }
 
@@ -75,6 +85,12 @@ exports.updateSystemSettings = async (
   if (old.municipality !== municipality)
     changes.push(`Municipality: '${old.municipality}' → '${municipality}'`);
   if (sealPath && old.seal !== sealPath) changes.push(`Seal updated`);
+  if (old.mission !== mission)
+    changes.push(`Mission: '${old.mission}' → '${mission}'`);
+  if (old.vision !== vision)
+    changes.push(`Vision: '${old.vision}' → '${vision}'`);
+  if (old.preamble !== preamble)
+    changes.push(`Preamble: '${old.preamble}' → '${preamble}'`);
 
   // Log audit
   if (changes.length > 0 && user) {
@@ -83,9 +99,8 @@ exports.updateSystemSettings = async (
       user.email,
       user.role,
       actionType,
-      "SYSTEM_SETTINGS",
-      ip,
-      changes.join("; ")
+      changes.join("; "),
+      ip
     );
   }
 

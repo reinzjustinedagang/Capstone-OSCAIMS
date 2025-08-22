@@ -9,11 +9,11 @@ import {
   ArchiveRestore,
   CheckCircle,
 } from "lucide-react";
-import Modal from "../UI/Modal";
+import Modal from "../../UI/Modal";
 
-import Button from "../UI/Button";
-import AddSenior from "./AddSenior";
-import SeniorCitizenList from "./SeniorCitizenList";
+import Button from "../../UI/Button";
+import AddSenior from "../../senior-citizen/AddSenior";
+import SeniorCitizenList from "../../senior-citizen/SeniorCitizenList";
 
 const SeniorCitizen = () => {
   const [activeTab, setActiveTab] = useState("list");
@@ -37,18 +37,6 @@ const SeniorCitizen = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <NavLink to="/admin/recycle-bin">
-            <Button
-              variant="secondary"
-              icon={<ArchiveRestore className="h-4 w-4 mr-2" />}
-              className="relative hover:bg-gray-200"
-            >
-              Recycle Bin
-              {/* <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                1
-              </span> */}
-            </Button>
-          </NavLink>
           <Button
             variant="primary"
             icon={<Plus className="h-4 w-4 mr-2" />}
@@ -63,6 +51,12 @@ const SeniorCitizen = () => {
         {activeTab === "list" && <SeniorCitizenList />}
 
         {activeTab === "add" && <AddSenior />}
+        {activeTab === "updatebenefits" && (
+          <UpdateBenefit
+            benefitId={selectedBenefitId}
+            onSuccess={handleUpdateSuccess}
+          />
+        )}
       </div>
       {/* Success Modal */}
       <Modal

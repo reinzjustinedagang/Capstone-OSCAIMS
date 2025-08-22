@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import axios from "axios";
 import { ArrowUp, Clock, Loader2, XCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -7,7 +7,6 @@ import { formatDistanceToNow } from "date-fns";
 const backendUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 const LoginTrail = () => {
-  const { userId } = useParams();
   const [trails, setTrails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,11 +19,18 @@ const LoginTrail = () => {
   const fetchLoginTrails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${backendUrl}/api/audit-logs/${userId}`
-      );
-      setTrails(response.data);
-      setTotalPages(Math.ceil(response.data.length / limit));
+      const meResponse = await axios.get(`${backendUrl}/api/user/me`, {
+        withCredentials: true,
+      });
+
+      if (meResponse.status === 200 && meResponse.data.isAuthenticated) {
+        const userId = meResponse.data.id;
+        const response = await axios.get(
+          `${backendUrl}/api/audit-logs/${userId}`
+        );
+        setTrails(response.data);
+        setTotalPages(Math.ceil(response.data.length / limit));
+      }
     } catch (err) {
       console.error("Error fetching login trails:", err);
       setError("Failed to fetch login trails.");
@@ -33,11 +39,10 @@ const LoginTrail = () => {
     }
   };
 
+  // ✅ just run once on mount, no need for userId
   useEffect(() => {
-    if (userId) {
-      fetchLoginTrails();
-    }
-  }, [userId]);
+    fetchLoginTrails();
+  }, []);
 
   // Slice current page records
   const currentRecords = useMemo(() => {
@@ -51,9 +56,7 @@ const LoginTrail = () => {
     const maxVisible = 5;
 
     if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
-        visiblePages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) visiblePages.push(i);
     } else {
       visiblePages.push(1);
       if (page > 3) visiblePages.push("ellipsis-prev");
@@ -89,20 +92,6 @@ const LoginTrail = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <NavLink
-          to="/admin/user-management"
-          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowUp className="h-5 w-5 mr-2 -rotate-90" />
-          Back to Users Management
-        </NavLink>
-        <div className="text-sm text-gray-500">
-          {trails.length} login records
-        </div>
-      </div>
-
       {/* Table Card */}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         {error && (

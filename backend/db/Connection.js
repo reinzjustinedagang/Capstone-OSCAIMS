@@ -351,7 +351,10 @@ db.query(
     system_name VARCHAR(255) NOT NULL,
     municipality VARCHAR(255) NOT NULL,
     seal VARCHAR(500), -- path or URL of uploaded seal image,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    mission TEXT NULL,
+    vision TEXT NULL,
+    preamble TEXT NULL
   )
   `,
   (err) => {

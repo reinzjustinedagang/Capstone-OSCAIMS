@@ -4,7 +4,7 @@ import { ShieldOff, LogIn } from "lucide-react"; // Importing relevant icons
 
 export default function UnauthorizedPage() {
   return (
-    <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-red-50 to-orange-100 font-inter overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-inter overflow-hidden">
       {/* Background animation elements - consistent with other auth pages */}
       <div className="absolute inset-0 z-0 opacity-20">
         <div className="absolute w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2"></div>

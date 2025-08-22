@@ -1,29 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import axios from "axios";
-import Modal from "../UI/Modal";
-import logo from "../../assets/osca-logo.png";
+import logo from "../../../assets/osca-logo.png";
 import {
   HomeIcon,
   UsersIcon,
   MessageSquareIcon,
-  UserCogIcon,
-  SettingsIcon,
-  LogOutIcon,
   FileTextIcon,
   GiftIcon,
-  UserIcon,
   Wallet,
   MenuIcon,
   XIcon,
-  UserCheck,
-  ClipboardListIcon,
   Calendar,
   InfoIcon,
+  History,
+  UserCheck,
 } from "lucide-react";
 
-const Sidebar = () => {
-  const navigate = useNavigate();
+const StaffSidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [systemSettings, setSystemSettings] = useState({
     system_name: "",
@@ -44,79 +38,68 @@ const Sidebar = () => {
     fetchSystemSettings();
   }, []);
 
+  // Staff only sees allowed modules
   const menuItems = [
-    { to: "/admin/dashboard", label: "Dashboard", icon: HomeIcon },
+    { to: "/staff/dashboard", label: "Dashboard", icon: HomeIcon },
     {
-      to: "/admin/senior-citizen-list",
+      to: "/staff/senior-citizen-list",
       label: "Senior Citizens",
       icon: UsersIcon,
     },
-
-    { to: "/admin/pension-list", label: "Pension List", icon: Wallet },
     {
-      to: "/admin/sms-management",
+      to: "/staff/sms-management",
       label: "SMS Management",
       icon: MessageSquareIcon,
     },
-    { to: "/admin/benefits", label: "Benefits", icon: GiftIcon },
-
-    { to: "/admin/reports", label: "Reports", icon: FileTextIcon },
-    { to: "/admin/events", label: "Events", icon: Calendar },
-    { to: "/admin/osca-officials", label: "OSCA Officials", icon: UserCheck },
-    { to: "/admin/audit-logs", label: "Audit Logs", icon: ClipboardListIcon },
-    {
-      to: "/admin/user-management",
-      label: "User Management",
-      icon: UserCogIcon,
-    },
-    { to: "/admin/about", label: "About OSCA", icon: InfoIcon },
+    { to: "/staff/benefits", label: "Benefits", icon: GiftIcon },
+    { to: "/staff/official", label: "Official", icon: UserCheck },
+    { to: "/staff/login-trails", label: "Login Trails", icon: History },
+    { to: "/staff/about", label: "About OSCA", icon: InfoIcon },
   ];
 
   return (
     <>
-      {/* Burger menu button for small screens */}
+      {/* Burger menu for mobile */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         {!isSidebarOpen && (
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="p-2 text-blue-800 bg-white rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Open sidebar"
           >
             <MenuIcon className="h-6 w-6" />
           </button>
         )}
       </div>
 
-      {/* Overlay for when sidebar is open on small screens */}
+      {/* Overlay for mobile */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
         ></div>
       )}
 
-      {/* Sidebar content */}
+      {/* Sidebar */}
       <aside
         className={`
-    fixed inset-y-0 left-0 z-50 w-64 bg-white text-gray-800
-    border-r border-gray-200 shadow-lg transform transition-transform duration-500 ease-in-out
-    ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-    md:relative md:translate-x-0
-    overflow-y-auto h-screen
-  `}
+          fixed inset-y-0 left-0 z-50 w-64 bg-white text-gray-800
+          border-r border-gray-200 shadow-lg transform transition-transform duration-500 ease-in-out
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          md:relative md:translate-x-0
+          overflow-y-auto h-screen
+        `}
       >
-        {/* Close button inside sidebar on mobile */}
+        {/* Close button (mobile) */}
         <div className="md:hidden absolute top-4 right-4 z-50">
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="p-2 text-blue-800 bg-white rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Close sidebar"
           >
             <XIcon className="h-6 w-6" />
           </button>
         </div>
 
+        {/* Header */}
         <div className="p-6 flex flex-col items-center text-center">
           <img
             src={systemSettings.seal || logo}
@@ -132,6 +115,7 @@ const Sidebar = () => {
           </p>
         </div>
 
+        {/* Menu */}
         <nav className="mt-6">
           {menuItems.map(({ to, label, icon: Icon }) => (
             <NavLink
@@ -152,4 +136,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default StaffSidebar;

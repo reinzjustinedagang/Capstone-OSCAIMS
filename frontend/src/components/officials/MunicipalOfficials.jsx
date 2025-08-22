@@ -258,7 +258,7 @@ const MunicipalOfficials = ({ title }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-4">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-        <h2 className="text-lg font-medium">{title}</h2>
+        <h2 className="text-lg font-medium text-blue-700">{title}</h2>
         <Button
           onClick={openAddModal}
           variant="primary"
@@ -286,7 +286,7 @@ const MunicipalOfficials = ({ title }) => {
       ) : null}
 
       {!isLoading && !error && (
-        <div className="flex flex-col items-center space-y-2">
+        <div className="flex flex-col items-center space-y-0">
           {/* Head */}
           {head && (
             <MunicipalCard
@@ -314,7 +314,7 @@ const MunicipalOfficials = ({ title }) => {
           {/* Others */}
           {others.length > 0 && (
             <>
-              <div className="relative flex justify-center items-center w-full mb-4">
+              <div className="relative flex justify-center items-center w-full mb-2">
                 <div className="w-1 h-6 bg-blue-400"></div>
                 <div className="absolute top-6 h-1 w-2/3 bg-blue-400"></div>
               </div>

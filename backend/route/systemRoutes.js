@@ -22,7 +22,14 @@ router.get("/", async (req, res) => {
 // POST (insert/update) system settings
 router.post("/", isAuthenticated, upload.single("image"), async (req, res) => {
   try {
-    const { systemName, municipality, existingSeal } = req.body;
+    const {
+      systemName,
+      municipality,
+      existingSeal,
+      mission,
+      vision,
+      preamble,
+    } = req.body;
     let sealPath = existingSeal || null;
     const ip = req.userIp;
     const user = req.session.user;
@@ -50,6 +57,9 @@ router.post("/", isAuthenticated, upload.single("image"), async (req, res) => {
       systemName,
       municipality,
       sealPath,
+      mission,
+      vision,
+      preamble,
       user,
       ip
     );

@@ -27,12 +27,20 @@ import { MyProfilePage } from "./pages/admin/MyProfilePage.jsx";
 import { AuditLogsPage } from "./pages/admin/AuditLogsPage.jsx";
 import { BarangayManagementPage } from "./pages/admin/BarangayManagementPage.jsx";
 import { LoginTrailPage } from "./pages/admin/LoginTrailPage.jsx";
-
-// Staff Pages
-import { UserDashboard } from "./pages/user/UserDashboard";
-import { NotificationPage } from "./pages/admin/NotificationPage.jsx";
 import { RecycleBinPage } from "./pages/admin/RecycleBinPage.jsx";
 import { EventPage } from "./pages/admin/EventPage.jsx";
+import { AboutOscaPage } from "./pages/admin/AboutOscaPage.jsx";
+import { NotificationPage } from "./pages/admin/NotificationPage.jsx";
+
+// Staff Pages
+import { StaffDashboardPage } from "./pages/staff/StaffDashboardPage";
+import { StaffSeniorCitizenPage } from "./pages/staff/StaffSeniorCitizenPage.jsx";
+import { StaffSmsManagementPage } from "./pages/staff/StaffSmsManagementPage.jsx";
+import { StaffBenefitsPage } from "./pages/staff/StaffBenefitsPage.jsx";
+import { StaffLoginTrailPage } from "./pages/staff/StaffLoginTrailPage.jsx";
+import { StaffAboutPage } from "./pages/staff/StaffAboutPage.jsx";
+import { StaffProfilePage } from "./pages/staff/StaffProfilePage.jsx";
+import StaffOfficialPage from "./pages/staff/StaffOfficialPage.jsx";
 
 function App() {
   return (
@@ -217,13 +225,77 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/admin/about"
+        element={
+          <ProtectedRoute role="Admin">
+            <AboutOscaPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Staff Routes */}
       <Route
         path="/staff/dashboard"
         element={
           <ProtectedRoute role="Staff">
-            <UserDashboard />
+            <StaffDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/senior-citizen-list"
+        element={
+          <ProtectedRoute role="Staff">
+            <StaffSeniorCitizenPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/sms-management"
+        element={
+          <ProtectedRoute role="Staff">
+            <StaffSmsManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/benefits"
+        element={
+          <ProtectedRoute role="Staff">
+            <StaffBenefitsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/official"
+        element={
+          <ProtectedRoute role="Staff">
+            <StaffOfficialPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/login-trails"
+        element={
+          <ProtectedRoute role="Staff">
+            <StaffLoginTrailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/about"
+        element={
+          <ProtectedRoute role="Staff">
+            <StaffAboutPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/my-profile"
+        element={
+          <ProtectedRoute role="Staff">
+            <StaffProfilePage />
           </ProtectedRoute>
         }
       />

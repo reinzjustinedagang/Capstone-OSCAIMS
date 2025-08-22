@@ -4,19 +4,26 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  HardDrive,
   ImagePlus,
   Cpu,
   Landmark,
+  Target,
+  Eye,
+  ScrollText,
 } from "lucide-react";
 import Button from "../UI/Button";
 import axios from "axios";
-import CropperModal from "../UI/CropperModal"; // adjust path
+import CropperModal from "../UI/CropperModal";
 import Modal from "../UI/Modal";
 
 const SystemTab = () => {
-  const [systemName, setSystemName] = useState("");
-  const [municipality, setMunicipality] = useState("");
+  const [formData, setFormData] = useState({
+    systemName: "",
+    municipality: "",
+    mission: "",
+    vision: "",
+    preamble: "",
+  });
 
   const [sealFile, setSealFile] = useState(null);
   const [sealPreview, setSealPreview] = useState(null);
@@ -24,12 +31,13 @@ const SystemTab = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const fileInputRef = useRef(null);
-
   const [showCropper, setShowCropper] = useState(false);
-  const [rawImage, setRawImage] = useState(null); // before crop
+  const [rawImage, setRawImage] = useState(null);
 
   const backendUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -41,10 +49,15 @@ const SystemTab = () => {
           withCredentials: true,
         });
         if (res.status === 200 && res.data) {
-          setSystemName(res.data.system_name || "");
-          setMunicipality(res.data.municipality || "");
-          setSealPreview(res.data.seal || null); // show existing seal
-          setSealFile(null); // only set when user uploads a new file
+          setFormData({
+            systemName: res.data.system_name || "",
+            municipality: res.data.municipality || "",
+            mission: res.data.mission || "",
+            vision: res.data.vision || "",
+            preamble: res.data.preamble || "",
+          });
+          setSealPreview(res.data.seal || null);
+          setSealFile(null);
         }
       } catch (err) {
         setError("Failed to fetch system settings.");
@@ -59,26 +72,15 @@ const SystemTab = () => {
 
   const handleSealChange = (e) => {
     const file = e.target.files[0];
-
     if (!file) return;
 
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-    const allowedExtensions = ["jpg", "jpeg", "png"];
     const maxSizeInBytes = 10 * 1024 * 1024;
 
-    const fileType = file.type.toLowerCase();
-    const fileExtension = file.name.toLowerCase().split(".").pop();
-
-    if (!allowedTypes.includes(fileType)) {
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
       setError("Only JPG, JPEG, or PNG files are allowed.");
       return;
     }
-
-    if (!allowedExtensions.includes(fileExtension)) {
-      setError("Only .jpeg, .jpg, and .png file are allowed.");
-      return;
-    }
-
     if (file.size > maxSizeInBytes) {
       setError("File must be under 10MB.");
       return;
@@ -86,8 +88,8 @@ const SystemTab = () => {
 
     const imageUrl = URL.createObjectURL(file);
     setError(null);
-    setRawImage(imageUrl); // for Cropper
-    setShowCropper(true); // show crop modal
+    setRawImage(imageUrl);
+    setShowCropper(true);
   };
 
   const handleCropComplete = (croppedFile) => {
@@ -96,26 +98,28 @@ const SystemTab = () => {
     setShowCropper(false);
   };
 
-  const handleSystemSave = async (e) => {
-    e.preventDefault();
+  const saveSystemSettings = async () => {
     setLoading(true);
     setError("");
     setSuccessMessage("");
 
-    if (!systemName || !municipality) {
-      setError("All system settings fields are required.");
+    if (!formData.systemName || !formData.municipality) {
+      setError("All required fields must be filled.");
       setLoading(false);
       return;
     }
 
     try {
-      const formData = new FormData();
-      formData.append("systemName", systemName);
-      formData.append("municipality", municipality);
-      formData.append("existingSeal", sealPreview || "");
-      if (sealFile) formData.append("image", sealFile);
+      const formPayload = new FormData();
+      formPayload.append("systemName", formData.systemName);
+      formPayload.append("municipality", formData.municipality);
+      formPayload.append("mission", formData.mission);
+      formPayload.append("vision", formData.vision);
+      formPayload.append("preamble", formData.preamble);
+      formPayload.append("existingSeal", sealPreview || "");
+      if (sealFile) formPayload.append("image", sealFile);
 
-      const res = await axios.post(`${backendUrl}/api/settings/`, formData, {
+      const res = await axios.post(`${backendUrl}/api/settings/`, formPayload, {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -125,13 +129,12 @@ const SystemTab = () => {
           res.data.message || "System settings updated successfully!"
         );
         setError("");
-        setShowSuccessModal(true); // ✅ show modal instead of reloading immediately
+        setShowSuccessModal(true);
       } else {
         setError("Failed to update system settings.");
       }
     } catch (err) {
       console.error(err);
-      // If backend provided error message, use it
       setError(
         err.response?.data?.message || "Failed to update system settings."
       );
@@ -142,39 +145,53 @@ const SystemTab = () => {
 
   const handleConfirmSuccess = () => {
     setShowSuccessModal(false);
-    window.location.reload(); // ✅ reload AFTER pressing OK
+    window.location.reload();
   };
 
   return (
-    <form onSubmit={handleSystemSave} className="space-y-6">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        setShowConfirmModal(true);
+      }}
+      className="space-y-6"
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* System Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
             System Name
           </label>
           <div className="mt-1 relative">
             <input
-              value={systemName}
-              onChange={(e) => setSystemName(e.target.value)}
+              value={formData.systemName}
+              onChange={(e) =>
+                setFormData({ ...formData, systemName: e.target.value })
+              }
               className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
             <Cpu className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
         </div>
+
+        {/* Municipality */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
             Municipality
           </label>
           <div className="mt-1 relative">
             <input
-              value={municipality}
-              onChange={(e) => setMunicipality(e.target.value)}
+              value={formData.municipality}
+              onChange={(e) =>
+                setFormData({ ...formData, municipality: e.target.value })
+              }
               className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
             <Landmark className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
         </div>
 
+        {/* Municipality Seal */}
         <div>
           <label className="block text-sm font-medium">Municipality Seal</label>
           <div className="flex items-center gap-4 mt-2">
@@ -207,6 +224,61 @@ const SystemTab = () => {
         </div>
       </div>
 
+      {/* Mission */}
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-700">
+          Mission
+        </label>
+        <div className="mt-1 relative">
+          <textarea
+            value={formData.mission}
+            onChange={(e) =>
+              setFormData({ ...formData, mission: e.target.value })
+            }
+            className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            rows={3}
+          />
+          <Target className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+        </div>
+      </div>
+
+      {/* Vision */}
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-700">
+          Vision
+        </label>
+        <div className="mt-1 relative">
+          <textarea
+            value={formData.vision}
+            onChange={(e) =>
+              setFormData({ ...formData, vision: e.target.value })
+            }
+            className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            rows={3}
+          />
+          <Eye className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+        </div>
+      </div>
+
+      {/* Preamble */}
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-700">
+          Preamble
+        </label>
+        <div className="mt-1 relative">
+          <textarea
+            value={formData.preamble}
+            onChange={(e) =>
+              setFormData({ ...formData, preamble: e.target.value })
+            }
+            className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            rows={4}
+          />
+          <ScrollText className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+        </div>
+      </div>
+
+      {/* Errors */}
       {error && (
         <div className="text-red-600 flex items-center gap-2">
           <XCircle size={18} /> {error}
@@ -218,6 +290,7 @@ const SystemTab = () => {
         </div>
       )}
 
+      {/* Save Button */}
       <div className="flex justify-end items-center mt-6">
         <Button
           type="submit"
@@ -233,6 +306,8 @@ const SystemTab = () => {
           {loading ? "Saving..." : "Save Settings"}
         </Button>
       </div>
+
+      {/* Cropper Modal */}
       {showCropper && rawImage && (
         <CropperModal
           imageSrc={rawImage}
@@ -240,7 +315,41 @@ const SystemTab = () => {
           onCropComplete={handleCropComplete}
         />
       )}
-      {/* ✅ Success Modal */}
+
+      {/* Confirmation Modal */}
+      <Modal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        title="Confirm Update"
+      >
+        <div className="mt-4 text-sm text-gray-700">
+          Are you sure you want to update your system settings?
+        </div>
+        <div className="mt-6 flex justify-end space-x-4">
+          <button
+            onClick={() => setShowConfirmModal(false)}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            disabled={loading}
+            onClick={() => {
+              setShowConfirmModal(false);
+              saveSystemSettings();
+            }}
+            className={`px-4 py-2 rounded text-sm ${
+              loading
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white`}
+          >
+            {loading ? "Saving..." : "Yes, Save"}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Success Modal */}
       <Modal isOpen={showSuccessModal} onClose={handleConfirmSuccess} title="">
         <div className="p-6 text-center">
           <div className="mx-auto mb-4 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">

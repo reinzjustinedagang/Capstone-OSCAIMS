@@ -11,7 +11,7 @@ import {
   Trash2,
   ArrowDown,
   ArrowUp,
-  ScrollText, // Added ScrollText for viewing login trails
+  History, // Added History for viewing login trails
   Loader2, // For loading indicators
   XCircle, // For error messages
   CheckCircle, // For success messages
@@ -485,7 +485,7 @@ const UserManagement = () => {
                             title="View Login Trails"
                             to={`/admin/login-trail/${user.id}`} // Adjusted to use user.id
                           >
-                            <ScrollText className="h-5 w-5" />
+                            <History className="h-5 w-5" />
                           </NavLink>
                         </div>
                       </td>
